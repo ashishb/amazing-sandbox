@@ -5,6 +5,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+	"os/exec"
 	"time"
 
 	docker "github.com/fsouza/go-dockerclient"
@@ -14,9 +16,6 @@ import (
 // RunNpxCmd runs the npx command with the given arguments.
 // args can be empty list as well
 func RunNpxCmd(ctx context.Context, config Config) error {
-	// alias npx='docker run --rm --init --user=$(id -u):$(id -g) -v "${PWD}":"${PWD}"
-	//--net=host --workdir=${PWD} node:25-bookworm-slim npx'
-
 	client, err := getDockerClient()
 	if err != nil {
 		return err
@@ -32,8 +31,9 @@ func RunNpxCmd(ctx context.Context, config Config) error {
 		return fmt.Errorf("failed to run npx command: %w", err)
 	}
 
+	config.args = append([]string{"npx"}, config.args...)
 	// Now run the image with the config
-	if err := runDockerContainer(ctx, client, config); err != nil {
+	if err := runDockerContainer1(ctx, config); err != nil {
 		return fmt.Errorf("failed to run npx command: %w", err)
 	}
 	return nil
@@ -91,7 +91,57 @@ func pullDockerImageIfNotExists(ctx context.Context, client *docker.Client, imag
 	return fmt.Errorf("failed to inspect docker image %s: %w", image, err)
 }
 
-func runDockerContainer(ctx context.Context, client *docker.Client, config Config) error {
+func runDockerContainer1(ctx context.Context, config Config) error {
+	const npmCacheDir = "/tmp/npm-cache"
+	if err := os.Mkdir(npmCacheDir, 0777); err != nil && !os.IsExist(err) {
+		return fmt.Errorf("failed to create npm cache directory: %w", err)
+	}
+
+	dockerRunCmd := []string{
+		"docker", "run", "--rm", "--init", "--interactive",
+		//"--env=" + "npm_config_cache=" + npmCacheDir, // to avoid permission issues
+		//"--user=" + strconv.Itoa(getCurrentUserID()) + ":" + strconv.Itoa(getCurrentGroupID()),
+		//"--user=node:node", // Included by default
+		"--volume=" + npmCacheDir + ":" + "/.npm", // to persist npm cache across runs
+		"--volume=" + fmt.Sprintf("%s:%s", config.workingDir, config.workingDir),
+		"--net=" + string(config.networkType),
+		"--workdir=" + config.workingDir,
+		config.dockerBaseImage,
+	}
+
+	dockerRunCmd = append(dockerRunCmd, config.args...)
+	// fmt.Println(dockerRunCmd)
+	log.Debug().
+		Strs("dockerRunCmd", dockerRunCmd).
+		Msg("Running docker container with command")
+
+	// Execute the docker run command
+	// Note: This is a blocking call
+	cmdCtx := exec.CommandContext(ctx, dockerRunCmd[0], dockerRunCmd[1:]...)
+	cmdCtx.Stderr = log.Logger.With().Strs("dockerRunCmd", dockerRunCmd).Logger()
+	cmdCtx.Stdout = log.Logger.With().Strs("dockerRunCmd", dockerRunCmd).Logger()
+	cmd := cmdCtx.Run()
+	if cmd != nil {
+		return fmt.Errorf("failed to run docker container: %w", cmd)
+	}
+
+	log.Debug().
+		Strs("dockerRunCmd", dockerRunCmd).
+		Msg("Docker container ran successfully")
+	return nil
+}
+
+func getCurrentUserID() int {
+	return os.Getuid()
+}
+
+func getCurrentGroupID() int {
+	return os.Getgid()
+}
+
+// This is the proper function to run the docker container except I am unable to see the logs right now
+// via this and that has to be debugged.
+func runDockerContainer2(ctx context.Context, client *docker.Client, config Config) error {
 	// TODO: add options to load .env file
 	var mounts []docker.Mount
 	if config.mountWorkingDirRW || config.mountWorkingDirRO {
