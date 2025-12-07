@@ -1,0 +1,26 @@
+package main
+
+import (
+	"github.com/rs/zerolog/log"
+	"github.com/spf13/cobra"
+)
+
+func getRootCmd() *cobra.Command {
+	rootCmd := &cobra.Command{
+		Use:   "as",
+		Short: "as is CLI tool for running tools inside Sandbox",
+		Long: "as is CLI tool for running tools inside Sandbox\n" +
+			"See https://ashishb.net/programming/run-tools-inside-docker/ for reasoning behind this tool",
+		Run: func(c *cobra.Command, _ []string) {
+			err := c.Help()
+			if err != nil {
+				log.Fatal().
+					Err(err).
+					Msg("Error displaying help")
+			}
+		},
+	}
+
+	rootCmd.AddCommand(npxCmd())
+	return rootCmd
+}

@@ -7,7 +7,7 @@ lint:
 	golangci-lint run
 
 build:
-	go build -o bin/as cmd/as/main.go
+	go build -o bin/as cmd/as/*
 
 run: build
 	./bin/as
