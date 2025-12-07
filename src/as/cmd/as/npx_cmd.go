@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 
+	"github.com/ashishb/as/src/as/internal/cmdrunner"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
@@ -27,7 +28,22 @@ func npxCmd() *cobra.Command {
 			Str("directory", *directory).
 			Strs("args", npxArgs).
 			Msg("Running npx command")
-		// Implement the logic to run npx command here
+
+		config := cmdrunner.NewNpxCmdConfig(
+			cmdrunner.SetWorkingDir(*directory),
+			cmdrunner.SetArgs(npxArgs),
+			cmdrunner.SetMountWorkingDirReadWrite(true),
+			cmdrunner.SetRunAsNonRoot(true),
+			cmdrunner.SetNetworkType(cmdrunner.NetworkHost),
+		)
+
+		err := cmdrunner.RunNpxCmd(cmd.Context(), config)
+		if err != nil {
+			log.Fatal().
+				Ctx(cmd.Context()).
+				Err(err).
+				Msg("Error running npx command")
+		}
 	}
 	return cmd
 }
