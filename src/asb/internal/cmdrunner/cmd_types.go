@@ -7,6 +7,7 @@ type (
 
 // Eventually, more command types will be added here
 const (
+	CmdTypeNpm         CmdType = "npm"
 	CmdTypeNpx         CmdType = "npx"
 	CmdTypeRubyGem     CmdType = "ruby_gem"
 	CmdTypeRubyGemExec CmdType = "ruby_gem_exec"

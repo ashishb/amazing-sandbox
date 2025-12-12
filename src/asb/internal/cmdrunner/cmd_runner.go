@@ -93,24 +93,26 @@ func pullDockerImageIfNotExists(ctx context.Context, client *docker.Client, imag
 }
 
 func runDockerContainer1(ctx context.Context, config Config) error {
-	dockerRunCmd := []string{
-		"docker", "run", "--rm", "--init",
-		"--interactive", "--tty",
-		// "--env=" + "npm_config_cache=" + npmCacheDir, // to avoid permission issues
-		// "--user=" + strconv.Itoa(getCurrentUserID()) + ":" + strconv.Itoa(getCurrentGroupID()),
-		//"--user=node:node", // Included by default
-		"--mount=type=volume,target=/.npm",                               // to persist npm cache across runs
-		"--mount=type=volume,target=/root/.npm",                          // to persist npm cache across runs
+	// If this is an interactive terminal then inform the process about this
+	isInteractiveTerminal := isatty.IsTerminal(os.Stdin.Fd())
+	dockerRunCmd := []string{"docker", "run", "--rm", "--init"}
+	if isInteractiveTerminal {
+		dockerRunCmd = append(dockerRunCmd, "--interactive", "--tty")
+	}
+
+	dockerRunCmd = append(dockerRunCmd,
+		// Warning: without volume names, the volumes are usually deleted when the container is removed
+		"--mount=type=volume,src=npm1,target=/.npm",                      // to persist npm cache across runs
+		"--mount=type=volume,src=npm2,target=/root/.npm",                 // to persist npm cache across runs
 		"--mount=type=volume,src=ruby1,target=/usr/local/bundle/",        // to persist Ruby gem cache across runs
 		"--mount=type=volume,src=ruby2,target=/root/.gem/ruby/",          // to persist Ruby gem cache across runs
 		"--mount=type=volume,src=ruby3,target=/usr/local/lib/ruby/gems/", // to persist Ruby gem cache across runs
 		"--mount=type=volume,src=ruby4,target=/root/.cache/gem/specs",    // to persist Ruby gem cache across runs
 		"--mount=type=volume,src=ruby5,target=/root/.rbenv/",             // to persist Ruby gem cache across runs
-		"--mount=type=bind," + fmt.Sprintf("source=%s,target=%s", config.workingDir, config.workingDir),
-		"--net=" + string(config.networkType),
-		"--workdir=" + config.workingDir,
-		config.dockerBaseImage,
-	}
+		"--mount=type=bind,"+fmt.Sprintf("source=%s,target=%s", config.workingDir, config.workingDir),
+		"--net="+string(config.networkType),
+		"--workdir="+config.workingDir,
+		config.dockerBaseImage)
 
 	dockerRunCmd = append(dockerRunCmd, config.args...)
 	// fmt.Println(dockerRunCmd)
@@ -121,8 +123,6 @@ func runDockerContainer1(ctx context.Context, config Config) error {
 	// Execute the docker run command
 	// Note: This is a blocking call
 	cmdCtx := exec.CommandContext(ctx, dockerRunCmd[0], dockerRunCmd[1:]...)
-	// If this is an interactive terminal then inform the process about this
-	isInteractiveTerminal := isatty.IsTerminal(os.Stdin.Fd())
 	if isInteractiveTerminal {
 		cmdCtx.Stdin = os.Stdin
 	}

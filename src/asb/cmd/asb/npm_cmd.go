@@ -1,28 +1,33 @@
 package main
 
 import (
+	"os"
+
 	"github.com/ashishb/asb/src/asb/internal/cmdrunner"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
-func npxCmd() *cobra.Command {
+func npmCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "npx",
-		Short: "Run an npx command",
+		Use:   "npm",
+		Short: "Run an npm command",
 	}
+	cmd.FParseErrWhitelist.UnknownFlags = true
 
 	directory := cmd.PersistentFlags().StringP("directory", "d", getCwdOrFail(), "Working directory for this command")
-	cmd.Run = func(cmd *cobra.Command, npxArgs []string) {
+	cmd.Run = func(cmd *cobra.Command, args []string) {
 		log.Info().
 			Ctx(cmd.Context()).
 			Str("directory", *directory).
-			Strs("args", npxArgs).
-			Msg("Running npx command")
+			Strs("args", args).
+			Msg("Running npm command")
 
-		config := cmdrunner.NewNpxCmdConfig(
+		// Skip the first two args (program name, "npm" command)
+		cmdArgs := os.Args[2:]
+		config := cmdrunner.NewNpmCmdConfig(
 			cmdrunner.SetWorkingDir(*directory),
-			cmdrunner.SetArgs(npxArgs),
+			cmdrunner.SetArgs(cmdArgs),
 			cmdrunner.SetMountWorkingDirReadWrite(true),
 			cmdrunner.SetRunAsNonRoot(true),
 			cmdrunner.SetNetworkType(cmdrunner.NetworkHost),

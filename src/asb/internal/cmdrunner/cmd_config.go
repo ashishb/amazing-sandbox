@@ -3,7 +3,8 @@ package cmdrunner
 import "github.com/rs/zerolog/log"
 
 const (
-	_npxDockerImage = "node:25-bookworm-slim"
+	_npmDockerImage = "node:25-bookworm-slim"
+	_npxDockerImage = _npmDockerImage
 )
 
 type Config struct {
@@ -31,6 +32,8 @@ func SetWorkingDir(workingDir string) Option {
 func SetArgs(args []string) Option {
 	return func(c *Config) {
 		switch c.cmdType {
+		case CmdTypeNpm:
+			c.args = append([]string{"npm"}, args...)
 		case CmdTypeNpx:
 			c.args = append([]string{"npx"}, args...)
 		case CmdTypeRubyGem:
@@ -79,6 +82,25 @@ func SetMountWorkingDirReadWrite(mountRW bool) Option {
 		}
 		c.mountWorkingDirRW = mountRW
 	}
+}
+
+func NewNpmCmdConfig(options ...Option) Config {
+	cfg := &Config{
+		dockerBaseImage:   _npmDockerImage,
+		cmdType:           CmdTypeNpm,
+		workingDir:        ".",
+		args:              nil,
+		mountWorkingDirRW: true,
+		mountWorkingDirRO: false,
+		runAsNonRoot:      true,
+		networkType:       NetworkHost,
+	}
+
+	for _, option := range options {
+		option(cfg)
+	}
+
+	return *cfg
 }
 
 func NewNpxCmdConfig(options ...Option) Config {
