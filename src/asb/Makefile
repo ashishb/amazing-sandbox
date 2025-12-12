@@ -7,7 +7,7 @@ lint:
 	golangci-lint run
 
 build:
-	go build -o bin/as cmd/as/*
+	go build -o bin/asb cmd/asb/*
 
 run: build
-	./bin/as
+	./bin/asb

@@ -1,4 +1,4 @@
-module github.com/ashishb/as/src/as
+module github.com/ashishb/asb/src/asb
 
 go 1.25.4
 

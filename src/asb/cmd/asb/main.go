@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ashishb/as/src/as/internal/logger"
+	"github.com/ashishb/asb/src/asb/internal/logger"
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
 )
@@ -14,7 +14,7 @@ func main() {
 	loadDotEnv()
 
 	log.Trace().
-		Msg("This is the 'as' command.")
+		Msg("This is the 'asb' command.")
 	if err := getRootCmd().Execute(); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

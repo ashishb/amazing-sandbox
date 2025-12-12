@@ -3,9 +3,10 @@ package main
 import (
 	"os"
 
-	"github.com/ashishb/as/src/as/internal/cmdrunner"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
+
+	"github.com/ashishb/asb/src/asb/internal/cmdrunner"
 )
 
 func npxCmd() *cobra.Command {

@@ -7,9 +7,9 @@ import (
 
 func getRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:   "as",
-		Short: "as is CLI tool for running tools inside Sandbox",
-		Long: "as is CLI tool for running tools inside Sandbox\n" +
+		Use:   "asb",
+		Short: "asb is CLI tool for running tools inside Sandbox",
+		Long: "asb is CLI tool for running tools inside Sandbox\n" +
 			"See https://ashishb.net/programming/run-tools-inside-docker/ for reasoning behind this tool",
 		Run: func(c *cobra.Command, _ []string) {
 			err := c.Help()
