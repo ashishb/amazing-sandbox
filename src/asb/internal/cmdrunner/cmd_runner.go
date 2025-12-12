@@ -10,12 +10,13 @@ import (
 	"time"
 
 	docker "github.com/fsouza/go-dockerclient"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
-// RunNpxCmd runs the npx command with the given arguments.
+// RunCmd runs the npx command with the given arguments.
 // args can be empty list as well
-func RunNpxCmd(ctx context.Context, config Config) error {
+func RunCmd(ctx context.Context, config Config) error {
 	client, err := getDockerClient()
 	if err != nil {
 		return err
@@ -23,18 +24,17 @@ func RunNpxCmd(ctx context.Context, config Config) error {
 
 	// 1. Check that docker is installed and running
 	if err := checkDockerInstalled(client); err != nil {
-		return fmt.Errorf("failed to run npx command: %w", err)
+		return fmt.Errorf("failed to run %s command: %w", config.cmdType, err)
 	}
 
 	// Download the docker image
 	if err := pullDockerImageIfNotExists(ctx, client, config.dockerBaseImage); err != nil {
-		return fmt.Errorf("failed to run npx command: %w", err)
+		return fmt.Errorf("failed to run %s command: %w", config.cmdType, err)
 	}
 
-	config.args = append([]string{"npx"}, config.args...)
 	// Now run the image with the config
 	if err := runDockerContainer1(ctx, config); err != nil {
-		return fmt.Errorf("failed to run npx command: %w", err)
+		return fmt.Errorf("failed to run %s command: %w", config.cmdType, err)
 	}
 	return nil
 }
@@ -92,18 +92,19 @@ func pullDockerImageIfNotExists(ctx context.Context, client *docker.Client, imag
 }
 
 func runDockerContainer1(ctx context.Context, config Config) error {
-	const npmCacheDir = "/tmp/npm-cache"
-	if err := os.Mkdir(npmCacheDir, 0777); err != nil && !os.IsExist(err) {
-		return fmt.Errorf("failed to create npm cache directory: %w", err)
-	}
-
 	dockerRunCmd := []string{
 		"docker", "run", "--rm", "--init", "--interactive",
-		//"--env=" + "npm_config_cache=" + npmCacheDir, // to avoid permission issues
-		//"--user=" + strconv.Itoa(getCurrentUserID()) + ":" + strconv.Itoa(getCurrentGroupID()),
+		// "--env=" + "npm_config_cache=" + npmCacheDir, // to avoid permission issues
+		// "--user=" + strconv.Itoa(getCurrentUserID()) + ":" + strconv.Itoa(getCurrentGroupID()),
 		//"--user=node:node", // Included by default
-		"--volume=" + npmCacheDir + ":" + "/.npm", // to persist npm cache across runs
-		"--volume=" + fmt.Sprintf("%s:%s", config.workingDir, config.workingDir),
+		"--mount=type=volume,target=/.npm",                               // to persist npm cache across runs
+		"--mount=type=volume,target=/root/.npm",                          // to persist npm cache across runs
+		"--mount=type=volume,src=ruby1,target=/usr/local/bundle/",        // to persist Ruby gem cache across runs
+		"--mount=type=volume,src=ruby2,target=/root/.gem/ruby/",          // to persist Ruby gem cache across runs
+		"--mount=type=volume,src=ruby3,target=/usr/local/lib/ruby/gems/", // to persist Ruby gem cache across runs
+		"--mount=type=volume,src=ruby4,target=/root/.cache/gem/specs",    // to persist Ruby gem cache across runs
+		"--mount=type=volume,src=ruby5,target=/root/.rbenv/",             // to persist Ruby gem cache across runs
+		"--mount=type=bind," + fmt.Sprintf("source=%s,target=%s", config.workingDir, config.workingDir),
 		"--net=" + string(config.networkType),
 		"--workdir=" + config.workingDir,
 		config.dockerBaseImage,
@@ -118,8 +119,8 @@ func runDockerContainer1(ctx context.Context, config Config) error {
 	// Execute the docker run command
 	// Note: This is a blocking call
 	cmdCtx := exec.CommandContext(ctx, dockerRunCmd[0], dockerRunCmd[1:]...)
-	cmdCtx.Stderr = log.Logger.With().Strs("dockerRunCmd", dockerRunCmd).Logger()
-	cmdCtx.Stdout = log.Logger.With().Strs("dockerRunCmd", dockerRunCmd).Logger()
+	cmdCtx.Stdout = log.Logger.Level(zerolog.InfoLevel).With().Logger()
+	cmdCtx.Stderr = log.Logger.Level(zerolog.ErrorLevel).With().Strs("dockerRunCmd", dockerRunCmd).Logger()
 	cmd := cmdCtx.Run()
 	if cmd != nil {
 		return fmt.Errorf("failed to run docker container: %w", cmd)
@@ -190,8 +191,8 @@ func runDockerContainer2(ctx context.Context, client *docker.Client, config Conf
 		Msg("Docker container started successfully")
 	if err = client.AttachToContainer(docker.AttachToContainerOptions{
 		Container:    container.ID,
-		OutputStream: log.Logger.With().Str("containerId", container.ID).Logger(),
-		ErrorStream:  log.Logger.With().Str("containerId", container.ID).Logger(),
+		OutputStream: log.Logger.With().Str("containerId", container.ID).Logger().Level(zerolog.InfoLevel),
+		ErrorStream:  log.Logger.With().Str("containerId", container.ID).Logger().Level(zerolog.ErrorLevel),
 		Stdout:       true,
 		Stderr:       true,
 		Stream:       true,

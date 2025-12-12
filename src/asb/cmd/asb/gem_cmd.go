@@ -1,28 +1,27 @@
 package main
 
 import (
-	"os"
-
 	"github.com/ashishb/asb/src/asb/internal/cmdrunner"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
-func npxCmd() *cobra.Command {
+func gemCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "npx",
-		Short: "Run an npx command",
+		Use:   "gem",
+		Short: "Run a Ruby gem-based CLI tool",
 	}
 
-	directory := cmd.PersistentFlags().StringP("directory", "d", getCwdOrFail(), "Working directory for this command")
+	directory := cmd.PersistentFlags().StringP("directory", "d", getCwdOrFail(),
+		"Working directory for this command")
 	cmd.Run = func(cmd *cobra.Command, npxArgs []string) {
 		log.Info().
 			Ctx(cmd.Context()).
 			Str("directory", *directory).
 			Strs("args", npxArgs).
-			Msg("Running npx command")
+			Msg("Running Ruby gem-based command")
 
-		config := cmdrunner.NewNpxCmdConfig(
+		config := cmdrunner.NewRubyGemCmdConfig(
 			cmdrunner.SetWorkingDir(*directory),
 			cmdrunner.SetArgs(npxArgs),
 			cmdrunner.SetMountWorkingDirReadWrite(true),
@@ -39,14 +38,4 @@ func npxCmd() *cobra.Command {
 		}
 	}
 	return cmd
-}
-
-func getCwdOrFail() string {
-	cwd, err := os.Getwd()
-	if err != nil {
-		log.Fatal().
-			Err(err).
-			Msg("Error getting current working directory")
-	}
-	return cwd
 }

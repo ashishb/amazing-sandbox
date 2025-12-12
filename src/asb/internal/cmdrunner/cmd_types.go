@@ -7,7 +7,9 @@ type (
 
 // Eventually, more command types will be added here
 const (
-	CmdTypeNpx CmdType = "npx"
+	CmdTypeNpx         CmdType = "npx"
+	CmdTypeRubyGem     CmdType = "ruby_gem"
+	CmdTypeRubyGemExec CmdType = "ruby_gem_exec"
 )
 
 // Ref: https://docs.docker.com/engine/network/

@@ -1,5 +1,7 @@
 package cmdrunner
 
+import "github.com/rs/zerolog/log"
+
 const (
 	_npxDockerImage = "node:25-bookworm-slim"
 )
@@ -28,7 +30,24 @@ func SetWorkingDir(workingDir string) Option {
 
 func SetArgs(args []string) Option {
 	return func(c *Config) {
-		c.args = args
+		switch c.cmdType {
+		case CmdTypeNpx:
+			c.args = append([]string{"npx"}, args...)
+		case CmdTypeRubyGem:
+			// Make sure to use --conservative flag for install command
+			// to avoid attemping to update already installed gems
+			if len(args) > 0 && args[0] == "install" {
+				c.args = append([]string{"gem", "install", "--conservative"}, args[1:]...)
+			} else {
+				c.args = append([]string{"gem"}, args...)
+			}
+		case CmdTypeRubyGemExec:
+			c.args = args
+		default:
+			log.Fatal().
+				Str("cmdType", string(c.cmdType)).
+				Msg("Unsupported command type for setting args")
+		}
 	}
 }
 
@@ -66,6 +85,44 @@ func NewNpxCmdConfig(options ...Option) Config {
 	cfg := &Config{
 		dockerBaseImage:   _npxDockerImage,
 		cmdType:           CmdTypeNpx,
+		workingDir:        ".",
+		args:              nil,
+		mountWorkingDirRW: true,
+		mountWorkingDirRO: false,
+		runAsNonRoot:      true,
+		networkType:       NetworkHost,
+	}
+
+	for _, option := range options {
+		option(cfg)
+	}
+
+	return *cfg
+}
+
+func NewRubyGemCmdConfig(options ...Option) Config {
+	cfg := &Config{
+		dockerBaseImage:   "ruby:3-bookworm",
+		cmdType:           CmdTypeRubyGem,
+		workingDir:        ".",
+		args:              nil,
+		mountWorkingDirRW: true,
+		mountWorkingDirRO: false,
+		runAsNonRoot:      true,
+		networkType:       NetworkHost,
+	}
+
+	for _, option := range options {
+		option(cfg)
+	}
+
+	return *cfg
+}
+
+func NewRubyGemExecCmdConfig(options ...Option) Config {
+	cfg := &Config{
+		dockerBaseImage:   "ruby:3-bookworm",
+		cmdType:           CmdTypeRubyGemExec,
 		workingDir:        ".",
 		args:              nil,
 		mountWorkingDirRW: true,

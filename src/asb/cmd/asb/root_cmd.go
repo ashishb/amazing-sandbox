@@ -22,5 +22,7 @@ func getRootCmd() *cobra.Command {
 	}
 
 	rootCmd.AddCommand(npxCmd())
+	rootCmd.AddCommand(gemCmd())
+	rootCmd.AddCommand(gemExecCmd())
 	return rootCmd
 }

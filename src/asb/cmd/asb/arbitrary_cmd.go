@@ -8,23 +8,27 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func npxCmd() *cobra.Command {
+func gemExecCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "npx",
-		Short: "Run an npx command",
+		Use:   "gem-exec",
+		Short: "Run a gem already inside sandbox",
 	}
+	cmd.FParseErrWhitelist.UnknownFlags = true
 
-	directory := cmd.PersistentFlags().StringP("directory", "d", getCwdOrFail(), "Working directory for this command")
-	cmd.Run = func(cmd *cobra.Command, npxArgs []string) {
+	directory := cmd.PersistentFlags().StringP("directory", "d", getCwdOrFail(),
+		"Working directory for this command")
+	cmd.Run = func(cmd *cobra.Command, args []string) {
 		log.Info().
 			Ctx(cmd.Context()).
 			Str("directory", *directory).
-			Strs("args", npxArgs).
-			Msg("Running npx command")
+			Strs("args", args).
+			Msg("Running gem that is already inside sandbox")
 
-		config := cmdrunner.NewNpxCmdConfig(
+		// Skip the first two args (program name, "gem-exec" command_
+		cmdArgs := os.Args[2:]
+		config := cmdrunner.NewRubyGemExecCmdConfig(
 			cmdrunner.SetWorkingDir(*directory),
-			cmdrunner.SetArgs(npxArgs),
+			cmdrunner.SetArgs(cmdArgs),
 			cmdrunner.SetMountWorkingDirReadWrite(true),
 			cmdrunner.SetRunAsNonRoot(true),
 			cmdrunner.SetNetworkType(cmdrunner.NetworkHost),
@@ -39,14 +43,4 @@ func npxCmd() *cobra.Command {
 		}
 	}
 	return cmd
-}
-
-func getCwdOrFail() string {
-	cwd, err := os.Getwd()
-	if err != nil {
-		log.Fatal().
-			Err(err).
-			Msg("Error getting current working directory")
-	}
-	return cwd
 }
