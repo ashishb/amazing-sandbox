@@ -10,6 +10,7 @@ import (
 	"time"
 
 	docker "github.com/fsouza/go-dockerclient"
+	isatty "github.com/mattn/go-isatty"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -93,7 +94,8 @@ func pullDockerImageIfNotExists(ctx context.Context, client *docker.Client, imag
 
 func runDockerContainer1(ctx context.Context, config Config) error {
 	dockerRunCmd := []string{
-		"docker", "run", "--rm", "--init", "--interactive",
+		"docker", "run", "--rm", "--init",
+		"--interactive", "--tty",
 		// "--env=" + "npm_config_cache=" + npmCacheDir, // to avoid permission issues
 		// "--user=" + strconv.Itoa(getCurrentUserID()) + ":" + strconv.Itoa(getCurrentGroupID()),
 		//"--user=node:node", // Included by default
@@ -119,6 +121,11 @@ func runDockerContainer1(ctx context.Context, config Config) error {
 	// Execute the docker run command
 	// Note: This is a blocking call
 	cmdCtx := exec.CommandContext(ctx, dockerRunCmd[0], dockerRunCmd[1:]...)
+	// If this is an interactive terminal then inform the process about this
+	isInteractiveTerminal := isatty.IsTerminal(os.Stdin.Fd())
+	if isInteractiveTerminal {
+		cmdCtx.Stdin = os.Stdin
+	}
 	cmdCtx.Stdout = log.Logger.Level(zerolog.InfoLevel).With().Logger()
 	cmdCtx.Stderr = log.Logger.Level(zerolog.ErrorLevel).With().Strs("dockerRunCmd", dockerRunCmd).Logger()
 	cmd := cmdCtx.Run()
