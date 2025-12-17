@@ -21,8 +21,12 @@ func getRootCmd() *cobra.Command {
 		},
 	}
 
+	rootCmd.AddCommand(cargoCmd())
+	rootCmd.AddCommand(cargoExecCmd())
+
 	rootCmd.AddCommand(gemCmd())
 	rootCmd.AddCommand(gemExecCmd())
+
 	rootCmd.AddCommand(npmCmd())
 	rootCmd.AddCommand(npxCmd())
 	rootCmd.AddCommand(yarnCmd())

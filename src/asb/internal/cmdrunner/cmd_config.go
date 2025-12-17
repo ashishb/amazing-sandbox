@@ -8,9 +8,11 @@ import (
 )
 
 const (
-	_npmDockerImage  = "node:25-bookworm-slim"
-	_yarnDockerImage = _npmDockerImage
-	_npxDockerImage  = _npmDockerImage
+	_rustCargoDockerImage = "rust:1.92"
+	_npmDockerImage       = "node:25-bookworm-slim"
+	_rubyDockerImage      = "ruby:3-bookworm"
+	_yarnDockerImage      = _npmDockerImage
+	_npxDockerImage       = _npmDockerImage
 )
 
 type Config struct {
@@ -41,6 +43,8 @@ func SetWorkingDir(workingDir string) Option {
 func SetArgs(args []string) Option {
 	return func(c *Config) {
 		switch c.cmdType {
+		case CmdTypeCargo:
+			c.args = append([]string{"cargo"}, args...)
 		case CmdTypeNpm:
 			c.args = append([]string{"npm"}, args...)
 		case CmdTypeNpx:
@@ -56,6 +60,8 @@ func SetArgs(args []string) Option {
 				c.args = append([]string{"gem"}, args...)
 			}
 		case CmdTypeRubyGemExec:
+			c.args = args
+		case CmdTypeRustCargoExec:
 			c.args = args
 		default:
 			log.Fatal().
@@ -164,6 +170,25 @@ func NewYarnCmdConfig(options ...Option) Config {
 	return *cfg
 }
 
+func NewCargoCmdConfig(options ...Option) Config {
+	cfg := &Config{
+		dockerBaseImage:   _rustCargoDockerImage,
+		cmdType:           CmdTypeCargo,
+		workingDir:        ".",
+		args:              nil,
+		mountWorkingDirRW: true,
+		mountWorkingDirRO: false,
+		runAsNonRoot:      true,
+		networkType:       NetworkHost,
+	}
+
+	for _, option := range options {
+		option(cfg)
+	}
+
+	return *cfg
+}
+
 func NewNpxCmdConfig(options ...Option) Config {
 	cfg := &Config{
 		dockerBaseImage:   _npxDockerImage,
@@ -204,8 +229,27 @@ func NewRubyGemCmdConfig(options ...Option) Config {
 
 func NewRubyGemExecCmdConfig(options ...Option) Config {
 	cfg := &Config{
-		dockerBaseImage:   "ruby:3-bookworm",
+		dockerBaseImage:   _rubyDockerImage,
 		cmdType:           CmdTypeRubyGemExec,
+		workingDir:        ".",
+		args:              nil,
+		mountWorkingDirRW: true,
+		mountWorkingDirRO: false,
+		runAsNonRoot:      true,
+		networkType:       NetworkHost,
+	}
+
+	for _, option := range options {
+		option(cfg)
+	}
+
+	return *cfg
+}
+
+func NewRustCargoExecCmdConfig(options ...Option) Config {
+	cfg := &Config{
+		dockerBaseImage:   _rustCargoDockerImage,
+		cmdType:           CmdTypeRustCargoExec,
 		workingDir:        ".",
 		args:              nil,
 		mountWorkingDirRW: true,

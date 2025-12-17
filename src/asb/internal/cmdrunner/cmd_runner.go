@@ -89,7 +89,7 @@ func pullDockerImageIfNotExists(ctx context.Context, client *docker.Client, imag
 			Msg("Successfully pulled docker image")
 	}
 
-	return fmt.Errorf("failed to inspect docker image %s: %w", image, err)
+	return nil
 }
 
 func runDockerContainer1(ctx context.Context, config Config) error {
@@ -129,6 +129,7 @@ func runDockerContainer1(ctx context.Context, config Config) error {
 		"--mount=type=volume,src=ruby3,target=/usr/local/lib/ruby/gems/", // to persist Ruby gem cache across runs
 		"--mount=type=volume,src=ruby4,target=/root/.cache/gem/specs",    // to persist Ruby gem cache across runs
 		"--mount=type=volume,src=ruby5,target=/root/.rbenv/",             // to persist Ruby gem cache across runs
+		"--mount=type=volume,src=cargo1,target=/usr/local/cargo",         // to persist Rust cargo cache across runs
 		"--net="+string(config.networkType),
 		"--workdir="+config.workingDir,
 		config.dockerBaseImage)

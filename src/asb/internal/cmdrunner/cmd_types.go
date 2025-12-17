@@ -7,11 +7,15 @@ type (
 
 // Eventually, more command types will be added here
 const (
-	CmdTypeNpm         CmdType = "npm"
-	CmdTypeYarn        CmdType = "yarn"
-	CmdTypeNpx         CmdType = "npx"
-	CmdTypeRubyGem     CmdType = "ruby_gem"
-	CmdTypeRubyGemExec CmdType = "ruby_gem_exec"
+	CmdTypeCargo CmdType = "cargo"
+
+	CmdTypeNpm  CmdType = "npm"
+	CmdTypeNpx  CmdType = "npx"
+	CmdTypeYarn CmdType = "yarn"
+
+	CmdTypeRubyGem       CmdType = "ruby_gem"
+	CmdTypeRubyGemExec   CmdType = "ruby_gem_exec"
+	CmdTypeRustCargoExec CmdType = "rust_cargo_exec"
 )
 
 // Ref: https://docs.docker.com/engine/network/

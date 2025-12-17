@@ -20,9 +20,9 @@ Amazing Sandbox (AS) is for running various tools inside a Docker sandbox in a b
 - [x] `npx`
 - [x] `npm`
 - [x] `yarn`
-- [ ] `cargo`
-- [ ] `brew`
+- [x] `cargo` and `cargo-exec`
 - [x] `gem` and `gem-exec`
+- [ ] `uv`
 
 ## Usage
 
