@@ -1,6 +1,11 @@
 package cmdrunner
 
-import "github.com/rs/zerolog/log"
+import (
+	"os"
+	"path"
+
+	"github.com/rs/zerolog/log"
+)
 
 const (
 	_npmDockerImage  = "node:25-bookworm-slim"
@@ -17,6 +22,9 @@ type Config struct {
 	// At most one of these should be true
 	mountWorkingDirRW bool // Whether to mount the working directory into the container as read-write
 	mountWorkingDirRO bool // Whether to mount the working directory into the container as read-only
+
+	mountReferencedDirRO bool // Whether to mount the referenced directory into the container as read-only
+	mountReferencedDirRW bool // Whether to mount the referenced directory into the container as read-write
 
 	runAsNonRoot bool        // Whether to run the container as non-root user
 	networkType  NetworkType // Network type for the container
@@ -85,6 +93,37 @@ func SetMountWorkingDirReadWrite(mountRW bool) Option {
 		}
 		c.mountWorkingDirRW = mountRW
 	}
+}
+
+func SetMountReferencedDirReadWrite(mountRW bool) Option {
+	return func(c *Config) {
+		if mountRW {
+			c.mountReferencedDirRO = false
+		}
+		c.mountReferencedDirRW = mountRW
+	}
+}
+
+func (c Config) getReferencedFiles() []string {
+	// Go through args and find any referenced files/directories
+	// For simplicity, we assume any arg that begins with "/" or ".." is a reference to a file/directory
+	var dirs []string
+	for _, arg := range c.args {
+		// Note: This is a simplistic check, in real-world scenarios,
+		// you might want to use filepath.IsAbs and also check if the path exists
+		if len(arg) > 0 && (arg[0] == '/' || (len(arg) > 1 && arg[0:2] == "..")) {
+			dirs = append(dirs, getAbsolutePath(c.workingDir, arg))
+		}
+	}
+	return dirs
+}
+
+func getAbsolutePath(baseDir string, relativeDir string) string {
+	if relativeDir[0] == os.PathSeparator {
+		return relativeDir
+	}
+
+	return path.Clean(baseDir + string(os.PathSeparator) + relativeDir)
 }
 
 func NewNpmCmdConfig(options ...Option) Config {

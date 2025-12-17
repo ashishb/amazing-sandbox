@@ -20,14 +20,8 @@ func npxCmd() *cobra.Command {
 			Strs("args", npxArgs).
 			Msg("Running npx command")
 
-		config := cmdrunner.NewNpxCmdConfig(
-			cmdrunner.SetWorkingDir(*directory),
-			cmdrunner.SetArgs(getCmdArgs(cmd)),
-			cmdrunner.SetMountWorkingDirReadWrite(true),
-			cmdrunner.SetRunAsNonRoot(true),
-			cmdrunner.SetNetworkType(cmdrunner.NetworkHost),
-		)
-
+		options := getCmdConfig(cmd, *directory)
+		config := cmdrunner.NewNpxCmdConfig(options...)
 		err := cmdrunner.RunCmd(cmd.Context(), config)
 		if err != nil {
 			log.Fatal().

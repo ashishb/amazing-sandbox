@@ -21,14 +21,8 @@ func yarnCmd() *cobra.Command {
 			Strs("args", args).
 			Msg("Running command")
 
-		config := cmdrunner.NewYarnCmdConfig(
-			cmdrunner.SetWorkingDir(*directory),
-			cmdrunner.SetArgs(getCmdArgs(cmd)),
-			cmdrunner.SetMountWorkingDirReadWrite(true),
-			cmdrunner.SetRunAsNonRoot(true),
-			cmdrunner.SetNetworkType(cmdrunner.NetworkHost),
-		)
-
+		options := getCmdConfig(cmd, *directory)
+		config := cmdrunner.NewYarnCmdConfig(options...)
 		err := cmdrunner.RunCmd(cmd.Context(), config)
 		if err != nil {
 			log.Fatal().

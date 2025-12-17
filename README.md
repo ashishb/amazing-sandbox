@@ -13,6 +13,7 @@ Amazing Sandbox (AS) is for running various tools inside a Docker sandbox in a b
 - [x] Give network access (enabled by default)
 - [x] Load `.env` file from the current directory (enabled by default)
 - [x] Cache various build steps using Docker
+- [x] Give Read-write access to any explictly referenced files via CLI arguments (enabled by default)
 
 ## Supported
 

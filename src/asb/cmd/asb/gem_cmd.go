@@ -21,14 +21,8 @@ func gemCmd() *cobra.Command {
 			Strs("args", args).
 			Msg("Running Ruby gem-based command")
 
-		config := cmdrunner.NewRubyGemCmdConfig(
-			cmdrunner.SetWorkingDir(*directory),
-			cmdrunner.SetArgs(getCmdArgs(cmd)),
-			cmdrunner.SetMountWorkingDirReadWrite(true),
-			cmdrunner.SetRunAsNonRoot(true),
-			cmdrunner.SetNetworkType(cmdrunner.NetworkHost),
-		)
-
+		options := getCmdConfig(cmd, *directory)
+		config := cmdrunner.NewRubyGemCmdConfig(options...)
 		err := cmdrunner.RunCmd(cmd.Context(), config)
 		if err != nil {
 			log.Fatal().

@@ -100,6 +100,26 @@ func runDockerContainer1(ctx context.Context, config Config) error {
 		dockerRunCmd = append(dockerRunCmd, "--interactive", "--tty")
 	}
 
+	if config.mountWorkingDirRW {
+		dockerRunCmd = append(dockerRunCmd,
+			"--mount=type=bind,"+fmt.Sprintf("source=%s,target=%s", config.workingDir, config.workingDir))
+	} else if config.mountWorkingDirRO {
+		dockerRunCmd = append(dockerRunCmd,
+			"--mount=type=bind,"+fmt.Sprintf("source=%s,target=%s,readonly", config.workingDir, config.workingDir))
+	}
+
+	if config.getReferencedFiles() != nil {
+		for _, dir := range config.getReferencedFiles() {
+			if config.mountReferencedDirRW {
+				dockerRunCmd = append(dockerRunCmd,
+					"--mount=type=bind,"+fmt.Sprintf("source=%s,target=%s", dir, dir))
+			} else {
+				dockerRunCmd = append(dockerRunCmd,
+					"--mount=type=bind,"+fmt.Sprintf("source=%s,target=%s,readonly", dir, dir))
+			}
+		}
+	}
+
 	dockerRunCmd = append(dockerRunCmd,
 		// Warning: without volume names, the volumes are usually deleted when the container is removed
 		"--mount=type=volume,src=npm1,target=/.npm",                      // to persist npm cache across runs
@@ -109,7 +129,6 @@ func runDockerContainer1(ctx context.Context, config Config) error {
 		"--mount=type=volume,src=ruby3,target=/usr/local/lib/ruby/gems/", // to persist Ruby gem cache across runs
 		"--mount=type=volume,src=ruby4,target=/root/.cache/gem/specs",    // to persist Ruby gem cache across runs
 		"--mount=type=volume,src=ruby5,target=/root/.rbenv/",             // to persist Ruby gem cache across runs
-		"--mount=type=bind,"+fmt.Sprintf("source=%s,target=%s", config.workingDir, config.workingDir),
 		"--net="+string(config.networkType),
 		"--workdir="+config.workingDir,
 		config.dockerBaseImage)
