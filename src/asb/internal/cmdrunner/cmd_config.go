@@ -9,10 +9,12 @@ import (
 
 const (
 	_rustCargoDockerImage = "rust:1.92"
-	_npmDockerImage       = "node:25-bookworm-slim"
-	_rubyDockerImage      = "ruby:3-bookworm"
-	_yarnDockerImage      = _npmDockerImage
-	_npxDockerImage       = _npmDockerImage
+	// Note that node:25-bookworm-slim does not contain C/C++ build tools and that makes anything
+	// using node-gyp to fail. Hence we use the full image here.
+	_npmDockerImage  = "node:25-bookworm"
+	_rubyDockerImage = "ruby:3-bookworm"
+	_yarnDockerImage = _npmDockerImage
+	_npxDockerImage  = _npmDockerImage
 )
 
 type Config struct {

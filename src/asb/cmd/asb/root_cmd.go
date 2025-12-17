@@ -30,5 +30,6 @@ func getRootCmd() *cobra.Command {
 	rootCmd.AddCommand(npmCmd())
 	rootCmd.AddCommand(npxCmd())
 	rootCmd.AddCommand(yarnCmd())
+
 	return rootCmd
 }
