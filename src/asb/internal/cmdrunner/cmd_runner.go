@@ -1,13 +1,11 @@
 package cmdrunner
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"os"
 	"os/exec"
-	"time"
 
 	docker "github.com/fsouza/go-dockerclient"
 	isatty "github.com/mattn/go-isatty"
@@ -134,6 +132,9 @@ func runDockerContainer1(ctx context.Context, config Config) error {
 		"--workdir="+config.workingDir,
 		config.dockerBaseImage)
 
+	// TODO: Use os.Getuid() and os.Getgid() to get the current user and group IDs
+	// and run the container as that user if config.runAsNonRoot is true
+
 	dockerRunCmd = append(dockerRunCmd, config.args...)
 	// fmt.Println(dockerRunCmd)
 	log.Debug().
@@ -142,6 +143,7 @@ func runDockerContainer1(ctx context.Context, config Config) error {
 
 	// Execute the docker run command
 	// Note: This is a blocking call
+	//nolint:gosec  // User is deliberately executing a command
 	cmdCtx := exec.CommandContext(ctx, dockerRunCmd[0], dockerRunCmd[1:]...)
 	if isInteractiveTerminal {
 		cmdCtx.Stdin = os.Stdin
@@ -156,108 +158,5 @@ func runDockerContainer1(ctx context.Context, config Config) error {
 	log.Debug().
 		Strs("dockerRunCmd", dockerRunCmd).
 		Msg("Docker container ran successfully")
-	return nil
-}
-
-func getCurrentUserID() int {
-	return os.Getuid()
-}
-
-func getCurrentGroupID() int {
-	return os.Getgid()
-}
-
-// This is the proper function to run the docker container except I am unable to see the logs right now
-// via this and that has to be debugged.
-func runDockerContainer2(ctx context.Context, client *docker.Client, config Config) error {
-	// TODO: add options to load .env file
-	var mounts []docker.Mount
-	if config.mountWorkingDirRW || config.mountWorkingDirRO {
-		mount := docker.Mount{
-			Source:      config.workingDir,
-			Destination: config.workingDir,
-			RW:          false,
-		}
-		mounts = append(mounts, mount)
-	}
-
-	opts := docker.CreateContainerOptions{
-		Name:     "",
-		Platform: "",
-		Config: &docker.Config{
-			Image:           config.dockerBaseImage,
-			WorkingDir:      config.workingDir,
-			NetworkDisabled: config.networkType == NetworkNone,
-			// Volumes:    nil,
-			Mounts:       mounts,
-			AttachStdout: true,
-			AttachStderr: true,
-		},
-		HostConfig:       nil,
-		NetworkingConfig: nil,
-		Context:          ctx,
-	}
-
-	container, err := client.CreateContainer(opts)
-	if err != nil {
-		return fmt.Errorf("failed to create docker container: %w", err)
-	}
-
-	log.Debug().
-		Str("containerId", container.ID).
-		Msg("Docker container created successfully")
-
-	// Start the container
-	err = client.StartContainer(container.ID, nil)
-	if err != nil {
-		return fmt.Errorf("failed to start docker container: %w", err)
-	}
-
-	log.Debug().
-		Str("containerId", container.ID).
-		Msg("Docker container started successfully")
-	if err = client.AttachToContainer(docker.AttachToContainerOptions{
-		Container:    container.ID,
-		OutputStream: log.Logger.With().Str("containerId", container.ID).Logger().Level(zerolog.InfoLevel),
-		ErrorStream:  log.Logger.With().Str("containerId", container.ID).Logger().Level(zerolog.ErrorLevel),
-		Stdout:       true,
-		Stderr:       true,
-		Stream:       true,
-	}); err != nil {
-		return fmt.Errorf("failed to attach to docker container: %w", err)
-	}
-
-	var outputBuf bytes.Buffer
-	var errorBuf bytes.Buffer
-	err = client.Logs(docker.LogsOptions{
-		Context:           ctx,
-		Container:         container.ID,
-		OutputStream:      &outputBuf,
-		ErrorStream:       &errorBuf,
-		InactivityTimeout: 10 * time.Second,
-		Tail:              "",
-		Since:             0,
-		Follow:            false,
-		Stdout:            true,
-		Stderr:            true,
-		Timestamps:        false,
-		RawTerminal:       false,
-	})
-	if err != nil {
-		return fmt.Errorf("failed to get logs from docker container: %w", err)
-	}
-
-	if outputBuf.Len() > 0 {
-		log.Info().
-			Str("containerId", container.ID).
-			Msgf("Docker container logs:\n%s", outputBuf.String())
-	}
-
-	if errorBuf.Len() > 0 {
-		log.Error().
-			Str("containerId", container.ID).
-			Msgf("Docker container error logs:\n%s", errorBuf.String())
-	}
-
 	return nil
 }
