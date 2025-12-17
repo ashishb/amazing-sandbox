@@ -14,16 +14,16 @@ func gemCmd() *cobra.Command {
 
 	directory := cmd.PersistentFlags().StringP("directory", "d", getCwdOrFail(),
 		"Working directory for this command")
-	cmd.Run = func(cmd *cobra.Command, npxArgs []string) {
+	cmd.Run = func(cmd *cobra.Command, args []string) {
 		log.Info().
 			Ctx(cmd.Context()).
 			Str("directory", *directory).
-			Strs("args", npxArgs).
+			Strs("args", args).
 			Msg("Running Ruby gem-based command")
 
 		config := cmdrunner.NewRubyGemCmdConfig(
 			cmdrunner.SetWorkingDir(*directory),
-			cmdrunner.SetArgs(npxArgs),
+			cmdrunner.SetArgs(getCmdArgs(cmd)),
 			cmdrunner.SetMountWorkingDirReadWrite(true),
 			cmdrunner.SetRunAsNonRoot(true),
 			cmdrunner.SetNetworkType(cmdrunner.NetworkHost),

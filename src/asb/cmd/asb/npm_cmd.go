@@ -2,6 +2,8 @@ package main
 
 import (
 	"os"
+	"slices"
+	"strings"
 
 	"github.com/ashishb/asb/src/asb/internal/cmdrunner"
 	"github.com/rs/zerolog/log"
@@ -23,11 +25,9 @@ func npmCmd() *cobra.Command {
 			Strs("args", args).
 			Msg("Running npm command")
 
-		// Skip the first two args (program name, "npm" command)
-		cmdArgs := os.Args[2:]
 		config := cmdrunner.NewNpmCmdConfig(
 			cmdrunner.SetWorkingDir(*directory),
-			cmdrunner.SetArgs(cmdArgs),
+			cmdrunner.SetArgs(getCmdArgs(cmd)),
 			cmdrunner.SetMountWorkingDirReadWrite(true),
 			cmdrunner.SetRunAsNonRoot(true),
 			cmdrunner.SetNetworkType(cmdrunner.NetworkHost),
@@ -42,4 +42,17 @@ func npmCmd() *cobra.Command {
 		}
 	}
 	return cmd
+}
+
+func getCmdArgs(cmd *cobra.Command) []string {
+	i1 := slices.Index(os.Args, cmd.Use)
+	if i1 == -1 {
+		log.Fatal().
+			Ctx(cmd.Context()).
+			Msgf("Could not find command %q in args %q", cmd.Use, strings.Join(os.Args, " "))
+	}
+
+	// Skip the first two args (program name, "npm" command)
+	cmdArgs := os.Args[i1+1:]
+	return cmdArgs
 }

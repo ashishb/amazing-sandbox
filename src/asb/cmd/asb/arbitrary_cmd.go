@@ -1,8 +1,6 @@
 package main
 
 import (
-	"os"
-
 	"github.com/ashishb/asb/src/asb/internal/cmdrunner"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -24,11 +22,9 @@ func gemExecCmd() *cobra.Command {
 			Strs("args", args).
 			Msg("Running gem that is already inside sandbox")
 
-		// Skip the first two args (program name, "gem-exec" command_
-		cmdArgs := os.Args[2:]
 		config := cmdrunner.NewRubyGemExecCmdConfig(
 			cmdrunner.SetWorkingDir(*directory),
-			cmdrunner.SetArgs(cmdArgs),
+			cmdrunner.SetArgs(getCmdArgs(cmd)),
 			cmdrunner.SetMountWorkingDirReadWrite(true),
 			cmdrunner.SetRunAsNonRoot(true),
 			cmdrunner.SetNetworkType(cmdrunner.NetworkHost),

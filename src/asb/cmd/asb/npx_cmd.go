@@ -22,7 +22,7 @@ func npxCmd() *cobra.Command {
 
 		config := cmdrunner.NewNpxCmdConfig(
 			cmdrunner.SetWorkingDir(*directory),
-			cmdrunner.SetArgs(npxArgs),
+			cmdrunner.SetArgs(getCmdArgs(cmd)),
 			cmdrunner.SetMountWorkingDirReadWrite(true),
 			cmdrunner.SetRunAsNonRoot(true),
 			cmdrunner.SetNetworkType(cmdrunner.NetworkHost),
