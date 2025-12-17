@@ -17,9 +17,8 @@ Amazing Sandbox (AS) is for running various tools inside a Docker sandbox in a b
 ## Supported
 
 - [x] `npx`
-- [[] `npm`
-- [ ] `yarn`
-- [ ] `brew`
+- [x] `npm`
+- [x] `yarn`
 - [ ] `cargo`
 - [ ] `brew`
 - [x] `gem` and `gem-exec`

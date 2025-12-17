@@ -3,8 +3,9 @@ package cmdrunner
 import "github.com/rs/zerolog/log"
 
 const (
-	_npmDockerImage = "node:25-bookworm-slim"
-	_npxDockerImage = _npmDockerImage
+	_npmDockerImage  = "node:25-bookworm-slim"
+	_yarnDockerImage = _npmDockerImage
+	_npxDockerImage  = _npmDockerImage
 )
 
 type Config struct {
@@ -36,6 +37,8 @@ func SetArgs(args []string) Option {
 			c.args = append([]string{"npm"}, args...)
 		case CmdTypeNpx:
 			c.args = append([]string{"npx"}, args...)
+		case CmdTypeYarn:
+			c.args = append([]string{"yarn"}, args...)
 		case CmdTypeRubyGem:
 			// Make sure to use --conservative flag for install command
 			// to avoid attemping to update already installed gems
@@ -88,6 +91,25 @@ func NewNpmCmdConfig(options ...Option) Config {
 	cfg := &Config{
 		dockerBaseImage:   _npmDockerImage,
 		cmdType:           CmdTypeNpm,
+		workingDir:        ".",
+		args:              nil,
+		mountWorkingDirRW: true,
+		mountWorkingDirRO: false,
+		runAsNonRoot:      true,
+		networkType:       NetworkHost,
+	}
+
+	for _, option := range options {
+		option(cfg)
+	}
+
+	return *cfg
+}
+
+func NewYarnCmdConfig(options ...Option) Config {
+	cfg := &Config{
+		dockerBaseImage:   _yarnDockerImage,
+		cmdType:           CmdTypeYarn,
 		workingDir:        ".",
 		args:              nil,
 		mountWorkingDirRW: true,
