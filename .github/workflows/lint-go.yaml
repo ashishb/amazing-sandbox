@@ -48,7 +48,7 @@ jobs:
 
       # Ref: https://github.com/actions/cache/blob/main/examples.md#go---modules
       # Warning: This is Linux specific
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: |
             ~/.cache/go-build
