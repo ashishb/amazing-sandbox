@@ -12,3 +12,11 @@ func gemCmd() *cobra.Command {
 	}
 	return createCmd(cmd, cmdrunner.NewRubyGemCmdConfig)
 }
+
+func gemExecCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "gem-exec",
+		Short: "Run a gem already installed inside sandbox",
+	}
+	return createCmd(cmd, cmdrunner.NewRubyGemExecCmdConfig)
+}
