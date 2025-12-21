@@ -21,6 +21,8 @@ func getRootCmd() *cobra.Command {
 		},
 	}
 
+	_ = rootCmd.PersistentFlags().StringP("directory", "d", getCwdOrFail(), "Working directory for this command")
+
 	rootCmd.AddCommand(cargoCmd())
 	rootCmd.AddCommand(cargoExecCmd())
 
