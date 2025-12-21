@@ -12,3 +12,11 @@ func cargoCmd() *cobra.Command {
 	}
 	return createCmd(cmd, cmdrunner.NewCargoCmdConfig)
 }
+
+func cargoExecCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "cargo-exec",
+		Short: "Run a Rust-based binary package already installed inside sandbox",
+	}
+	return createCmd(cmd, cmdrunner.NewRustCargoExecCmdConfig)
+}
