@@ -10,6 +10,30 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func createCmd(cmd *cobra.Command, f func(options ...cmdrunner.Option) cmdrunner.Config) *cobra.Command {
+	cmd.FParseErrWhitelist.UnknownFlags = true
+	cmd.Run = func(cmd *cobra.Command, args []string) {
+		directory := getStringFlagOrFail(cmd, "directory")
+		log.Debug().
+			Ctx(cmd.Context()).
+			Str("name", cmd.Name()).
+			Str("directory", directory).
+			Strs("args", args).
+			Msg("Running command")
+
+		options := getCmdConfig(cmd, directory)
+		config := f(options...)
+		err := cmdrunner.RunCmd(cmd.Context(), config)
+		if err != nil {
+			log.Fatal().
+				Ctx(cmd.Context()).
+				Err(err).
+				Msg("Error running command")
+		}
+	}
+	return cmd
+}
+
 func getCwdOrFail() string {
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -18,6 +42,17 @@ func getCwdOrFail() string {
 			Msg("Error getting current working directory")
 	}
 	return cwd
+}
+
+func getStringFlagOrFail(cmd *cobra.Command, name string) string {
+	value, err := cmd.Flags().GetString(name)
+	if err != nil {
+		log.Fatal().
+			Err(err).
+			Str("flagName", name).
+			Msg("Failed to fetch flag")
+	}
+	return value
 }
 
 func getCmdConfig(cmd *cobra.Command, cwd string) []cmdrunner.Option {
