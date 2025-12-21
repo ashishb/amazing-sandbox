@@ -9,7 +9,6 @@ import (
 
 	docker "github.com/fsouza/go-dockerclient"
 	isatty "github.com/mattn/go-isatty"
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
@@ -147,9 +146,11 @@ func runDockerContainer1(ctx context.Context, config Config) error {
 	cmdCtx := exec.CommandContext(ctx, dockerRunCmd[0], dockerRunCmd[1:]...)
 	if isInteractiveTerminal {
 		cmdCtx.Stdin = os.Stdin
+		cmdCtx.Stdout = os.Stdout
+		cmdCtx.Stderr = os.Stderr
 	}
-	cmdCtx.Stdout = log.Logger.Level(zerolog.InfoLevel).With().Logger()
-	cmdCtx.Stderr = log.Logger.Level(zerolog.ErrorLevel).With().Strs("dockerRunCmd", dockerRunCmd).Logger()
+	// cmdCtx.Stdout = log.Logger.Level(zerolog.InfoLevel).With().Logger()
+	// cmdCtx.Stderr = log.Logger.Level(zerolog.ErrorLevel).With().Strs("dockerRunCmd", dockerRunCmd).Logger()
 	cmd := cmdCtx.Run()
 	if cmd != nil {
 		return fmt.Errorf("failed to run docker container: %w", cmd)
