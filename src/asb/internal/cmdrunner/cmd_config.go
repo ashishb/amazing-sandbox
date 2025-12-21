@@ -120,7 +120,13 @@ func (c Config) getReferencedFiles() []string {
 		// Note: This is a simplistic check, in real-world scenarios,
 		// you might want to use filepath.IsAbs and also check if the path exists
 		if len(arg) > 0 && (arg[0] == '/' || (len(arg) > 1 && arg[0:2] == "..")) {
-			dirs = append(dirs, getAbsolutePath(c.workingDir, arg))
+			dir1 := getAbsolutePath(c.workingDir, arg)
+			if dir1 == c.workingDir {
+				log.Debug().
+					Msg("Skipping working directory from referenced files to avoid double mount")
+				continue
+			}
+			dirs = append(dirs, dir1)
 		}
 	}
 	return dirs
