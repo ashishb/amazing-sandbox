@@ -38,7 +38,7 @@ Planned via CLI config
    - [x] `npm`
    - [x] `yarn`
    - [x] `pnpm` - Use `asb npx pnpm`
-   - [x] `bun`
+   - [ ] `bun`
 - [x] Rust `cargo` and `cargo-exec`
 - [x] Ruby `gem` and `gem-exec`
 - Python
