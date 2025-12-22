@@ -32,6 +32,7 @@ type Config struct {
 
 	runAsNonRoot bool        // Whether to run the container as non-root user
 	networkType  NetworkType // Network type for the container
+	loadDotEnv   bool        // Whether to load .env file from working directory
 }
 
 type Option func(*Config)
@@ -109,6 +110,12 @@ func SetMountReferencedDirReadWrite(mountRW bool) Option {
 			c.mountReferencedDirRO = false
 		}
 		c.mountReferencedDirRW = mountRW
+	}
+}
+
+func SetLoadDotEnv(loadDotEnv bool) Option {
+	return func(c *Config) {
+		c.loadDotEnv = loadDotEnv
 	}
 }
 

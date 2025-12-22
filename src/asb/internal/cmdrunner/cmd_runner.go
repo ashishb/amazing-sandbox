@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	docker "github.com/fsouza/go-dockerclient"
 	isatty "github.com/mattn/go-isatty"
@@ -115,6 +116,10 @@ func runDockerContainer1(ctx context.Context, config Config) error {
 					"--mount=type=bind,"+fmt.Sprintf("source=%s,target=%s,readonly", dir, dir))
 			}
 		}
+	}
+
+	if config.loadDotEnv {
+		dockerRunCmd = append(dockerRunCmd, "--env-file="+filepath.Join(config.workingDir, ".env"))
 	}
 
 	dockerRunCmd = append(dockerRunCmd,

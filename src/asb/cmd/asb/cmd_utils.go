@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 
@@ -56,7 +57,13 @@ func getStringFlagOrFail(cmd *cobra.Command, name string) string {
 }
 
 func getCmdConfig(cmd *cobra.Command, cwd string) []cmdrunner.Option {
-	return []cmdrunner.Option{
+	envFile := filepath.Join(cwd, ".env")
+	envFileExists := false
+	if fileInfo, _ := os.Stat(envFile); fileInfo != nil && !fileInfo.IsDir() {
+		envFileExists = true
+	}
+
+	options := []cmdrunner.Option{
 		cmdrunner.SetWorkingDir(cwd),
 		cmdrunner.SetArgs(getCmdArgs(cmd)),
 		cmdrunner.SetMountWorkingDirReadWrite(true),
@@ -64,6 +71,10 @@ func getCmdConfig(cmd *cobra.Command, cwd string) []cmdrunner.Option {
 		cmdrunner.SetRunAsNonRoot(true),
 		cmdrunner.SetNetworkType(cmdrunner.NetworkHost),
 	}
+	if envFileExists {
+		options = append(options, cmdrunner.SetLoadDotEnv(true))
+	}
+	return options
 }
 
 func getCmdArgs(cmd *cobra.Command) []string {
