@@ -73,7 +73,7 @@ func pullDockerImageIfNotExists(ctx context.Context, client *docker.Client, imag
 		pullOpts := docker.PullImageOptions{
 			Context:      ctx,
 			Repository:   image,
-			OutputStream: log.Logger.With().Str("image", image).Logger(),
+			OutputStream: os.Stdout,
 		}
 		authOpts := docker.AuthConfiguration{}
 
@@ -132,6 +132,11 @@ func runDockerContainer1(ctx context.Context, config Config) error {
 		"--mount=type=volume,src=ruby4,target=/root/.cache/gem/specs",    // to persist Ruby gem cache across runs
 		"--mount=type=volume,src=ruby5,target=/root/.rbenv/",             // to persist Ruby gem cache across runs
 		"--mount=type=volume,src=cargo1,target=/usr/local/cargo",         // to persist Rust cargo cache across runs
+		// to persist pip cache across runs
+		"--mount=type=volume,src=pip312,target=/usr/local/lib/python3.12/",
+		"--mount=type=volume,src=pip313,target=/usr/local/lib/python3.13/",
+		"--mount=type=volume,src=pip314,target=/usr/local/lib/python3.14/",
+		"--mount=type=volume,src=pip315,target=/usr/local/lib/python3.15/",
 		"--net="+string(config.networkType),
 		"--workdir="+config.workingDir,
 		config.dockerBaseImage)

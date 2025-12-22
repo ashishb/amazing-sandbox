@@ -8,6 +8,8 @@ import (
 )
 
 const (
+	_uvDockerImage        = "astral/uv:python3.12-bookworm-slim"
+	_pipDockerImage       = _uvDockerImage
 	_rustCargoDockerImage = "rust:1.92"
 	// Note that node:25-bookworm-slim does not contain C/C++ build tools and that makes anything
 	// using node-gyp to fail. Hence we use the full image here.
@@ -46,12 +48,16 @@ func SetWorkingDir(workingDir string) Option {
 func SetArgs(args []string) Option {
 	return func(c *Config) {
 		switch c.cmdType {
-		case CmdTypeCargo:
+		case CmdTypeRustCargo:
 			c.args = append([]string{"cargo"}, args...)
+		case CmdTypePythonPip:
+			c.args = append([]string{"pip"}, args...)
 		case CmdTypeNpm:
 			c.args = append([]string{"npm"}, args...)
 		case CmdTypeNpx:
 			c.args = append([]string{"npx"}, args...)
+		case CmdTypePythonUvx:
+			c.args = append([]string{"uvx"}, args...)
 		case CmdTypeYarn:
 			c.args = append([]string{"yarn"}, args...)
 		case CmdTypeRubyGem:
@@ -62,9 +68,7 @@ func SetArgs(args []string) Option {
 			} else {
 				c.args = append([]string{"gem"}, args...)
 			}
-		case CmdTypeRubyGemExec:
-			c.args = args
-		case CmdTypeRustCargoExec:
+		case CmdTypeRubyGemExec, CmdTypeRustCargoExec, CmdTypePythonPipExec:
 			c.args = args
 		default:
 			log.Fatal().
@@ -127,13 +131,20 @@ func (c Config) getReferencedFiles() []string {
 		// Note: This is a simplistic check, in real-world scenarios,
 		// you might want to use filepath.IsAbs and also check if the path exists
 		if len(arg) > 0 && (arg[0] == '/' || (len(arg) > 1 && arg[0:2] == "..")) {
-			dir1 := getAbsolutePath(c.workingDir, arg)
-			if dir1 == c.workingDir {
+			file1 := getAbsolutePath(c.workingDir, arg)
+			if file1 == c.workingDir {
 				log.Debug().
 					Msg("Skipping working directory from referenced files to avoid double mount")
 				continue
 			}
-			dirs = append(dirs, dir1)
+			if _, err := os.Stat(file1); os.IsNotExist(err) {
+				log.Debug().
+					Str("file", file1).
+					Msg("Referenced file/directory does not exist, skipping mount")
+				continue
+			}
+
+			dirs = append(dirs, file1)
 		}
 	}
 	return dirs
@@ -188,7 +199,64 @@ func NewYarnCmdConfig(options ...Option) Config {
 func NewCargoCmdConfig(options ...Option) Config {
 	cfg := &Config{
 		dockerBaseImage:   _rustCargoDockerImage,
-		cmdType:           CmdTypeCargo,
+		cmdType:           CmdTypeRustCargo,
+		workingDir:        ".",
+		args:              nil,
+		mountWorkingDirRW: true,
+		mountWorkingDirRO: false,
+		runAsNonRoot:      true,
+		networkType:       NetworkHost,
+	}
+
+	for _, option := range options {
+		option(cfg)
+	}
+
+	return *cfg
+}
+
+func NewPipCmdConfig(options ...Option) Config {
+	cfg := &Config{
+		dockerBaseImage:   _pipDockerImage,
+		cmdType:           CmdTypePythonPip,
+		workingDir:        ".",
+		args:              nil,
+		mountWorkingDirRW: true,
+		mountWorkingDirRO: false,
+		runAsNonRoot:      true,
+		networkType:       NetworkHost,
+	}
+
+	for _, option := range options {
+		option(cfg)
+	}
+
+	return *cfg
+}
+
+func NewPipExecCmdConfig(options ...Option) Config {
+	cfg := &Config{
+		dockerBaseImage:   _pipDockerImage,
+		cmdType:           CmdTypePythonPipExec,
+		workingDir:        ".",
+		args:              nil,
+		mountWorkingDirRW: true,
+		mountWorkingDirRO: false,
+		runAsNonRoot:      true,
+		networkType:       NetworkHost,
+	}
+
+	for _, option := range options {
+		option(cfg)
+	}
+
+	return *cfg
+}
+
+func NewUvxCmdConfig(options ...Option) Config {
+	cfg := &Config{
+		dockerBaseImage:   _uvDockerImage,
+		cmdType:           CmdTypePythonUvx,
 		workingDir:        ".",
 		args:              nil,
 		mountWorkingDirRW: true,

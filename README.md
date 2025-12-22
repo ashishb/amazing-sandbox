@@ -45,6 +45,7 @@ Planned via CLI config
    - [ ] `pip`
    - [ ] `poetry`
    - [ ] `uv`
+   - [x] `uvx`
 
 ### Installation
 
@@ -58,6 +59,7 @@ $ go install github.com/ashishb/amazing-sandbox/src/asb@latest
 ```bash
 $ asb yarn install   # Run npm with full access to current directory + a cache directory but no access to full disk
 $ asb -n npx htmlhint  # Amazing sandbox (-n = no Internet) access
+$ asb uvx yamllint -d <path-to-dir-containing-yaml-files-to-lint>  # Run yamllint inside the sandbox
 
 # To see the full usage
 $ asb --help

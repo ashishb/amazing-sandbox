@@ -20,3 +20,27 @@ func cargoExecCmd() *cobra.Command {
 	}
 	return createCmd(cmd, cmdrunner.NewRustCargoExecCmdConfig)
 }
+
+func pipCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "pip",
+		Short: "Install Python packages using pip",
+	}
+	return createCmd(cmd, cmdrunner.NewPipCmdConfig)
+}
+
+func pipExecCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "pip-exec",
+		Short: "Run a Python-based package already installed inside sandbox",
+	}
+	return createCmd(cmd, cmdrunner.NewPipExecCmdConfig)
+}
+
+func uvxCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "uvx",
+		Short: "Run a Python-based package already installed inside sandbox using uvx",
+	}
+	return createCmd(cmd, cmdrunner.NewUvxCmdConfig)
+}
