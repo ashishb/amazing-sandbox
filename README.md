@@ -7,7 +7,7 @@
 [![Lint Go](https://github.com/ashishb/amazing-sandbox/actions/workflows/lint-go.yaml/badge.svg)](https://github.com/ashishb/amazing-sandbox/actions/workflows/lint-go.yaml)
 [![Validate Go code formatting](https://github.com/ashishb/amazing-sandbox/actions/workflows/format-go.yaml/badge.svg)](https://github.com/ashishb/amazing-sandbox/actions/workflows/format-go.yaml)
 
-Amazing Sandbox (AS) is for running various tools inside a Docker sandbox in a brain-dead fashion.
+Amazing Sandbox (AS) is for running various tools inside a Docker sandbox.
 
 - [x] Prevents [malicious packages](https://www.kaspersky.com/about/press-releases/kaspersky-uncovers-500k-crypto-heist-through-malicious-packages-targeting-cursor-developers) from having full disk access and stealing data
 - [x] Prevents AI agents from [mistakenly](https://www.theregister.com/2025/12/01/google_antigravity_wipes_d_drive/) deleting all files on your disk
@@ -53,6 +53,8 @@ Planned via CLI config
 $ go install github.com/ashishb/amazing-sandbox/src/asb@latest
 ...
 ```
+
+Or download a bianry from the [releases page](https://github.com/ashishb/amazing-sandbox/releases)
 
 ## Usage
 
