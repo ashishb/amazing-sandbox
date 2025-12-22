@@ -15,6 +15,7 @@ func createCmd(cmd *cobra.Command, f func(options ...cmdrunner.Option) cmdrunner
 	cmd.FParseErrWhitelist.UnknownFlags = true
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		directory := getStringFlagOrFail(cmd, "directory")
+		enableNetwork := !getBoolFlagOrFail(cmd, "no-network")
 		log.Debug().
 			Ctx(cmd.Context()).
 			Str("name", cmd.Name()).
@@ -22,7 +23,7 @@ func createCmd(cmd *cobra.Command, f func(options ...cmdrunner.Option) cmdrunner
 			Strs("args", args).
 			Msg("Running command")
 
-		options := getCmdConfig(cmd, directory)
+		options := getCmdConfig(cmd, directory, enableNetwork)
 		config := f(options...)
 		err := cmdrunner.RunCmd(cmd.Context(), config)
 		if err != nil {
@@ -56,10 +57,25 @@ func getStringFlagOrFail(cmd *cobra.Command, name string) string {
 	return value
 }
 
-func getCmdConfig(cmd *cobra.Command, cwd string) []cmdrunner.Option {
+func getBoolFlagOrFail(cmd *cobra.Command, name string) bool {
+	value, err := cmd.Flags().GetBool(name)
+	if err != nil {
+		log.Fatal().
+			Err(err).
+			Str("flagName", name).
+			Msg("Failed to fetch flag")
+	}
+	return value
+}
+
+func getCmdConfig(cmd *cobra.Command, cwd string, enableNetwork bool) []cmdrunner.Option {
 	envFile := filepath.Join(cwd, ".env")
 	envFileExists := false
 	if fileInfo, _ := os.Stat(envFile); fileInfo != nil && !fileInfo.IsDir() {
+		log.Debug().
+			Ctx(cmd.Context()).
+			Str("envFile", envFile).
+			Msg(".env file found, will be loaded inside the sandbox")
 		envFileExists = true
 	}
 
@@ -69,7 +85,12 @@ func getCmdConfig(cmd *cobra.Command, cwd string) []cmdrunner.Option {
 		cmdrunner.SetMountWorkingDirReadWrite(true),
 		cmdrunner.SetMountReferencedDirReadWrite(true),
 		cmdrunner.SetRunAsNonRoot(true),
-		cmdrunner.SetNetworkType(cmdrunner.NetworkHost),
+	}
+
+	if enableNetwork {
+		options = append(options, cmdrunner.SetNetworkType(cmdrunner.NetworkHost))
+	} else {
+		options = append(options, cmdrunner.SetNetworkType(cmdrunner.NetworkNone))
 	}
 	if envFileExists {
 		options = append(options, cmdrunner.SetLoadDotEnv(true))

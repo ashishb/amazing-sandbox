@@ -22,6 +22,7 @@ func getRootCmd() *cobra.Command {
 	}
 
 	_ = rootCmd.PersistentFlags().StringP("directory", "d", getCwdOrFail(), "Working directory for this command")
+	_ = rootCmd.PersistentFlags().BoolP("no-network", "n", false, "Disable network access inside the sandbox")
 
 	rootCmd.AddCommand(cargoCmd())
 	rootCmd.AddCommand(cargoExecCmd())

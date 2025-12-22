@@ -27,7 +27,7 @@ Planned via CLI config
 
 - [ ] Disable Read-write access to current directory
 - [ ] Give Read-only access to current directory
-- [ ] Disable network access
+- [x] Disable network access - via `-n`
 - [ ] Disable `.env` file loading
 - [ ] Disable Read-write access to any explictly referenced files via CLI arguments
 
@@ -46,11 +46,18 @@ Planned via CLI config
    - [ ] `poetry`
    - [ ] `uv`
 
+### Installation
+
+```
+$ go install github.com/ashishb/amazing-sandbox/src/asb@latest
+...
+```
+
 ## Usage
 
 ```bash
 $ asb yarn install   # Run npm with full access to current directory + a cache directory but no access to full disk
-$ asb npx htmlhint  # asn = Amazing sandbox (no Internet) access
+$ asb -n npx htmlhint  # Amazing sandbox (-n = no Internet) access
 
 # To see the full usage
 $ asb --help
