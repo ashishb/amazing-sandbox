@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	_defaultLogLevel = zerolog.DebugLevel
+	_defaultLogLevel = zerolog.InfoLevel
 )
 
 // ConfigureLogging configures ZeroLog's logging config with good defaults
