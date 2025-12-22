@@ -26,20 +26,26 @@ Planned via CLI config
 
 ## Supported
 
-- [x] `npx`
-- [x] `npm`
-- [x] `yarn`
-- [x] `cargo` and `cargo-exec`
-- [x] `gem` and `gem-exec`
-- [ ] `uv`
+- Javascript/Typescript
+  - [x] `npx`
+  - [x] `npm`
+  - [x] `yarn`
+  - [x] `pnpm` - Use `asb npx pnpm`
+  - [x] `bun`
+- [x] Rust `cargo` and `cargo-exec`
+- [x] Ruby `gem` and `gem-exec`
+- Python
+  - [ ] `pip`
+  - [ ] `poetry`
+  - [ ] `uv`
 
 ## Usage
 
 ```bash
-$ as yarn install   # Run npm with full access to current directory + a cache directory but no access to full disk
-$ asn npx htmlhint  # asn = Amazing sandbox (no Internet) access
+$ asb yarn install   # Run npm with full access to current directory + a cache directory but no access to full disk
+$ asb npx htmlhint  # asn = Amazing sandbox (no Internet) access
 
 # To see the full usage
-$ asn --help
+$ asb --help
 ...
 ```
