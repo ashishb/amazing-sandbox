@@ -1,5 +1,12 @@
 # Amazing Sandbox (AS)
 
+[![Lint GitHub Actions](https://github.com/ashishb/amazing-sandbox/actions/workflows/lint-github-actions.yaml/badge.svg)](https://github.com/ashishb/amazing-sandbox/actions/workflows/lint-github-actions.yaml)
+[![Lint Markdown](https://github.com/ashishb/amazing-sandbox/actions/workflows/lint-markdown.yaml/badge.svg)](https://github.com/ashishb/amazing-sandbox/actions/workflows/lint-markdown.yaml)
+[![Lint YAML](https://github.com/ashishb/amazing-sandbox/actions/workflows/lint-yaml.yaml/badge.svg)](https://github.com/ashishb/amazing-sandbox/actions/workflows/lint-yaml.yaml)
+
+[![Lint Go](https://github.com/ashishb/amazing-sandbox/actions/workflows/lint-go.yaml/badge.svg)](https://github.com/ashishb/amazing-sandbox/actions/workflows/lint-go.yaml)
+[![Validate Go code formatting](https://github.com/ashishb/amazing-sandbox/actions/workflows/format-go.yaml/badge.svg)](https://github.com/ashishb/amazing-sandbox/actions/workflows/format-go.yaml)
+
 Amazing Sandbox (AS) is for running various tools inside a Docker sandbox in a brain-dead fashion.
 
 - [x] Prevents [malicious packages](https://www.kaspersky.com/about/press-releases/kaspersky-uncovers-500k-crypto-heist-through-malicious-packages-targeting-cursor-developers) from having full disk access and stealing data
@@ -27,17 +34,17 @@ Planned via CLI config
 ## Supported
 
 - Javascript/Typescript
-  - [x] `npx`
-  - [x] `npm`
-  - [x] `yarn`
-  - [x] `pnpm` - Use `asb npx pnpm`
-  - [x] `bun`
+   - [x] `npx`
+   - [x] `npm`
+   - [x] `yarn`
+   - [x] `pnpm` - Use `asb npx pnpm`
+   - [x] `bun`
 - [x] Rust `cargo` and `cargo-exec`
 - [x] Ruby `gem` and `gem-exec`
 - Python
-  - [ ] `pip`
-  - [ ] `poetry`
-  - [ ] `uv`
+   - [ ] `pip`
+   - [ ] `poetry`
+   - [ ] `uv`
 
 ## Usage
 
