@@ -10,4 +10,4 @@ build:
 	go build -o bin/asb cmd/asb/*
 
 run: build
-	./bin/asb
+	LOG_LEVEL=DEBUG ./bin/asb
