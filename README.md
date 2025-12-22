@@ -20,23 +20,23 @@ Amazing Sandbox (AS) is for running various tools inside a Docker sandbox.
 
 Default config
 
-- [x] Give Read-write access to current directory
+- [x] Give Read-write access to the current directory
 - [x] network access
 - [x] Load `.env` file from the current directory
 - [x] Cache various build steps using Docker
-- [x] Give Read-write access to any explictly referenced files via CLI arguments
+- [x] Give Read-write access to any explicitly referenced files via CLI arguments
 
 Planned via CLI config
 
-- [ ] Disable Read-write access to current directory
-- [ ] Give Read-only access to current directory
+- [ ] Disable Read-write access tothe  current directory
+- [ ] Give Read-only access to the current directory
 - [x] Disable network access - via `-n`
 - [ ] Disable `.env` file loading
-- [ ] Disable Read-write access to any explictly referenced files via CLI arguments
+- [ ] Disable Read-write access to any explicitly referenced files via CLI arguments
 
 ## Supported
 
-- Javascript/Typescript
+- JavaScript/Typescript
    - [x] `npx`
    - [x] `npm`
    - [x] `yarn`
