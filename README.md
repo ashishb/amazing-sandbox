@@ -57,12 +57,12 @@ $ go install github.com/ashishb/amazing-sandbox/src/asb@latest
 ...
 ```
 
-Or download a bianry from the [releases page](https://github.com/ashishb/amazing-sandbox/releases)
+Or download a binary from the [releases page](https://github.com/ashishb/amazing-sandbox/releases)
 
 ## Usage
 
 ```bash
-$ asb yarn install   # Run npm with full access to current directory + a cache directory but no access to full disk
+$ asb yarn install   # Run yarn with full access to current directory + a cache directory but no access to full disk
 $ asb -n npx htmlhint  # Amazing sandbox (-n = no Internet) access
 $ asb uvx yamllint -d <path-to-dir-containing-yaml-files-to-lint>  # Run yamllint inside the sandbox
 
