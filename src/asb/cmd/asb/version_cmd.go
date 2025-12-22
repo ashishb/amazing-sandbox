@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"fmt"
+
 	"github.com/spf13/cobra"
 )
 
@@ -14,7 +15,7 @@ func versionCmd() *cobra.Command {
 		Use:   "version",
 		Short: "Display asb version",
 		Long:  _description,
-		Run: func(c *cobra.Command, _ []string) {
+		Run: func(_ *cobra.Command, _ []string) {
 			fmt.Printf("Amazing Sandbox (asb)\nversion: %s\n%s\n", version, _description)
 		},
 	}
