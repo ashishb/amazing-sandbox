@@ -11,7 +11,10 @@ Amazing Sandbox (AS) is for running various tools inside a Docker sandbox.
 
 - [x] Prevents [malicious packages](https://www.kaspersky.com/about/press-releases/kaspersky-uncovers-500k-crypto-heist-through-malicious-packages-targeting-cursor-developers) from having full disk access and stealing data
 - [x] Prevents AI agents from [mistakenly](https://www.theregister.com/2025/12/01/google_antigravity_wipes_d_drive/) deleting all files on your disk
-- [x] Optionally, run packages like linters with no internet access as well
+- [x] Optionally, run packages like linters [air-gapped](https://en.wikipedia.org/wiki/Air_gap_(networking)) (no internet access) as well
+
+> [!WARNING]
+> As of Dec 2025, this package is experimental
 
 ## Features
 
