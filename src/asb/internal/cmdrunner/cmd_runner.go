@@ -156,9 +156,15 @@ func runDockerContainer1(ctx context.Context, config Config) error {
 	}
 	// cmdCtx.Stdout = log.Logger.Level(zerolog.InfoLevel).With().Logger()
 	// cmdCtx.Stderr = log.Logger.Level(zerolog.ErrorLevel).With().Strs("dockerRunCmd", dockerRunCmd).Logger()
-	cmd := cmdCtx.Run()
-	if cmd != nil {
-		return fmt.Errorf("failed to run docker container: %w", cmd)
+	err := cmdCtx.Run()
+	var exitErr *exec.ExitError
+	if errors.As(err, &exitErr) {
+		os.Exit(exitErr.ExitCode())
+	}
+
+	// Check for other errors and return them as-is
+	if err != nil {
+		return fmt.Errorf("failed to run docker container: %w", err)
 	}
 
 	log.Debug().
