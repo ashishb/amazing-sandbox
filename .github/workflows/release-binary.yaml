@@ -6,7 +6,7 @@ on:  # yamllint disable-line rule:truthy
     branches: ["main", "master"]
     # Release whenever this file changes
     paths:
-      - "src/gabo/cmd/gabo/version.txt"
+      - "src/asb/cmd/asb/version.txt"
   workflow_dispatch:
 
 jobs:
@@ -33,13 +33,13 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version-file: "src/gabo/go.mod"
+          go-version-file: "src/asb/go.mod"
           cache: false  # Disable caching to avoid cache poisoning
 
-      - name: Read gabo version name
+      - name: Read version name
         id: read-version
         run: |
-          echo "version=$(cat src/gabo/cmd/gabo/version.txt)" > "$GITHUB_OUTPUT"
+          echo "version=$(cat src/asb/cmd/asb/version.txt)" > "$GITHUB_OUTPUT"
 
       - name: Create new tag
         id: tag_version
