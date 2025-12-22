@@ -7,7 +7,7 @@ lint:
 	golangci-lint run
 
 build:
-	go build -o bin/asb cmd/asb/*
+	go build -o bin/asb cmd/asb/*.go
 
 run: build
 	LOG_LEVEL=DEBUG ./bin/asb

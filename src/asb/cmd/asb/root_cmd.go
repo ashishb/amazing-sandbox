@@ -5,12 +5,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const _description = "asb is CLI tool for running tools inside Sandbox\n" +
+	"See https://ashishb.net/programming/run-tools-inside-docker/ for reasoning behind this tool"
+
 func getRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:   "asb",
 		Short: "asb is CLI tool for running tools inside Sandbox",
-		Long: "asb is CLI tool for running tools inside Sandbox\n" +
-			"See https://ashishb.net/programming/run-tools-inside-docker/ for reasoning behind this tool",
+		Long:  _description,
 		Run: func(c *cobra.Command, _ []string) {
 			err := c.Help()
 			if err != nil {
@@ -23,6 +25,8 @@ func getRootCmd() *cobra.Command {
 
 	_ = rootCmd.PersistentFlags().StringP("directory", "d", getCwdOrFail(), "Working directory for this command")
 	_ = rootCmd.PersistentFlags().BoolP("no-network", "n", false, "Disable network access inside the sandbox")
+
+	rootCmd.AddCommand(versionCmd())
 
 	// Python related
 	if false { // Disabled for now
