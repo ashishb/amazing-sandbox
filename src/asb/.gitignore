@@ -25,3 +25,5 @@ go.work
 
 .idea
 bin
+# Added by goreleaser init:
+dist/
