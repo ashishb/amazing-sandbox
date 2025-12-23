@@ -91,10 +91,49 @@ func pullDockerImageIfNotExists(ctx context.Context, client *docker.Client, imag
 }
 
 func runDockerContainer1(ctx context.Context, config Config) error {
+	dockerRunCmd, err := getDockerRunCmd(config)
+	if err != nil {
+		return err
+	}
+
+	dockerRunCmd = append(dockerRunCmd, config.args...)
+	// fmt.Println(dockerRunCmd)
+	log.Debug().
+		Strs("dockerRunCmd", dockerRunCmd).
+		Msg("Running docker container with command")
+
+	// Execute the docker run command
+	// Note: This is a blocking call
+	//nolint:gosec  // User is deliberately executing a command
+	cmdCtx := exec.CommandContext(ctx, dockerRunCmd[0], dockerRunCmd[1:]...)
+	if isInteractiveTerminal() {
+		cmdCtx.Stdin = os.Stdin
+		cmdCtx.Stdout = os.Stdout
+		cmdCtx.Stderr = os.Stderr
+	}
+	// cmdCtx.Stdout = log.Logger.Level(zerolog.InfoLevel).With().Logger()
+	// cmdCtx.Stderr = log.Logger.Level(zerolog.ErrorLevel).With().Strs("dockerRunCmd", dockerRunCmd).Logger()
+	err = cmdCtx.Run()
+	var exitErr *exec.ExitError
+	if errors.As(err, &exitErr) {
+		os.Exit(exitErr.ExitCode())
+	}
+
+	// Check for other errors and return them as-is
+	if err != nil {
+		return fmt.Errorf("failed to run docker container: %w", err)
+	}
+
+	log.Debug().
+		Strs("dockerRunCmd", dockerRunCmd).
+		Msg("Docker container ran successfully")
+	return nil
+}
+
+func getDockerRunCmd(config Config) ([]string, error) {
 	// If this is an interactive terminal then inform the process about this
-	isInteractiveTerminal := isatty.IsTerminal(os.Stdin.Fd())
 	dockerRunCmd := []string{"docker", "run", "--rm", "--init"}
-	if isInteractiveTerminal {
+	if isInteractiveTerminal() {
 		dockerRunCmd = append(dockerRunCmd, "--interactive", "--tty")
 	}
 
@@ -122,6 +161,21 @@ func runDockerContainer1(ctx context.Context, config Config) error {
 		dockerRunCmd = append(dockerRunCmd, "--env-file="+filepath.Join(config.workingDir, ".env"))
 	}
 
+	// /tmp/claude.json mapped to /root/.claude.json (inside Docker)
+	if config.cmdType == CmdTypeNpx {
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get user home directory: %w", err)
+		}
+
+		configFile := filepath.Join(homeDir, ".claude.json")
+		if err = touchFile(configFile); err != nil {
+			return nil, fmt.Errorf("failed to touch %s: %w", configFile, err)
+		}
+		dockerRunCmd = append(dockerRunCmd,
+			fmt.Sprintf("--mount=type=bind,src=%s,target=/root/.claude.json", configFile))
+	}
+
 	dockerRunCmd = append(dockerRunCmd,
 		// Warning: without volume names, the volumes are usually deleted when the container is removed
 		"--mount=type=volume,src=npm1,target=/.npm",                      // to persist npm cache across runs
@@ -137,43 +191,32 @@ func runDockerContainer1(ctx context.Context, config Config) error {
 		"--mount=type=volume,src=pip313,target=/usr/local/lib/python3.13/",
 		"--mount=type=volume,src=pip314,target=/usr/local/lib/python3.14/",
 		"--mount=type=volume,src=pip315,target=/usr/local/lib/python3.15/",
+		// For claude code, persist ~/.claude/ and ~/.claude.json
+		"--mount=type=volume,src=claude1,target=/root/.claude/",
+		"--mount=type=volume,src=dotconfig,target=/root/.config/",
 		"--net="+string(config.networkType),
 		"--workdir="+config.workingDir,
 		config.dockerBaseImage)
 
 	// TODO: Use os.Getuid() and os.Getgid() to get the current user and group IDs
 	// and run the container as that user if config.runAsNonRoot is true
+	return dockerRunCmd, nil
+}
 
-	dockerRunCmd = append(dockerRunCmd, config.args...)
-	// fmt.Println(dockerRunCmd)
-	log.Debug().
-		Strs("dockerRunCmd", dockerRunCmd).
-		Msg("Running docker container with command")
+func isInteractiveTerminal() bool {
+	return isatty.IsTerminal(os.Stdin.Fd())
+}
 
-	// Execute the docker run command
-	// Note: This is a blocking call
-	//nolint:gosec  // User is deliberately executing a command
-	cmdCtx := exec.CommandContext(ctx, dockerRunCmd[0], dockerRunCmd[1:]...)
-	if isInteractiveTerminal {
-		cmdCtx.Stdin = os.Stdin
-		cmdCtx.Stdout = os.Stdout
-		cmdCtx.Stderr = os.Stderr
-	}
-	// cmdCtx.Stdout = log.Logger.Level(zerolog.InfoLevel).With().Logger()
-	// cmdCtx.Stderr = log.Logger.Level(zerolog.ErrorLevel).With().Strs("dockerRunCmd", dockerRunCmd).Logger()
-	err := cmdCtx.Run()
-	var exitErr *exec.ExitError
-	if errors.As(err, &exitErr) {
-		os.Exit(exitErr.ExitCode())
-	}
-
-	// Check for other errors and return them as-is
+// touchFile mimics the basic behavior of the Unix 'touch' command
+func touchFile(name string) error {
+	file, err := os.OpenFile(name, os.O_RDONLY|os.O_CREATE, 0o644)
 	if err != nil {
-		return fmt.Errorf("failed to run docker container: %w", err)
+		return fmt.Errorf("failed to touch file %s: %w", name, err)
 	}
 
 	log.Debug().
-		Strs("dockerRunCmd", dockerRunCmd).
-		Msg("Docker container ran successfully")
-	return nil
+		Str("file", name).
+		Msg("Created file")
+	// It's crucial to close the file to release the file descriptor
+	return file.Close()
 }

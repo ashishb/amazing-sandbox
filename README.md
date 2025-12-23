@@ -62,9 +62,10 @@ Or download a binary from the [releases page](https://github.com/ashishb/amazing
 ## Usage
 
 ```bash
-$ asb yarn install   # Run yarn with full access to current directory + a cache directory but no access to full disk
-$ asb -n npx htmlhint  # Amazing sandbox (-n = no Internet) access
-$ asb uvx yamllint -d <path-to-dir-containing-yaml-files-to-lint>  # Run yamllint inside the sandbox
+$ asb yarn install  # Run [yarn](https://yarnpkg.com/) with full access to current directory + a cache directory but no access to full disk
+$ asb -n npx htmlhint  # Run [htmlhint](https://www.npmjs.com/package/htmlhint) HTML linter inside sandbox with `-n`, that is no Internet access
+$ asb uvx yamllint -d <path-to-dir-containing-yaml-files-to-lint>  # Run [yamllint](https://github.com/adrienverge/yamllint) inside the sandbox
+$ asb npx @anthropic-ai/claude-code  # Run [Claude code](https://code.claude.com/docs/en/overview) against the current directory
 
 # To see the full usage
 $ asb --help
