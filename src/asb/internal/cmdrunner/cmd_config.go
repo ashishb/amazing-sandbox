@@ -8,13 +8,16 @@ import (
 )
 
 const (
-	_uvDockerImage        = "astral/uv:python3.12-bookworm-slim"
-	_pipDockerImage       = _uvDockerImage
+	_uvDockerImage     = "astral/uv:python3.12-bookworm-slim"
+	_pipDockerImage    = _uvDockerImage
+	_poetryDockerImage = _uvDockerImage
+
 	_rustCargoDockerImage = "rust:1.92"
+	_rubyDockerImage      = "ruby:3-bookworm"
+
 	// Note that node:25-bookworm-slim does not contain C/C++ build tools and that makes anything
 	// using node-gyp to fail. Hence we use the full image here.
 	_npmDockerImage  = "node:25-bookworm"
-	_rubyDockerImage = "ruby:3-bookworm"
 	_yarnDockerImage = _npmDockerImage
 	_npxDockerImage  = _npmDockerImage
 )
@@ -58,6 +61,8 @@ func SetArgs(args []string) Option {
 			c.args = append([]string{"npx"}, args...)
 		case CmdTypePythonUvx:
 			c.args = append([]string{"uvx"}, args...)
+		case CmdTypePythonPoetry:
+			c.args = append([]string{"uvx", "poetry"}, args...)
 		case CmdTypeYarn:
 			c.args = append([]string{"yarn"}, args...)
 		case CmdTypeRubyGem:
@@ -158,10 +163,8 @@ func getAbsolutePath(baseDir string, relativeDir string) string {
 	return path.Clean(baseDir + string(os.PathSeparator) + relativeDir)
 }
 
-func NewNpmCmdConfig(options ...Option) Config {
-	cfg := &Config{
-		dockerBaseImage:   _npmDockerImage,
-		cmdType:           CmdTypeNpm,
+func getDefaultConfig() Config {
+	return Config{
 		workingDir:        ".",
 		args:              nil,
 		mountWorkingDirRW: true,
@@ -169,181 +172,114 @@ func NewNpmCmdConfig(options ...Option) Config {
 		runAsNonRoot:      true,
 		networkType:       NetworkHost,
 	}
+}
 
+func NewNpmCmdConfig(options ...Option) Config {
+	cfg := getDefaultConfig()
+	cfg.dockerBaseImage = _npmDockerImage
+	cfg.cmdType = CmdTypeNpm
 	for _, option := range options {
-		option(cfg)
+		option(&cfg)
 	}
-
-	return *cfg
+	return cfg
 }
 
 func NewYarnCmdConfig(options ...Option) Config {
-	cfg := &Config{
-		dockerBaseImage:   _yarnDockerImage,
-		cmdType:           CmdTypeYarn,
-		workingDir:        ".",
-		args:              nil,
-		mountWorkingDirRW: true,
-		mountWorkingDirRO: false,
-		runAsNonRoot:      true,
-		networkType:       NetworkHost,
-	}
-
+	cfg := getDefaultConfig()
+	cfg.dockerBaseImage = _yarnDockerImage
+	cfg.cmdType = CmdTypeYarn
 	for _, option := range options {
-		option(cfg)
+		option(&cfg)
 	}
-
-	return *cfg
+	return cfg
 }
 
 func NewCargoCmdConfig(options ...Option) Config {
-	cfg := &Config{
-		dockerBaseImage:   _rustCargoDockerImage,
-		cmdType:           CmdTypeRustCargo,
-		workingDir:        ".",
-		args:              nil,
-		mountWorkingDirRW: true,
-		mountWorkingDirRO: false,
-		runAsNonRoot:      true,
-		networkType:       NetworkHost,
-	}
-
+	cfg := getDefaultConfig()
+	cfg.dockerBaseImage = _rustCargoDockerImage
+	cfg.cmdType = CmdTypeRustCargo
 	for _, option := range options {
-		option(cfg)
+		option(&cfg)
 	}
-
-	return *cfg
+	return cfg
 }
 
 func NewPipCmdConfig(options ...Option) Config {
-	cfg := &Config{
-		dockerBaseImage:   _pipDockerImage,
-		cmdType:           CmdTypePythonPip,
-		workingDir:        ".",
-		args:              nil,
-		mountWorkingDirRW: true,
-		mountWorkingDirRO: false,
-		runAsNonRoot:      true,
-		networkType:       NetworkHost,
-	}
-
+	cfg := getDefaultConfig()
+	cfg.dockerBaseImage = _pipDockerImage
+	cfg.cmdType = CmdTypePythonPip
 	for _, option := range options {
-		option(cfg)
+		option(&cfg)
 	}
-
-	return *cfg
+	return cfg
 }
 
 func NewPipExecCmdConfig(options ...Option) Config {
-	cfg := &Config{
-		dockerBaseImage:   _pipDockerImage,
-		cmdType:           CmdTypePythonPipExec,
-		workingDir:        ".",
-		args:              nil,
-		mountWorkingDirRW: true,
-		mountWorkingDirRO: false,
-		runAsNonRoot:      true,
-		networkType:       NetworkHost,
-	}
-
+	cfg := getDefaultConfig()
+	cfg.dockerBaseImage = _pipDockerImage
+	cfg.cmdType = CmdTypePythonPipExec
 	for _, option := range options {
-		option(cfg)
+		option(&cfg)
 	}
-
-	return *cfg
+	return cfg
 }
 
 func NewUvxCmdConfig(options ...Option) Config {
-	cfg := &Config{
-		dockerBaseImage:   _uvDockerImage,
-		cmdType:           CmdTypePythonUvx,
-		workingDir:        ".",
-		args:              nil,
-		mountWorkingDirRW: true,
-		mountWorkingDirRO: false,
-		runAsNonRoot:      true,
-		networkType:       NetworkHost,
-	}
-
+	cfg := getDefaultConfig()
+	cfg.dockerBaseImage = _uvDockerImage
+	cfg.cmdType = CmdTypePythonUvx
 	for _, option := range options {
-		option(cfg)
+		option(&cfg)
 	}
+	return cfg
+}
 
-	return *cfg
+func NewPoetryCmdConfig(options ...Option) Config {
+	cfg := getDefaultConfig()
+	cfg.dockerBaseImage = _poetryDockerImage
+	cfg.cmdType = CmdTypePythonPoetry
+	for _, option := range options {
+		option(&cfg)
+	}
+	return cfg
 }
 
 func NewNpxCmdConfig(options ...Option) Config {
-	cfg := &Config{
-		dockerBaseImage:   _npxDockerImage,
-		cmdType:           CmdTypeNpx,
-		workingDir:        ".",
-		args:              nil,
-		mountWorkingDirRW: true,
-		mountWorkingDirRO: false,
-		runAsNonRoot:      true,
-		networkType:       NetworkHost,
-	}
-
+	cfg := getDefaultConfig()
+	cfg.dockerBaseImage = _npxDockerImage
+	cfg.cmdType = CmdTypeNpx
 	for _, option := range options {
-		option(cfg)
+		option(&cfg)
 	}
-
-	return *cfg
+	return cfg
 }
 
 func NewRubyGemCmdConfig(options ...Option) Config {
-	cfg := &Config{
-		dockerBaseImage:   "ruby:3-bookworm",
-		cmdType:           CmdTypeRubyGem,
-		workingDir:        ".",
-		args:              nil,
-		mountWorkingDirRW: true,
-		mountWorkingDirRO: false,
-		runAsNonRoot:      true,
-		networkType:       NetworkHost,
-	}
-
+	cfg := getDefaultConfig()
+	cfg.dockerBaseImage = _rubyDockerImage
+	cfg.cmdType = CmdTypeRubyGem
 	for _, option := range options {
-		option(cfg)
+		option(&cfg)
 	}
-
-	return *cfg
+	return cfg
 }
 
 func NewRubyGemExecCmdConfig(options ...Option) Config {
-	cfg := &Config{
-		dockerBaseImage:   _rubyDockerImage,
-		cmdType:           CmdTypeRubyGemExec,
-		workingDir:        ".",
-		args:              nil,
-		mountWorkingDirRW: true,
-		mountWorkingDirRO: false,
-		runAsNonRoot:      true,
-		networkType:       NetworkHost,
-	}
-
+	cfg := getDefaultConfig()
+	cfg.dockerBaseImage = _rubyDockerImage
+	cfg.cmdType = CmdTypeRubyGemExec
 	for _, option := range options {
-		option(cfg)
+		option(&cfg)
 	}
-
-	return *cfg
+	return cfg
 }
 
 func NewRustCargoExecCmdConfig(options ...Option) Config {
-	cfg := &Config{
-		dockerBaseImage:   _rustCargoDockerImage,
-		cmdType:           CmdTypeRustCargoExec,
-		workingDir:        ".",
-		args:              nil,
-		mountWorkingDirRW: true,
-		mountWorkingDirRO: false,
-		runAsNonRoot:      true,
-		networkType:       NetworkHost,
-	}
-
+	cfg := getDefaultConfig()
+	cfg.dockerBaseImage = _rustCargoDockerImage
+	cfg.cmdType = CmdTypeRustCargoExec
 	for _, option := range options {
-		option(cfg)
+		option(&cfg)
 	}
-
-	return *cfg
+	return cfg
 }

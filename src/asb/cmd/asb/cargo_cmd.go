@@ -44,3 +44,11 @@ func uvxCmd() *cobra.Command {
 	}
 	return createCmd(cmd, cmdrunner.NewUvxCmdConfig)
 }
+
+func poetryCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "poetry",
+		Short: "Run a poetry command",
+	}
+	return createCmd(cmd, cmdrunner.NewPoetryCmdConfig)
+}

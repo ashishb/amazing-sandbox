@@ -34,6 +34,7 @@ func getRootCmd() *cobra.Command {
 		rootCmd.AddCommand(pipExecCmd())
 	}
 	rootCmd.AddCommand(uvxCmd())
+	rootCmd.AddCommand(poetryCmd())
 
 	// Rust related
 	rootCmd.AddCommand(cargoCmd())

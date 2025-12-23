@@ -46,7 +46,7 @@ Planned via CLI config
 - [x] Ruby `gem` and `gem-exec`
 - Python
    - [ ] `pip`
-   - [ ] `poetry`
+   - [x] `poetry`
    - [ ] `uv`
    - [x] `uvx`
 

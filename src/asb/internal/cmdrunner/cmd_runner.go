@@ -182,6 +182,7 @@ func getDockerRunCmd(config Config) ([]string, error) {
 		"--mount=type=volume,src=pip313,target=/usr/local/lib/python3.13/",
 		"--mount=type=volume,src=pip314,target=/usr/local/lib/python3.14/",
 		"--mount=type=volume,src=pip315,target=/usr/local/lib/python3.15/",
+		"--mount=type=volume,src=uv1,target=/root/.cache/uv/",
 		"--net="+string(config.networkType),
 		"--workdir="+config.workingDir,
 		config.dockerBaseImage)
