@@ -52,3 +52,43 @@ func poetryCmd() *cobra.Command {
 	}
 	return createCmd(cmd, cmdrunner.CmdTypePythonPoetry)
 }
+
+func gemCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "gem",
+		Short: "Run a Ruby gem-based CLI tool",
+	}
+	return createCmd(cmd, cmdrunner.CmdTypeRubyGem)
+}
+
+func gemExecCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "gem-exec",
+		Short: "Run a gem already installed inside sandbox",
+	}
+	return createCmd(cmd, cmdrunner.CmdTypeRubyGemExec)
+}
+
+func npmCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "npm",
+		Short: "Run an npm command",
+	}
+	return createCmd(cmd, cmdrunner.CmdTypeNpm)
+}
+
+func npxCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "npx",
+		Short: "Run an npx command",
+	}
+	return createCmd(cmd, cmdrunner.CmdTypeNpx)
+}
+
+func yarnCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "yarn",
+		Short: "Run a yarn command",
+	}
+	return createCmd(cmd, cmdrunner.CmdTypeYarn)
+}
