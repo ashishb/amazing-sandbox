@@ -161,21 +161,12 @@ func getDockerRunCmd(config Config) ([]string, error) {
 		dockerRunCmd = append(dockerRunCmd, "--env-file="+filepath.Join(config.workingDir, ".env"))
 	}
 
-	// /tmp/claude.json mapped to /root/.claude.json (inside Docker)
-	if config.cmdType == CmdTypeNpx {
-		homeDir, err := os.UserHomeDir()
-		if err != nil {
-			return nil, fmt.Errorf("failed to get user home directory: %w", err)
-		}
-
-		configFile := filepath.Join(homeDir, ".claude.json")
-		if err = touchFile(configFile); err != nil {
-			return nil, fmt.Errorf("failed to touch %s: %w", configFile, err)
-		}
-		dockerRunCmd = append(dockerRunCmd,
-			fmt.Sprintf("--mount=type=bind,src=%s,target=/root/.claude.json", configFile))
+	dockerArgs, err := setupDirMappingsForCodingAgents(config)
+	if err != nil {
+		return nil, err
 	}
 
+	dockerRunCmd = append(dockerRunCmd, dockerArgs...)
 	dockerRunCmd = append(dockerRunCmd,
 		// Warning: without volume names, the volumes are usually deleted when the container is removed
 		"--mount=type=volume,src=npm1,target=/.npm",                      // to persist npm cache across runs
@@ -191,9 +182,6 @@ func getDockerRunCmd(config Config) ([]string, error) {
 		"--mount=type=volume,src=pip313,target=/usr/local/lib/python3.13/",
 		"--mount=type=volume,src=pip314,target=/usr/local/lib/python3.14/",
 		"--mount=type=volume,src=pip315,target=/usr/local/lib/python3.15/",
-		// For claude code, persist ~/.claude/ and ~/.claude.json
-		"--mount=type=volume,src=claude1,target=/root/.claude/",
-		"--mount=type=volume,src=dotconfig,target=/root/.config/",
 		"--net="+string(config.networkType),
 		"--workdir="+config.workingDir,
 		config.dockerBaseImage)
@@ -201,6 +189,45 @@ func getDockerRunCmd(config Config) ([]string, error) {
 	// TODO: Use os.Getuid() and os.Getgid() to get the current user and group IDs
 	// and run the container as that user if config.runAsNonRoot is true
 	return dockerRunCmd, nil
+}
+
+func setupDirMappingsForCodingAgents(config Config) ([]string, error) {
+	if config.cmdType != CmdTypeNpx {
+		return make([]string, 0), nil
+	}
+
+	dockerArgs := make([]string, 0)
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user home directory: %w", err)
+	}
+
+	claudeConfigFile := filepath.Join(homeDir, ".claude.json")
+	if err = touchFile(claudeConfigFile); err != nil {
+		return nil, fmt.Errorf("failed to touch %s: %w", claudeConfigFile, err)
+	}
+
+	// /tmp/claude.json mapped to /root/.claude.json (inside Docker)
+	dockerArgs = append(dockerArgs,
+		fmt.Sprintf("--mount=type=bind,src=%s,target=/root/.claude.json", claudeConfigFile))
+
+	dirsToMap := []string{
+		".config", // General config directory
+		".claude", // Anthropic Claude code config
+		".codex",  // OpenAI Codex config
+		".gemini", // Google Gemini CLI config
+	}
+
+	for _, dirName := range dirsToMap {
+		dirPath := filepath.Join(homeDir, dirName)
+		if err = os.MkdirAll(dirPath, 0o700); err != nil {
+			return nil, fmt.Errorf("failed to create directory %s: %w", dirPath, err)
+		}
+
+		dockerArgs = append(dockerArgs,
+			fmt.Sprintf("--mount=type=bind,src=%s,target=/root/%s", dirPath, dirName))
+	}
+	return dockerArgs, nil
 }
 
 func isInteractiveTerminal() bool {

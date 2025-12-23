@@ -50,6 +50,12 @@ Planned via CLI config
    - [ ] `uv`
    - [x] `uvx`
 
+### Caches config of the following coding agents
+
+1. Claude code
+1. OpenAI Codex
+1. Google Gemini CLI
+
 ### Installation
 
 ```
@@ -87,6 +93,18 @@ $ asb uvx yamllint -d <path-to-dir-containing-yaml-files-to-lint>
 ```bash
 $ asb npx @anthropic-ai/claude-code
 ...  
+```
+
+## Run [Open AI Codex](https://openai.com/codex/) against the  directory "~/src/repo1"
+
+```bash
+$ asb -d ~/src/repo1 npx @openai/codex
+```
+
+### Run [Google Gemini CLI](https://github.com/google-gemini/gemini-cli) inside the sandbox
+
+```bash
+$ asb npx @google/gemini-cli@latest
 ```
 
 ## To see the full usage
