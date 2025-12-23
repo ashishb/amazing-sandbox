@@ -61,13 +61,37 @@ Or download a binary from the [releases page](https://github.com/ashishb/amazing
 
 ## Usage
 
-```bash
-$ asb yarn install  # Run [yarn](https://yarnpkg.com/) with full access to current directory + a cache directory but no access to full disk
-$ asb -n npx htmlhint  # Run [htmlhint](https://www.npmjs.com/package/htmlhint) HTML linter inside sandbox with `-n`, that is no Internet access
-$ asb uvx yamllint -d <path-to-dir-containing-yaml-files-to-lint>  # Run [yamllint](https://github.com/adrienverge/yamllint) inside the sandbox
-$ asb npx @anthropic-ai/claude-code  # Run [Claude code](https://code.claude.com/docs/en/overview) against the current directory
+## Run [yarn](https://yarnpkg.com/) with full access to current directory + a cache directory but no access to full disk
 
-# To see the full usage
+```bash
+$ asb yarn install
+...
+```
+
+## Run [HTML linter](https://www.npmjs.com/package/htmlhint) inside sandbox with `-n`, that is, no Internet access
+
+```bash
+$ asb -n npx htmlhint
+...  
+```
+
+## Run [yamllint](https://github.com/adrienverge/yamllint) inside the sandbox
+
+```bash
+$ asb uvx yamllint -d <path-to-dir-containing-yaml-files-to-lint>
+...  
+```
+
+## Run [Claude code](https://code.claude.com/docs/en/overview) against the current directory
+
+```bash
+$ asb npx @anthropic-ai/claude-code
+...  
+```
+
+## To see the full usage
+
+```bash
 $ asb --help
 ...
 ```
