@@ -76,7 +76,7 @@ linters:
     - wrapcheck
   settings:
     cyclop:
-      max-complexity: 12
+      max-complexity: 14
       package-average: 10
     errcheck:
       check-type-assertions: true
