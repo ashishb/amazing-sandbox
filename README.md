@@ -70,3 +70,9 @@ $ asb uvx yamllint -d <path-to-dir-containing-yaml-files-to-lint>  # Run yamllin
 $ asb --help
 ...
 ```
+
+## FAQ
+
+1. Why not use [bubblewrap](https://github.com/containers/bubblewrap)?
+   It only [supports](https://github.com/containers/bubblewrap/issues/396) GNU/Linux.
+   Further, the developer experience for trying to run a simple tool like `htmlhint` or `yamllint` is sub-par.
