@@ -52,9 +52,13 @@ Planned via CLI config
 
 ### Caches config of the following coding agents
 
-1. Claude code
-1. OpenAI Codex
-1. Google Gemini CLI
+The config of the following coding agents is mapped to the corresponding directories in
+your home directory, so, they will work seamlessly inside the sandbox without needing to
+re-authenticate or re-configure them.
+
+1. [Claude code](https://code.claude.com/docs/en/overview)
+1. [Open AI Codex](https://openai.com/codex/)
+1. [Google Gemini CLI](https://github.com/google-gemini/gemini-cli)
 
 ### Installation
 
@@ -99,12 +103,14 @@ $ asb npx @anthropic-ai/claude-code
 
 ```bash
 $ asb -d ~/src/repo1 npx @openai/codex
+...
 ```
 
 ### Run [Google Gemini CLI](https://github.com/google-gemini/gemini-cli) inside the sandbox
 
 ```bash
 $ asb npx @google/gemini-cli@latest
+...
 ```
 
 ## To see the full usage
