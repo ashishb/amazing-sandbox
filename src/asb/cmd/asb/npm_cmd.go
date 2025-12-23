@@ -10,5 +10,5 @@ func npmCmd() *cobra.Command {
 		Use:   "npm",
 		Short: "Run an npm command",
 	}
-	return createCmd(cmd, cmdrunner.NewNpmCmdConfig)
+	return createCmd(cmd, cmdrunner.CmdTypeNpm)
 }

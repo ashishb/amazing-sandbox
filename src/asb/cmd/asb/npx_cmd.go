@@ -10,5 +10,5 @@ func npxCmd() *cobra.Command {
 		Use:   "npx",
 		Short: "Run an npx command",
 	}
-	return createCmd(cmd, cmdrunner.NewNpxCmdConfig)
+	return createCmd(cmd, cmdrunner.CmdTypeNpx)
 }

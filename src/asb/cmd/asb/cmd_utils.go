@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func createCmd(cmd *cobra.Command, f func(options ...cmdrunner.Option) cmdrunner.Config) *cobra.Command {
+func createCmd(cmd *cobra.Command, cmdType cmdrunner.CmdType) *cobra.Command {
 	cmd.FParseErrWhitelist.UnknownFlags = true
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		directory := getStringFlagOrFail(cmd, "directory")
@@ -24,8 +24,8 @@ func createCmd(cmd *cobra.Command, f func(options ...cmdrunner.Option) cmdrunner
 			Msg("Running command")
 
 		options := getCmdConfig(cmd, directory, enableNetwork)
-		config := f(options...)
-		err := cmdrunner.RunCmd(cmd.Context(), config)
+		cfg := cmdrunner.NewConfig(cmdType, options...)
+		err := cmdrunner.RunCmd(cmd.Context(), cfg)
 		if err != nil {
 			log.Fatal().
 				Ctx(cmd.Context()).

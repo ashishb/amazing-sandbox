@@ -67,7 +67,7 @@ func SetArgs(args []string) Option {
 			c.args = append([]string{"yarn"}, args...)
 		case CmdTypeRubyGem:
 			// Make sure to use --conservative flag for install command
-			// to avoid attemping to update already installed gems
+			// to avoid attempting to update already installed gems
 			if len(args) > 0 && args[0] == "install" {
 				c.args = append([]string{"gem", "install", "--conservative"}, args[1:]...)
 			} else {
@@ -163,6 +163,16 @@ func getAbsolutePath(baseDir string, relativeDir string) string {
 	return path.Clean(baseDir + string(os.PathSeparator) + relativeDir)
 }
 
+func NewConfig(cmdType CmdType, options ...Option) Config {
+	cfg := getDefaultConfig()
+	cfg.dockerBaseImage = getDockerImageForCmdType(cmdType)
+	cfg.cmdType = cmdType
+	for _, option := range options {
+		option(&cfg)
+	}
+	return cfg
+}
+
 func getDefaultConfig() Config {
 	return Config{
 		workingDir:        ".",
@@ -174,112 +184,28 @@ func getDefaultConfig() Config {
 	}
 }
 
-func NewNpmCmdConfig(options ...Option) Config {
-	cfg := getDefaultConfig()
-	cfg.dockerBaseImage = _npmDockerImage
-	cfg.cmdType = CmdTypeNpm
-	for _, option := range options {
-		option(&cfg)
+func getDockerImageForCmdType(cmdType CmdType) string {
+	switch cmdType {
+	case CmdTypeNpm:
+		return _npmDockerImage
+	case CmdTypeYarn:
+		return _yarnDockerImage
+	case CmdTypeRustCargo:
+		return _rustCargoDockerImage
+	case CmdTypePythonPip, CmdTypePythonPipExec:
+		return _pipDockerImage
+	case CmdTypePythonUvx:
+		return _uvDockerImage
+	case CmdTypePythonPoetry:
+		return _poetryDockerImage
+	case CmdTypeNpx:
+		return _npxDockerImage
+	case CmdTypeRubyGem, CmdTypeRubyGemExec:
+		return _rubyDockerImage
+	default:
+		log.Fatal().
+			Str("cmdType", string(cmdType)).
+			Msg("Unsupported command type for getting docker image")
+		return ""
 	}
-	return cfg
-}
-
-func NewYarnCmdConfig(options ...Option) Config {
-	cfg := getDefaultConfig()
-	cfg.dockerBaseImage = _yarnDockerImage
-	cfg.cmdType = CmdTypeYarn
-	for _, option := range options {
-		option(&cfg)
-	}
-	return cfg
-}
-
-func NewCargoCmdConfig(options ...Option) Config {
-	cfg := getDefaultConfig()
-	cfg.dockerBaseImage = _rustCargoDockerImage
-	cfg.cmdType = CmdTypeRustCargo
-	for _, option := range options {
-		option(&cfg)
-	}
-	return cfg
-}
-
-func NewPipCmdConfig(options ...Option) Config {
-	cfg := getDefaultConfig()
-	cfg.dockerBaseImage = _pipDockerImage
-	cfg.cmdType = CmdTypePythonPip
-	for _, option := range options {
-		option(&cfg)
-	}
-	return cfg
-}
-
-func NewPipExecCmdConfig(options ...Option) Config {
-	cfg := getDefaultConfig()
-	cfg.dockerBaseImage = _pipDockerImage
-	cfg.cmdType = CmdTypePythonPipExec
-	for _, option := range options {
-		option(&cfg)
-	}
-	return cfg
-}
-
-func NewUvxCmdConfig(options ...Option) Config {
-	cfg := getDefaultConfig()
-	cfg.dockerBaseImage = _uvDockerImage
-	cfg.cmdType = CmdTypePythonUvx
-	for _, option := range options {
-		option(&cfg)
-	}
-	return cfg
-}
-
-func NewPoetryCmdConfig(options ...Option) Config {
-	cfg := getDefaultConfig()
-	cfg.dockerBaseImage = _poetryDockerImage
-	cfg.cmdType = CmdTypePythonPoetry
-	for _, option := range options {
-		option(&cfg)
-	}
-	return cfg
-}
-
-func NewNpxCmdConfig(options ...Option) Config {
-	cfg := getDefaultConfig()
-	cfg.dockerBaseImage = _npxDockerImage
-	cfg.cmdType = CmdTypeNpx
-	for _, option := range options {
-		option(&cfg)
-	}
-	return cfg
-}
-
-func NewRubyGemCmdConfig(options ...Option) Config {
-	cfg := getDefaultConfig()
-	cfg.dockerBaseImage = _rubyDockerImage
-	cfg.cmdType = CmdTypeRubyGem
-	for _, option := range options {
-		option(&cfg)
-	}
-	return cfg
-}
-
-func NewRubyGemExecCmdConfig(options ...Option) Config {
-	cfg := getDefaultConfig()
-	cfg.dockerBaseImage = _rubyDockerImage
-	cfg.cmdType = CmdTypeRubyGemExec
-	for _, option := range options {
-		option(&cfg)
-	}
-	return cfg
-}
-
-func NewRustCargoExecCmdConfig(options ...Option) Config {
-	cfg := getDefaultConfig()
-	cfg.dockerBaseImage = _rustCargoDockerImage
-	cfg.cmdType = CmdTypeRustCargoExec
-	for _, option := range options {
-		option(&cfg)
-	}
-	return cfg
 }

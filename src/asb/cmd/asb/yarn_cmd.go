@@ -10,5 +10,5 @@ func yarnCmd() *cobra.Command {
 		Use:   "yarn",
 		Short: "Run a yarn command",
 	}
-	return createCmd(cmd, cmdrunner.NewYarnCmdConfig)
+	return createCmd(cmd, cmdrunner.CmdTypeYarn)
 }

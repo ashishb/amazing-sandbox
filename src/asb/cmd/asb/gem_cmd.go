@@ -10,7 +10,7 @@ func gemCmd() *cobra.Command {
 		Use:   "gem",
 		Short: "Run a Ruby gem-based CLI tool",
 	}
-	return createCmd(cmd, cmdrunner.NewRubyGemCmdConfig)
+	return createCmd(cmd, cmdrunner.CmdTypeRubyGem)
 }
 
 func gemExecCmd() *cobra.Command {
@@ -18,5 +18,5 @@ func gemExecCmd() *cobra.Command {
 		Use:   "gem-exec",
 		Short: "Run a gem already installed inside sandbox",
 	}
-	return createCmd(cmd, cmdrunner.NewRubyGemExecCmdConfig)
+	return createCmd(cmd, cmdrunner.CmdTypeRubyGemExec)
 }
