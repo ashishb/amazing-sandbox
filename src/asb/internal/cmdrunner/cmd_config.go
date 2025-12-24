@@ -190,7 +190,7 @@ func getDockerImageForCmdType(cmdType CmdType) string {
 		return _npmDockerImage
 	case CmdTypeYarn:
 		return _yarnDockerImage
-	case CmdTypeRustCargo:
+	case CmdTypeRustCargo, CmdTypeRustCargoExec:
 		return _rustCargoDockerImage
 	case CmdTypePythonPip, CmdTypePythonPipExec:
 		return _pipDockerImage
