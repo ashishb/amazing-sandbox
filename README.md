@@ -113,6 +113,13 @@ $ asb npx @google/gemini-cli@latest
 ...
 ```
 
+### Run [fd tool](https://github.com/sharkdp/fd) inside the sandbox with no Internet access
+
+```bash
+$ asb cargo install fd-find  # One time install
+$ asb  -n cargo-exec fd '.*.go'
+```
+
 ## To see the full usage
 
 ```bash
