@@ -13,6 +13,18 @@ import (
 
 func createCmd(cmd *cobra.Command, cmdType cmdrunner.CmdType) *cobra.Command {
 	cmd.FParseErrWhitelist.UnknownFlags = true
+
+	// This convoluted setup passes help properly to sub-command, "cobra CLI framework"
+	// has no good support to handle this
+	cmd.SetHelpFunc(func(cmd *cobra.Command, args []string) {
+		// E.g asb uvx yamllint --help
+		log.Debug().
+			Ctx(cmd.Context()).
+			Str("name", cmd.Name()).
+			Strs("args", args).
+			Msg("Passing help to sub-command")
+		cmd.Run(cmd, args)
+	})
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		directory := getStringFlagOrFail(cmd, "directory")
 		enableNetwork := !getBoolFlagOrFail(cmd, "no-network")
