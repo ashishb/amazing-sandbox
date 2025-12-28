@@ -26,13 +26,12 @@ Default config
 - [x] Cache various build steps using Docker
 - [x] Give Read-write access to any explicitly referenced files via CLI arguments
 
-Planned via CLI config
+Configurable via CLI parameters
 
 - [x] Disable read access to the current and referenced directories via `-x`
 - [x] Provide Read-only access to the referenced directories via `-r`
 - [x] Disable network access - via `-n`
 - [ ] Disable `.env` file loading
-- [ ] Disable Read-write access to any explicitly referenced files via CLI arguments
 
 ## Supported
 
