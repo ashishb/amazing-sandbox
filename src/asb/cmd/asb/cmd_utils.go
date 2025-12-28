@@ -28,6 +28,7 @@ func createCmd(cmd *cobra.Command, cmdType cmdrunner.CmdType) *cobra.Command {
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		directory := getStringFlagOrFail(cmd, "directory")
 		enableNetwork := !getBoolFlagOrFail(cmd, "no-network")
+		readOnly := getBoolFlagOrFail(cmd, "read-only")
 		log.Debug().
 			Ctx(cmd.Context()).
 			Str("name", cmd.Name()).
@@ -35,7 +36,7 @@ func createCmd(cmd *cobra.Command, cmdType cmdrunner.CmdType) *cobra.Command {
 			Strs("args", args).
 			Msg("Running command")
 
-		options := getCmdConfig(cmd, directory, enableNetwork)
+		options := getCmdConfig(cmd, directory, enableNetwork, readOnly)
 		cfg := cmdrunner.NewConfig(cmdType, options...)
 		err := cmdrunner.RunCmd(cmd.Context(), cfg)
 		if err != nil {
@@ -80,7 +81,7 @@ func getBoolFlagOrFail(cmd *cobra.Command, name string) bool {
 	return value
 }
 
-func getCmdConfig(cmd *cobra.Command, cwd string, enableNetwork bool) []cmdrunner.Option {
+func getCmdConfig(cmd *cobra.Command, cwd string, enableNetwork bool, readOnly bool) []cmdrunner.Option {
 	envFile := filepath.Join(cwd, ".env")
 	envFileExists := false
 	if fileInfo, _ := os.Stat(envFile); fileInfo != nil && !fileInfo.IsDir() {
@@ -94,16 +95,26 @@ func getCmdConfig(cmd *cobra.Command, cwd string, enableNetwork bool) []cmdrunne
 	options := []cmdrunner.Option{
 		cmdrunner.SetWorkingDir(cwd),
 		cmdrunner.SetArgs(getCmdArgs(cmd)),
-		cmdrunner.SetMountWorkingDirReadWrite(true),
-		cmdrunner.SetMountReferencedDirReadWrite(true),
 		cmdrunner.SetRunAsNonRoot(true),
 	}
 
-	if enableNetwork {
-		options = append(options, cmdrunner.SetNetworkType(cmdrunner.NetworkHost))
+	if readOnly {
+		options = append(options,
+			cmdrunner.SetMountWorkingDirReadOnly(true),
+			cmdrunner.SetMountReferencedDirReadOnly(true))
 	} else {
-		options = append(options, cmdrunner.SetNetworkType(cmdrunner.NetworkNone))
+		options = append(options,
+			cmdrunner.SetMountWorkingDirReadWrite(true),
+			cmdrunner.SetMountReferencedDirReadWrite(true),
+			cmdrunner.SetMountWorkingDirReadWrite(true))
 	}
+
+	networkType := cmdrunner.NetworkNone
+	if enableNetwork {
+		networkType = cmdrunner.NetworkHost
+	}
+	options = append(options, cmdrunner.SetNetworkType(networkType))
+
 	if envFileExists {
 		options = append(options, cmdrunner.SetLoadDotEnv(true))
 	}

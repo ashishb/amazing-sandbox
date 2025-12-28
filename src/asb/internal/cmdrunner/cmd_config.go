@@ -104,6 +104,15 @@ func SetMountWorkingDirReadOnly(mountRO bool) Option {
 	}
 }
 
+func SetMountReferencedDirReadOnly(mountRO bool) Option {
+	return func(c *Config) {
+		if mountRO {
+			c.mountReferencedDirRW = false
+		}
+		c.mountReferencedDirRO = mountRO
+	}
+}
+
 func SetMountWorkingDirReadWrite(mountRW bool) Option {
 	return func(c *Config) {
 		if mountRW {

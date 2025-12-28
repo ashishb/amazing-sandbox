@@ -150,7 +150,7 @@ func getDockerRunCmd(config Config) ([]string, error) {
 			if config.mountReferencedDirRW {
 				dockerRunCmd = append(dockerRunCmd,
 					"--mount=type=bind,"+fmt.Sprintf("source=%s,target=%s", dir, dir))
-			} else {
+			} else if config.mountReferencedDirRO {
 				dockerRunCmd = append(dockerRunCmd,
 					"--mount=type=bind,"+fmt.Sprintf("source=%s,target=%s,readonly", dir, dir))
 			}

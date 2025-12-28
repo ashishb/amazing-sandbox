@@ -25,6 +25,7 @@ func getRootCmd() *cobra.Command {
 
 	_ = rootCmd.PersistentFlags().StringP("directory", "d", getCwdOrFail(), "Working directory for this command")
 	_ = rootCmd.PersistentFlags().BoolP("no-network", "n", false, "Disable network access inside the sandbox")
+	_ = rootCmd.PersistentFlags().BoolP("read-only", "r", false, "Mount working directory and referenced directories as read-only")
 
 	rootCmd.AddCommand(versionCmd())
 

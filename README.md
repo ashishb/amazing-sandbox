@@ -28,8 +28,8 @@ Default config
 
 Planned via CLI config
 
-- [ ] Disable Read-write access tothe  current directory
-- [ ] Give Read-only access to the current directory
+- [ ] Disable read access to the current and referenced directories
+- [ ] Provide Read-only access to the referenced directories via `-ro`
 - [x] Disable network access - via `-n`
 - [ ] Disable `.env` file loading
 - [ ] Disable Read-write access to any explicitly referenced files via CLI arguments
@@ -71,35 +71,35 @@ Or download a binary from the [releases page](https://github.com/ashishb/amazing
 
 ## Usage
 
-## Run [yarn](https://yarnpkg.com/) with full access to current directory + a cache directory but no access to full disk
+### Run [yarn](https://yarnpkg.com/) with full access to current directory + a cache directory but no access to full disk
 
 ```bash
 $ asb yarn install
 ...
 ```
 
-## Run [HTML linter](https://www.npmjs.com/package/htmlhint) inside sandbox with `-n`, that is, no Internet access
+### Run [HTML linter](https://www.npmjs.com/package/htmlhint) inside sandbox with `-n`, that is, no Internet access
 
 ```bash
 $ asb -n npx htmlhint
 ...  
 ```
 
-## Run [yamllint](https://github.com/adrienverge/yamllint) inside the sandbox
+### Run [yamllint](https://github.com/adrienverge/yamllint) inside the sandbox
 
 ```bash
 $ asb uvx yamllint -d <path-to-dir-containing-yaml-files-to-lint>
 ...  
 ```
 
-## Run [Claude code](https://code.claude.com/docs/en/overview) against the current directory
+### Run [Claude code](https://code.claude.com/docs/en/overview) against the current directory
 
 ```bash
 $ asb npx @anthropic-ai/claude-code
 ...  
 ```
 
-## Run [Open AI Codex](https://openai.com/codex/) against the  directory "~/src/repo1"
+### Run [Open AI Codex](https://openai.com/codex/) against the  directory "~/src/repo1"
 
 ```bash
 $ asb -d ~/src/repo1 npx @openai/codex
@@ -126,7 +126,32 @@ $ asb  -n cargo-exec fd '.*.go'
 
 ```bash
 $ asb --help
-...
+asb is CLI tool for running tools inside Sandbox
+See https://ashishb.net/programming/run-tools-inside-docker/ for reasoning behind this tool
+
+Usage:
+  asb [flags]
+  asb [command]
+
+Available Commands:
+  cargo       Run a cargo command
+  cargo-exec  Run a Rust-based binary package already installed inside sandbox
+  completion  Generate the autocompletion script for the specified shell
+  gem         Run a Ruby gem-based CLI tool
+  gem-exec    Run a gem already installed inside sandbox
+  help        Help about any command
+  npm         Run an npm command
+  npx         Run an npx command
+  poetry      Run a poetry command
+  uvx         Run a Python-based package already installed inside sandbox using uvx
+  version     Display asb version
+  yarn        Run a yarn command
+
+Flags:
+  -d, --directory string   Working directory for this command (default "/Users/ashishb/src/amazing-sandbox/src/asb")
+  -h, --help               help for asb
+  -n, --no-network         Disable network access inside the sandbox
+  -r, --read-only          Mount working directory and referenced directories as read-only
 ```
 
 ## FAQ
