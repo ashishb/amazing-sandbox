@@ -28,8 +28,8 @@ Default config
 
 Planned via CLI config
 
-- [ ] Disable read access to the current and referenced directories
-- [ ] Provide Read-only access to the referenced directories via `-ro`
+- [x] Disable read access to the current and referenced directories via `-x`
+- [x] Provide Read-only access to the referenced directories via `-r`
 - [x] Disable network access - via `-n`
 - [ ] Disable `.env` file loading
 - [ ] Disable Read-write access to any explicitly referenced files via CLI arguments

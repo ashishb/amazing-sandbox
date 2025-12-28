@@ -198,6 +198,12 @@ func setupDirMappingsForCodingAgents(config Config) ([]string, error) {
 		return make([]string, 0), nil
 	}
 
+	if !config.mountReferencedDirRW && !config.mountReferencedDirRO {
+		log.Debug().
+			Msg("No disk access enabled inside the sandbox, skipping directory mappings for coding agents")
+		return make([]string, 0), nil
+	}
+
 	dockerArgs := make([]string, 0)
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -226,8 +232,13 @@ func setupDirMappingsForCodingAgents(config Config) ([]string, error) {
 			return nil, fmt.Errorf("failed to create directory %s: %w", dirPath, err)
 		}
 
-		dockerArgs = append(dockerArgs,
-			fmt.Sprintf("--mount=type=bind,src=%s,target=/root/%s", dirPath, dirName))
+		var mountStr string
+		if config.mountReferencedDirRO {
+			mountStr = fmt.Sprintf("--mount=type=bind,src=%s,target=/root/%s,readonly", dirPath, dirName)
+		} else {
+			mountStr = fmt.Sprintf("--mount=type=bind,src=%s,target=/root/%s", dirPath, dirName)
+		}
+		dockerArgs = append(dockerArgs, mountStr)
 	}
 	return dockerArgs, nil
 }

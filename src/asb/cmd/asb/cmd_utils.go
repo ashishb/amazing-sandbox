@@ -28,7 +28,20 @@ func createCmd(cmd *cobra.Command, cmdType cmdrunner.CmdType) *cobra.Command {
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		directory := getStringFlagOrFail(cmd, "directory")
 		enableNetwork := !getBoolFlagOrFail(cmd, "no-network")
+		readWrite := getBoolFlagOrFail(cmd, "read-write")
 		readOnly := getBoolFlagOrFail(cmd, "read-only")
+		noDiskAccess := getBoolFlagOrFail(cmd, "no-disk-access")
+		// Note that, readWrite is true by default
+		if noDiskAccess || readOnly {
+			readWrite = false
+		}
+
+		if readOnly && noDiskAccess {
+			log.Fatal().
+				Ctx(cmd.Context()).
+				Msg("Both read-only and no-disk-access flags cannot be enabled together")
+		}
+
 		log.Debug().
 			Ctx(cmd.Context()).
 			Str("name", cmd.Name()).
@@ -36,7 +49,7 @@ func createCmd(cmd *cobra.Command, cmdType cmdrunner.CmdType) *cobra.Command {
 			Strs("args", args).
 			Msg("Running command")
 
-		options := getCmdConfig(cmd, directory, enableNetwork, readOnly)
+		options := getCmdConfig(cmd, directory, enableNetwork, readWrite, readOnly, noDiskAccess)
 		cfg := cmdrunner.NewConfig(cmdType, options...)
 		err := cmdrunner.RunCmd(cmd.Context(), cfg)
 		if err != nil {
@@ -81,7 +94,9 @@ func getBoolFlagOrFail(cmd *cobra.Command, name string) bool {
 	return value
 }
 
-func getCmdConfig(cmd *cobra.Command, cwd string, enableNetwork bool, readOnly bool) []cmdrunner.Option {
+func getCmdConfig(cmd *cobra.Command, cwd string, enableNetwork bool, readWrite bool,
+	readOnly bool, noDiskAccess bool,
+) []cmdrunner.Option {
 	envFile := filepath.Join(cwd, ".env")
 	envFileExists := false
 	if fileInfo, _ := os.Stat(envFile); fileInfo != nil && !fileInfo.IsDir() {
@@ -98,15 +113,15 @@ func getCmdConfig(cmd *cobra.Command, cwd string, enableNetwork bool, readOnly b
 		cmdrunner.SetRunAsNonRoot(true),
 	}
 
-	if readOnly {
+	if readWrite {
+		options = append(options, cmdrunner.SetMountWorkingDirReadWrite(true))
+	} else if readOnly {
+		options = append(options, cmdrunner.SetMountWorkingDirReadOnly(true))
+	} else if noDiskAccess {
 		options = append(options,
-			cmdrunner.SetMountWorkingDirReadOnly(true),
-			cmdrunner.SetMountReferencedDirReadOnly(true))
-	} else {
-		options = append(options,
-			cmdrunner.SetMountWorkingDirReadWrite(true),
-			cmdrunner.SetMountReferencedDirReadWrite(true),
-			cmdrunner.SetMountWorkingDirReadWrite(true))
+			cmdrunner.SetMountWorkingDirReadOnly(false),
+			cmdrunner.SetMountWorkingDirReadWrite(false),
+		)
 	}
 
 	networkType := cmdrunner.NetworkNone
