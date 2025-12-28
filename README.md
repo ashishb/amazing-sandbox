@@ -117,7 +117,9 @@ $ asb npx @google/gemini-cli@latest
 
 ```bash
 $ asb cargo install fd-find  # One time install
+...
 $ asb  -n cargo-exec fd '.*.go'
+...
 ```
 
 ## To see the full usage
