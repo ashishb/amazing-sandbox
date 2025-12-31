@@ -28,6 +28,7 @@ func getRootCmd() *cobra.Command {
 	_ = rootCmd.PersistentFlags().BoolP("read-only", "r", false, "Load working directory and referenced directories as read-only")
 	_ = rootCmd.PersistentFlags().BoolP("read-write", "w", true, "Load working directory and referenced directories as read-only")
 	_ = rootCmd.PersistentFlags().BoolP("no-disk-access", "x", false, "Disable disk access inside the sandbox")
+	_ = rootCmd.PersistentFlags().BoolP("load-env", "e", true, "Load .env file from working directory")
 
 	rootCmd.AddCommand(versionCmd())
 

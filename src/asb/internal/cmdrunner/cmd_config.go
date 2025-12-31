@@ -180,12 +180,15 @@ func NewConfig(cmdType CmdType, options ...Option) Config {
 
 func getDefaultConfig() Config {
 	return Config{
-		workingDir:        ".",
-		args:              nil,
-		mountWorkingDirRW: true,
-		mountWorkingDirRO: false,
-		runAsNonRoot:      true,
-		networkType:       NetworkHost,
+		workingDir:           ".",
+		args:                 nil,
+		mountWorkingDirRW:    true,
+		mountWorkingDirRO:    false,
+		mountReferencedDirRO: false,
+		mountReferencedDirRW: false,
+		runAsNonRoot:         true,
+		networkType:          NetworkHost,
+		loadDotEnv:           false,
 	}
 }
 

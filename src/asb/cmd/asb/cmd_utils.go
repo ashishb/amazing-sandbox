@@ -31,6 +31,7 @@ func createCmd(cmd *cobra.Command, cmdType cmdrunner.CmdType) *cobra.Command {
 		readWrite := getBoolFlagOrFail(cmd, "read-write")
 		readOnly := getBoolFlagOrFail(cmd, "read-only")
 		noDiskAccess := getBoolFlagOrFail(cmd, "no-disk-access")
+		loadEnv := getBoolFlagOrFail(cmd, "load-env")
 		// Note that, readWrite is true by default
 		if noDiskAccess || readOnly {
 			readWrite = false
@@ -49,7 +50,7 @@ func createCmd(cmd *cobra.Command, cmdType cmdrunner.CmdType) *cobra.Command {
 			Strs("args", args).
 			Msg("Running command")
 
-		options := getCmdConfig(cmd, directory, enableNetwork, readWrite, readOnly, noDiskAccess)
+		options := getCmdConfig(cmd, directory, enableNetwork, readWrite, readOnly, noDiskAccess, loadEnv)
 		cfg := cmdrunner.NewConfig(cmdType, options...)
 		err := cmdrunner.RunCmd(cmd.Context(), cfg)
 		if err != nil {
@@ -94,19 +95,9 @@ func getBoolFlagOrFail(cmd *cobra.Command, name string) bool {
 	return value
 }
 
-func getCmdConfig(cmd *cobra.Command, cwd string, enableNetwork bool, readWrite bool,
-	readOnly bool, noDiskAccess bool,
+func getCmdConfig(cmd *cobra.Command, cwd string, enableNetwork bool, readWrite bool, readOnly bool, noDiskAccess bool,
+	loadEnv bool,
 ) []cmdrunner.Option {
-	envFile := filepath.Join(cwd, ".env")
-	envFileExists := false
-	if fileInfo, _ := os.Stat(envFile); fileInfo != nil && !fileInfo.IsDir() {
-		log.Debug().
-			Ctx(cmd.Context()).
-			Str("envFile", envFile).
-			Msg(".env file found, will be loaded inside the sandbox")
-		envFileExists = true
-	}
-
 	options := []cmdrunner.Option{
 		cmdrunner.SetWorkingDir(cwd),
 		cmdrunner.SetArgs(getCmdArgs(cmd)),
@@ -130,8 +121,15 @@ func getCmdConfig(cmd *cobra.Command, cwd string, enableNetwork bool, readWrite 
 	}
 	options = append(options, cmdrunner.SetNetworkType(networkType))
 
-	if envFileExists {
-		options = append(options, cmdrunner.SetLoadDotEnv(true))
+	if loadEnv {
+		envFile := filepath.Join(cwd, ".env")
+		if fileInfo, _ := os.Stat(envFile); fileInfo != nil && !fileInfo.IsDir() {
+			log.Debug().
+				Ctx(cmd.Context()).
+				Str("envFile", envFile).
+				Msg(".env file found, will be loaded inside the sandbox")
+			options = append(options, cmdrunner.SetLoadDotEnv(true))
+		}
 	}
 	return options
 }

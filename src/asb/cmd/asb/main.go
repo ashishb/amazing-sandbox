@@ -11,7 +11,9 @@ import (
 
 func main() {
 	logger.ConfigureLogging()
-	loadDotEnv()
+	if false { // This is redundant for now
+		loadDotEnv()
+	}
 
 	log.Trace().
 		Msg("This is the 'asb' command.")

@@ -28,7 +28,7 @@ Configurable via CLI parameters
 - [x] Disable read access to the current and referenced directories via `-x`
 - [x] Provide Read-only access to the referenced directories via `-r`
 - [x] Disable network access - via `-n`
-- [ ] Disable `.env` file loading
+- [x] Disable `.env` file loading via `--load-env=false`
 
 ## Supported
 
@@ -130,6 +130,7 @@ Usage:
   asb [command]
 
 Available Commands:
+  bun         Run a bun command
   cargo       Run a cargo command
   cargo-exec  Run a Rust-based binary package already installed inside sandbox
   completion  Generate the autocompletion script for the specified shell
@@ -145,6 +146,7 @@ Available Commands:
 
 Flags:
   -d, --directory string   Working directory for this command (default: "<current directory>")
+  -e, --load-env           Load .env file from working directory (default true)
   -h, --help               help for asb
   -x, --no-disk-access     Disable disk access inside the sandbox
   -n, --no-network         Disable network access inside the sandbox
