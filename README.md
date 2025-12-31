@@ -144,7 +144,7 @@ Available Commands:
   yarn        Run a yarn command
 
 Flags:
-  -d, --directory string   Working directory for this command (default "/Users/ashishb/src/amazing-sandbox/src/asb")
+  -d, --directory string   Working directory for this command (default: "<current directory>")
   -h, --help               help for asb
   -x, --no-disk-access     Disable disk access inside the sandbox
   -n, --no-network         Disable network access inside the sandbox
