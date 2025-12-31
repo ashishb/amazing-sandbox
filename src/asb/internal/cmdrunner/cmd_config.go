@@ -20,6 +20,7 @@ const (
 	_npmDockerImage  = "node:25-bookworm"
 	_yarnDockerImage = _npmDockerImage
 	_npxDockerImage  = _npmDockerImage
+	_bunDockerImage  = "oven/bun:debian"
 )
 
 type Config struct {
@@ -51,20 +52,29 @@ func SetWorkingDir(workingDir string) Option {
 func SetArgs(args []string) Option {
 	return func(c *Config) {
 		switch c.cmdType {
+		// Rust related
 		case CmdTypeRustCargo:
 			c.args = append([]string{"cargo"}, args...)
-		case CmdTypePythonPip:
-			c.args = append([]string{"pip"}, args...)
+
+		// Javascript related
+		case CmdTypeBun:
+			c.args = append([]string{"bun"}, args...)
 		case CmdTypeNpm:
 			c.args = append([]string{"npm"}, args...)
 		case CmdTypeNpx:
 			c.args = append([]string{"npx"}, args...)
+		case CmdTypeYarn:
+			c.args = append([]string{"yarn"}, args...)
+
+		// Python related
+		case CmdTypePythonPip:
+			c.args = append([]string{"pip"}, args...)
 		case CmdTypePythonUvx:
 			c.args = append([]string{"uvx"}, args...)
 		case CmdTypePythonPoetry:
 			c.args = append([]string{"uvx", "poetry"}, args...)
-		case CmdTypeYarn:
-			c.args = append([]string{"yarn"}, args...)
+
+		// Ruby related
 		case CmdTypeRubyGem:
 			// Make sure to use --conservative flag for install command
 			// to avoid attempting to update already installed gems
@@ -160,7 +170,7 @@ func getAbsolutePath(baseDir string, relativeDir string) string {
 
 func NewConfig(cmdType CmdType, options ...Option) Config {
 	cfg := getDefaultConfig()
-	cfg.dockerBaseImage = getDockerImageForCmdType(cmdType)
+	cfg.dockerBaseImage = cmdType.getDockerImage()
 	cfg.cmdType = cmdType
 	for _, option := range options {
 		option(&cfg)
@@ -179,8 +189,10 @@ func getDefaultConfig() Config {
 	}
 }
 
-func getDockerImageForCmdType(cmdType CmdType) string {
+func (cmdType CmdType) getDockerImage() string {
 	switch cmdType {
+	case CmdTypeBun:
+		return _bunDockerImage
 	case CmdTypeNpm:
 		return _npmDockerImage
 	case CmdTypeYarn:

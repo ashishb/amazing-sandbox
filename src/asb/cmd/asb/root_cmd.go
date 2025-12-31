@@ -48,6 +48,7 @@ func getRootCmd() *cobra.Command {
 	rootCmd.AddCommand(gemExecCmd())
 
 	// Javascript related
+	rootCmd.AddCommand(bunCmd())
 	rootCmd.AddCommand(npmCmd())
 	rootCmd.AddCommand(npxCmd())
 	rootCmd.AddCommand(yarnCmd())

@@ -37,7 +37,7 @@ Configurable via CLI parameters
    - [x] `npm`
    - [x] `yarn`
    - [x] `pnpm` - Use `asb npx pnpm`
-   - [ ] `bun`
+   - [x] `bun`
 - [x] Rust `cargo` and `cargo-exec`
 - [x] Ruby `gem` and `gem-exec`
 - Python

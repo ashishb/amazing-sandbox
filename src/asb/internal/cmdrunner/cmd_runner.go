@@ -171,12 +171,14 @@ func getDockerRunCmd(config Config) ([]string, error) {
 		// Warning: without volume names, the volumes are usually deleted when the container is removed
 		"--mount=type=volume,src=npm1,target=/.npm",                      // to persist npm cache across runs
 		"--mount=type=volume,src=npm2,target=/root/.npm",                 // to persist npm cache across runs
+		"--mount=type=volume,src=bun1,target=/root/.bun/install/cache",   // to persist bun cache across runs
 		"--mount=type=volume,src=ruby1,target=/usr/local/bundle/",        // to persist Ruby gem cache across runs
 		"--mount=type=volume,src=ruby2,target=/root/.gem/ruby/",          // to persist Ruby gem cache across runs
 		"--mount=type=volume,src=ruby3,target=/usr/local/lib/ruby/gems/", // to persist Ruby gem cache across runs
 		"--mount=type=volume,src=ruby4,target=/root/.cache/gem/specs",    // to persist Ruby gem cache across runs
 		"--mount=type=volume,src=ruby5,target=/root/.rbenv/",             // to persist Ruby gem cache across runs
 		"--mount=type=volume,src=cargo1,target=/usr/local/cargo",         // to persist Rust cargo cache across runs
+
 		// to persist pip cache across runs
 		"--mount=type=volume,src=pip312,target=/usr/local/lib/python3.12/",
 		"--mount=type=volume,src=pip313,target=/usr/local/lib/python3.13/",
@@ -184,7 +186,7 @@ func getDockerRunCmd(config Config) ([]string, error) {
 		"--mount=type=volume,src=pip315,target=/usr/local/lib/python3.15/",
 		"--mount=type=volume,src=uv1,target=/root/.cache/uv/",
 		"--mount=type=volume,src=poetry1,target=/root/.cache/pypoetry",
-		"--net="+string(config.networkType),
+		"--network="+string(config.networkType),
 		"--workdir="+config.workingDir,
 		config.dockerBaseImage)
 

@@ -69,6 +69,14 @@ func gemExecCmd() *cobra.Command {
 	return createCmd(cmd, cmdrunner.CmdTypeRubyGemExec)
 }
 
+func bunCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "bun",
+		Short: "Run a bun command",
+	}
+	return createCmd(cmd, cmdrunner.CmdTypeBun)
+}
+
 func npmCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "npm",
