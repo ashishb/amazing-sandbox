@@ -27,31 +27,7 @@ func createCmd(cmd *cobra.Command, cmdType cmdrunner.CmdType) *cobra.Command {
 		cmd.Run(cmd, args)
 	})
 	cmd.Run = func(cmd *cobra.Command, args []string) {
-		directory := getStringFlagOrFail(cmd, "directory")
-		enableNetwork := !getBoolFlagOrFail(cmd, "no-network")
-		readWrite := getBoolFlagOrFail(cmd, "read-write")
-		readOnly := getBoolFlagOrFail(cmd, "read-only")
-		noDiskAccess := getBoolFlagOrFail(cmd, "no-disk-access")
-		loadEnv := getBoolFlagOrFail(cmd, "load-env")
-		// Note that, readWrite is true by default
-		if noDiskAccess || readOnly {
-			readWrite = false
-		}
-
-		if readOnly && noDiskAccess {
-			log.Fatal().
-				Ctx(cmd.Context()).
-				Msg("Both read-only and no-disk-access flags cannot be enabled together")
-		}
-
-		log.Debug().
-			Ctx(cmd.Context()).
-			Str("name", cmd.Name()).
-			Str("directory", directory).
-			Strs("args", args).
-			Msg("Running command")
-
-		options := getCmdConfig(cmd, directory, enableNetwork, readWrite, readOnly, noDiskAccess, loadEnv)
+		options := getCmdConfig(cmd, args)
 		cfg := cmdrunner.NewConfig(cmdType, options...)
 		err := cmdrunner.RunCmd(cmd.Context(), cfg)
 		if err != nil {
@@ -96,11 +72,33 @@ func getBoolFlagOrFail(cmd *cobra.Command, name string) bool {
 	return value
 }
 
-func getCmdConfig(cmd *cobra.Command, cwd string, enableNetwork bool, readWrite bool, readOnly bool, noDiskAccess bool,
-	loadEnv bool,
-) []cmdrunner.Option {
+func getCmdConfig(cmd *cobra.Command, args []string) []cmdrunner.Option {
+	directory := getStringFlagOrFail(cmd, "directory")
+	enableNetwork := !getBoolFlagOrFail(cmd, "no-network")
+	readWrite := getBoolFlagOrFail(cmd, "read-write")
+	readOnly := getBoolFlagOrFail(cmd, "read-only")
+	noDiskAccess := getBoolFlagOrFail(cmd, "no-disk-access")
+	loadEnv := getBoolFlagOrFail(cmd, "load-env")
+	// Note that, readWrite is true by default
+	if noDiskAccess || readOnly {
+		readWrite = false
+	}
+
+	if readOnly && noDiskAccess {
+		log.Fatal().
+			Ctx(cmd.Context()).
+			Msg("Both read-only and no-disk-access flags cannot be enabled together")
+	}
+
+	log.Debug().
+		Ctx(cmd.Context()).
+		Str("name", cmd.Name()).
+		Str("directory", directory).
+		Strs("args", args).
+		Msg("Running command")
+
 	options := []cmdrunner.Option{
-		cmdrunner.SetWorkingDir(cwd),
+		cmdrunner.SetWorkingDir(directory),
 		cmdrunner.SetArgs(getCmdArgs(cmd)),
 		cmdrunner.SetRunAsNonRoot(true),
 	}
@@ -123,7 +121,7 @@ func getCmdConfig(cmd *cobra.Command, cwd string, enableNetwork bool, readWrite 
 	options = append(options, cmdrunner.SetNetworkType(networkType))
 
 	if loadEnv {
-		envFile := filepath.Join(cwd, ".env")
+		envFile := filepath.Join(directory, ".env")
 		if fileInfo, _ := os.Stat(envFile); fileInfo != nil && !fileInfo.IsDir() {
 			log.Debug().
 				Ctx(cmd.Context()).
