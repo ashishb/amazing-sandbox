@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ashishb/asb/src/asb/internal/logger"
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
+
+	"github.com/ashishb/asb/src/asb/internal/logger"
 )
 
 func main() {

@@ -1,10 +1,11 @@
 package main
 
 import (
-	_ "embed"
 	"fmt"
 
 	"github.com/spf13/cobra"
+
+	_ "embed"
 )
 
 //go:embed version.txt

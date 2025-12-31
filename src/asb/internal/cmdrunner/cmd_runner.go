@@ -8,9 +8,10 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/rs/zerolog/log"
+
 	docker "github.com/fsouza/go-dockerclient"
 	isatty "github.com/mattn/go-isatty"
-	"github.com/rs/zerolog/log"
 )
 
 // RunCmd runs the npx command with the given arguments.
