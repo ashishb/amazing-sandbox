@@ -3,6 +3,7 @@ package cmdrunner
 import (
 	"os"
 	"path"
+	"strings"
 
 	"github.com/rs/zerolog/log"
 )
@@ -51,45 +52,7 @@ func SetWorkingDir(workingDir string) Option {
 
 func SetArgs(args []string) Option {
 	return func(c *Config) {
-		switch c.cmdType {
-		// Rust related
-		case CmdTypeRustCargo:
-			c.args = append([]string{"cargo"}, args...)
-
-		// Javascript related
-		case CmdTypeBun:
-			c.args = append([]string{"bun"}, args...)
-		case CmdTypeNpm:
-			c.args = append([]string{"npm"}, args...)
-		case CmdTypeNpx:
-			c.args = append([]string{"npx"}, args...)
-		case CmdTypeYarn:
-			c.args = append([]string{"yarn"}, args...)
-
-		// Python related
-		case CmdTypePythonPip:
-			c.args = append([]string{"pip"}, args...)
-		case CmdTypePythonUvx:
-			c.args = append([]string{"uvx"}, args...)
-		case CmdTypePythonPoetry:
-			c.args = append([]string{"uvx", "poetry"}, args...)
-
-		// Ruby related
-		case CmdTypeRubyGem:
-			// Make sure to use --conservative flag for install command
-			// to avoid attempting to update already installed gems
-			if len(args) > 0 && args[0] == "install" {
-				c.args = append([]string{"gem", "install", "--conservative"}, args[1:]...)
-			} else {
-				c.args = append([]string{"gem"}, args...)
-			}
-		case CmdTypeRubyGemExec, CmdTypeRustCargoExec, CmdTypePythonPipExec:
-			c.args = args
-		default:
-			log.Fatal().
-				Str("cmdType", string(c.cmdType)).
-				Msg("Unsupported command type for setting args")
-		}
+		c.args = c.cmdType.getArgs(args)
 	}
 }
 
@@ -204,7 +167,7 @@ func (cmdType CmdType) getDockerImage() string {
 		return _rustCargoDockerImage
 	case CmdTypePythonPip, CmdTypePythonPipExec:
 		return _pipDockerImage
-	case CmdTypePythonUvx:
+	case CmdTypePythonUv, CmdTypePythonUvx:
 		return _uvDockerImage
 	case CmdTypePythonPoetry:
 		return _poetryDockerImage
@@ -218,4 +181,47 @@ func (cmdType CmdType) getDockerImage() string {
 			Msg("Unsupported command type for getting docker image")
 		return ""
 	}
+}
+
+func (cmdType CmdType) getArgs(args []string) []string {
+	cmdNameMapping := map[CmdType]string{
+		// Rust related
+		CmdTypeRustCargo: "cargo",
+		// Javascript related
+		CmdTypeBun:  "bun",
+		CmdTypeNpm:  "npm",
+		CmdTypeNpx:  "npx",
+		CmdTypeYarn: "yarn",
+		// Python related
+		CmdTypePythonPip:    "pip",
+		CmdTypePythonUv:     "uv",
+		CmdTypePythonUvx:    "uvx",
+		CmdTypePythonPoetry: "uvx poetry",
+		// CmdTypeRubyGem is handled separately below
+		CmdTypePythonPipExec: "",
+		CmdTypeRubyGemExec:   "",
+		CmdTypeRustCargoExec: "",
+	}
+
+	if cmdName, ok := cmdNameMapping[cmdType]; ok {
+		if cmdName == "" {
+			return args
+		}
+		return append(strings.Split(cmdName, " "), args...)
+	}
+
+	if cmdType == CmdTypeRubyGem {
+		// Make sure to use --conservative flag for install command
+		// to avoid attempting to update already installed gems
+		if len(args) > 0 && args[0] == "install" {
+			return append([]string{"gem", "install", "--conservative"}, args[1:]...)
+		}
+
+		return append([]string{"gem"}, args...)
+	}
+
+	log.Fatal().
+		Str("cmdType", string(cmdType)).
+		Msg("Unsupported command type for setting args")
+	return args
 }

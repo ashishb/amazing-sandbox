@@ -38,6 +38,14 @@ func pipExecCmd() *cobra.Command {
 	return createCmd(cmd, cmdrunner.CmdTypePythonPipExec)
 }
 
+func uvCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "uv",
+		Short: "Run a uv command",
+	}
+	return createCmd(cmd, cmdrunner.CmdTypePythonUv)
+}
+
 func uvxCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "uvx",

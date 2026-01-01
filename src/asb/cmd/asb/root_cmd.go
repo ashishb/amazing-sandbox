@@ -37,6 +37,7 @@ func getRootCmd() *cobra.Command {
 		rootCmd.AddCommand(pipCmd())
 		rootCmd.AddCommand(pipExecCmd())
 	}
+	rootCmd.AddCommand(uvCmd())
 	rootCmd.AddCommand(uvxCmd())
 	rootCmd.AddCommand(poetryCmd())
 

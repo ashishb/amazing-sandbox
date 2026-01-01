@@ -43,7 +43,7 @@ Configurable via CLI parameters
 - Python
    - [ ] `pip`
    - [x] `poetry`
-   - [ ] `uv`
+   - [x] `uv`
    - [x] `uvx`
 
 ### Caches config of the following coding agents
