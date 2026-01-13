@@ -1,4 +1,4 @@
-module github.com/ashishb/asb/src/asb
+module github.com/ashishb/amazing-sandbox/src/asb
 
 go 1.25.4
 

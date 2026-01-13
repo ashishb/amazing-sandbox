@@ -7,7 +7,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
 
-	"github.com/ashishb/asb/src/asb/internal/logger"
+	"github.com/ashishb/amazing-sandbox/src/asb/internal/logger"
 )
 
 func main() {
