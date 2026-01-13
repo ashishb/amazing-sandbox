@@ -60,7 +60,7 @@ re-authenticate or re-configure them.
 ### Installation
 
 ```
-$ go install github.com/ashishb/amazing-sandbox/src/asb@latest
+$ go install github.com/ashishb/amazing-sandbox/src/asb/cmd/asb@latest
 ...
 ```
 
