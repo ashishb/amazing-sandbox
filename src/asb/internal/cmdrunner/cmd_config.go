@@ -22,6 +22,7 @@ const (
 	_npmDockerImage  = "node:25-bookworm"
 	_yarnDockerImage = _npmDockerImage
 	_npxDockerImage  = _npmDockerImage
+	_pnpmDockerImage = _npmDockerImage
 	_bunDockerImage  = "oven/bun:debian"
 )
 
@@ -182,6 +183,8 @@ func (cmdType CmdType) getDockerImage() string {
 		return _poetryDockerImage
 	case CmdTypeNpx:
 		return _npxDockerImage
+	case CmdTypePnpm:
+		return _pnpmDockerImage
 	case CmdTypeRubyGem, CmdTypeRubyGemExec:
 		return _rubyDockerImage
 	default:
@@ -200,6 +203,7 @@ func (cmdType CmdType) getArgs(args []string) []string {
 		CmdTypeBun:  "bun",
 		CmdTypeNpm:  "npm",
 		CmdTypeNpx:  "npx",
+		CmdTypePnpm: "npx pnpm", // npx handles downloading and caching pnpm automatically
 		CmdTypeYarn: "yarn",
 		// Python related
 		CmdTypePythonPip:    "pip",

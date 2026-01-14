@@ -103,6 +103,14 @@ func npxCmd() *cobra.Command {
 	return createCmd(cmd, cmdrunner.CmdTypeNpx)
 }
 
+func pnpmCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "pnpm",
+		Short: "Run a pnpm command",
+	}
+	return createCmd(cmd, cmdrunner.CmdTypePnpm)
+}
+
 func yarnCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "yarn",

@@ -19,6 +19,7 @@ const (
 	CmdTypeBun  CmdType = "bun" // Ref: https://bun.sh/
 	CmdTypeNpm  CmdType = "npm"
 	CmdTypeNpx  CmdType = "npx"
+	CmdTypePnpm CmdType = "pnpm"
 	CmdTypeYarn CmdType = "yarn"
 
 	CmdTypeRubyGem     CmdType = "ruby_gem"
