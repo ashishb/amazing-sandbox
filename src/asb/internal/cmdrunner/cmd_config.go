@@ -203,7 +203,7 @@ func (cmdType CmdType) getArgs(args []string) []string {
 		CmdTypeBun:  "bun",
 		CmdTypeNpm:  "npm",
 		CmdTypeNpx:  "npx",
-		CmdTypePnpm: "npx pnpm", // npx handles downloading and caching pnpm automatically
+		CmdTypePnpm: "npx --yes pnpm", // npx handles downloading and caching pnpm automatically
 		CmdTypeYarn: "yarn",
 		// Python related
 		CmdTypePythonPip:    "pip",
