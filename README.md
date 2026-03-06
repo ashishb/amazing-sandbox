@@ -123,7 +123,7 @@ $ asb  -n cargo-exec fd '.*.go'
 ### Run [hadolint](https://github.com/hadolint/hadolint) (Haskell-based Dockerfile linter) inside the sandbox
 
 ```bash
-$ asb cabal install hadolint  # One time install
+$ asb cabal update && asb cabal install hadolint  # One time install
 ...
 $ asb -n cabal-exec hadolint Dockerfile
 ...
