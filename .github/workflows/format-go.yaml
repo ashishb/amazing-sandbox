@@ -35,7 +35,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up Go ${{ matrix.go-version }}
+      - name: Set up Go
         uses: actions/setup-go@v6
         with:
           go-version-file: src/asb/go.mod
