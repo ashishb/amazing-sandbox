@@ -24,6 +24,9 @@ const (
 
 	CmdTypeRubyGem     CmdType = "ruby_gem"
 	CmdTypeRubyGemExec CmdType = "ruby_gem_exec"
+
+	CmdTypeHaskellCabal     CmdType = "haskell_cabal"
+	CmdTypeHaskellCabalExec CmdType = "haskell_cabal_exec"
 )
 
 // Ref: https://docs.docker.com/engine/network/

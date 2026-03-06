@@ -16,6 +16,7 @@ const (
 
 	_rustCargoDockerImage = "rust:1.92"
 	_rubyDockerImage      = "ruby:3-bookworm"
+	_haskellDockerImage   = "haskell:9.10"
 
 	// Note that node:25-bookworm-slim does not contain C/C++ build tools and that makes anything
 	// using node-gyp to fail. Hence we use the full image here.
@@ -187,6 +188,8 @@ func (cmdType CmdType) getDockerImage() string {
 		return _pnpmDockerImage
 	case CmdTypeRubyGem, CmdTypeRubyGemExec:
 		return _rubyDockerImage
+	case CmdTypeHaskellCabal, CmdTypeHaskellCabalExec:
+		return _haskellDockerImage
 	default:
 		log.Fatal().
 			Str("cmdType", string(cmdType)).
@@ -214,6 +217,9 @@ func (cmdType CmdType) getArgs(args []string) []string {
 		CmdTypePythonPipExec: "",
 		CmdTypeRubyGemExec:   "gem exec",
 		CmdTypeRustCargoExec: "",
+		// Haskell related
+		CmdTypeHaskellCabal:     "cabal",
+		CmdTypeHaskellCabalExec: "",
 	}
 
 	if cmdName, ok := cmdNameMapping[cmdType]; ok {

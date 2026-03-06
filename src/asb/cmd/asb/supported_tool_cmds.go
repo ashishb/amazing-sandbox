@@ -118,3 +118,19 @@ func yarnCmd() *cobra.Command {
 	}
 	return createCmd(cmd, cmdrunner.CmdTypeYarn)
 }
+
+func cabalCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "cabal",
+		Short: "Run a Haskell cabal command",
+	}
+	return createCmd(cmd, cmdrunner.CmdTypeHaskellCabal)
+}
+
+func cabalExecCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "cabal-exec",
+		Short: "Run a Haskell-based binary already installed inside sandbox",
+	}
+	return createCmd(cmd, cmdrunner.CmdTypeHaskellCabalExec)
+}

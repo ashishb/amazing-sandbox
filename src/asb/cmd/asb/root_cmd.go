@@ -57,5 +57,9 @@ func getRootCmd() *cobra.Command {
 	rootCmd.AddCommand(pnpmCmd())
 	rootCmd.AddCommand(yarnCmd())
 
+	// Haskell related
+	rootCmd.AddCommand(cabalCmd())
+	rootCmd.AddCommand(cabalExecCmd())
+
 	return rootCmd
 }

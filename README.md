@@ -41,6 +41,7 @@ Configurable via CLI parameters
    - [x] `bun`
 - [x] Rust `cargo` and `cargo-exec`
 - [x] Ruby `gem` and `gem-exec`
+- [x] Haskell `cabal` and `cabal-exec`
 - Python
    - [ ] `pip`
    - [x] `poetry`
@@ -116,6 +117,15 @@ $ asb npx @google/gemini-cli@latest
 $ asb cargo install fd-find  # One time install
 ...
 $ asb  -n cargo-exec fd '.*.go'
+...
+```
+
+### Run [hadolint](https://github.com/hadolint/hadolint) (Haskell-based Dockerfile linter) inside the sandbox
+
+```bash
+$ asb cabal install hadolint  # One time install
+...
+$ asb -n cabal-exec hadolint Dockerfile
 ...
 ```
 
