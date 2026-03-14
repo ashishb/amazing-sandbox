@@ -43,7 +43,7 @@ Configurable via CLI parameters
 - [x] Ruby `gem` and `gem-exec`
 - [x] Haskell `cabal` and `cabal-exec`
 - Python
-   - [ ] `pip`
+   - [x] `pip`
    - [x] `poetry`
    - [x] `uv`
    - [x] `uvx`

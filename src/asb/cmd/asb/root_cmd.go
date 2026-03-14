@@ -34,10 +34,8 @@ func getRootCmd() *cobra.Command {
 	rootCmd.AddCommand(versionCmd())
 
 	// Python related
-	if false { // Disabled for now
-		rootCmd.AddCommand(pipCmd())
-		rootCmd.AddCommand(pipExecCmd())
-	}
+	rootCmd.AddCommand(pipCmd())
+	rootCmd.AddCommand(pipExecCmd())
 	rootCmd.AddCommand(uvCmd())
 	rootCmd.AddCommand(uvxCmd())
 	rootCmd.AddCommand(poetryCmd())
