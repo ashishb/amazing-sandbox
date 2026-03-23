@@ -180,6 +180,8 @@ func getDockerRunCmd(config Config) ([]string, error) {
 		"--mount=type=volume,src=ruby5,target=/root/.rbenv/",             // to persist Ruby gem cache across runs
 		"--mount=type=volume,src=cargo1,target=/usr/local/cargo",         // to persist Rust cargo cache across runs
 		"--mount=type=volume,src=cabal1,target=/root/.cabal/",            // to persist Haskell cabal cache across runs
+		"--mount=type=volume,src=go1,target=/go",                         // to persist Go module cache across runs
+		"--mount=type=volume,src=go2,target=/root/.cache/go-build",       // to persist Go build cache across runs
 
 		// to persist pip cache across runs
 		"--mount=type=volume,src=pip312,target=/usr/local/lib/python3.12/",

@@ -28,6 +28,8 @@ const (
 
 	CmdTypeHaskellCabal     CmdType = "haskell_cabal"
 	CmdTypeHaskellCabalExec CmdType = "haskell_cabal_exec"
+
+	CmdTypeGoExec CmdType = "go_exec"
 )
 
 // Ref: https://docs.docker.com/engine/network/

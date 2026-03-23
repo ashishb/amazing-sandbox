@@ -60,5 +60,8 @@ func getRootCmd() *cobra.Command {
 	rootCmd.AddCommand(cabalCmd())
 	rootCmd.AddCommand(cabalExecCmd())
 
+	// Go related
+	rootCmd.AddCommand(goExecCmd())
+
 	return rootCmd
 }

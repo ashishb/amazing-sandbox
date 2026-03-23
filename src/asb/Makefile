@@ -11,3 +11,6 @@ build:
 
 run: build
 	LOG_LEVEL=DEBUG ./bin/asb
+
+test:
+	go test -v ./...

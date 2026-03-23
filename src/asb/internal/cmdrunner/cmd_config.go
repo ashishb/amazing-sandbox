@@ -17,6 +17,7 @@ const (
 	_rustCargoDockerImage = "rust:1.92"
 	_rubyDockerImage      = "ruby:3-bookworm"
 	_haskellDockerImage   = "haskell:9.10"
+	_goDockerImage        = "golang:1.26"
 
 	// Note that node:25-bookworm-slim does not contain C/C++ build tools and that makes anything
 	// using node-gyp to fail. Hence we use the full image here.
@@ -27,6 +28,27 @@ const (
 	_pnpmDockerImage = _npmDockerImage
 	_bunDockerImage  = "oven/bun:debian"
 )
+
+var _dockerImageMap = map[CmdType]string{
+	CmdTypeBun:              _bunDockerImage,
+	CmdTypeNode:             _nodeDockerImage,
+	CmdTypeNpm:              _npmDockerImage,
+	CmdTypeYarn:             _yarnDockerImage,
+	CmdTypeRustCargo:        _rustCargoDockerImage,
+	CmdTypeRustCargoExec:    _rustCargoDockerImage,
+	CmdTypePythonPip:        _pipDockerImage,
+	CmdTypePythonPipExec:    _pipDockerImage,
+	CmdTypePythonUv:         _uvDockerImage,
+	CmdTypePythonUvx:        _uvDockerImage,
+	CmdTypePythonPoetry:     _poetryDockerImage,
+	CmdTypeNpx:              _npxDockerImage,
+	CmdTypePnpm:             _pnpmDockerImage,
+	CmdTypeRubyGem:          _rubyDockerImage,
+	CmdTypeRubyGemExec:      _rubyDockerImage,
+	CmdTypeHaskellCabal:     _haskellDockerImage,
+	CmdTypeHaskellCabalExec: _haskellDockerImage,
+	CmdTypeGoExec:           _goDockerImage,
+}
 
 type Config struct {
 	dockerBaseImage string // Docker base image to use
@@ -168,37 +190,14 @@ func getDefaultConfig() Config {
 }
 
 func (cmdType CmdType) getDockerImage() string {
-	switch cmdType {
-	case CmdTypeBun:
-		return _bunDockerImage
-	case CmdTypeNode:
-		return _nodeDockerImage
-	case CmdTypeNpm:
-		return _npmDockerImage
-	case CmdTypeYarn:
-		return _yarnDockerImage
-	case CmdTypeRustCargo, CmdTypeRustCargoExec:
-		return _rustCargoDockerImage
-	case CmdTypePythonPip, CmdTypePythonPipExec:
-		return _pipDockerImage
-	case CmdTypePythonUv, CmdTypePythonUvx:
-		return _uvDockerImage
-	case CmdTypePythonPoetry:
-		return _poetryDockerImage
-	case CmdTypeNpx:
-		return _npxDockerImage
-	case CmdTypePnpm:
-		return _pnpmDockerImage
-	case CmdTypeRubyGem, CmdTypeRubyGemExec:
-		return _rubyDockerImage
-	case CmdTypeHaskellCabal, CmdTypeHaskellCabalExec:
-		return _haskellDockerImage
-	default:
+	dockerImage, ok := _dockerImageMap[cmdType]
+	if !ok {
 		log.Fatal().
 			Str("cmdType", string(cmdType)).
 			Msg("Unsupported command type for getting docker image")
 		return ""
 	}
+	return dockerImage
 }
 
 func (cmdType CmdType) getArgs(args []string) []string {
@@ -224,13 +223,8 @@ func (cmdType CmdType) getArgs(args []string) []string {
 		// Haskell related
 		CmdTypeHaskellCabal:     "cabal",
 		CmdTypeHaskellCabalExec: "",
-	}
-
-	if cmdName, ok := cmdNameMapping[cmdType]; ok {
-		if cmdName == "" {
-			return args
-		}
-		return append(strings.Split(cmdName, " "), args...)
+		// Go related
+		CmdTypeGoExec: "go run",
 	}
 
 	if cmdType == CmdTypeRubyGem {
@@ -244,6 +238,25 @@ func (cmdType CmdType) getArgs(args []string) []string {
 		}
 
 		return append([]string{"gem"}, args...)
+	}
+
+	if cmdType == CmdTypeGoExec {
+		// Remove http:// and https:// from the beginning of the first arg if it exists, because "go run" does not
+		// support them, and it can be common for users to include them when copy-pasting
+		if len(args) > 0 {
+			firstArg := args[0]
+			firstArg = strings.TrimPrefix(firstArg, "http://")
+			firstArg = strings.TrimPrefix(firstArg, "https://")
+			args[0] = firstArg
+			return append([]string{"go", "run"}, args...)
+		}
+	}
+
+	if cmdName, ok := cmdNameMapping[cmdType]; ok {
+		if cmdName == "" {
+			return args
+		}
+		return append(strings.Split(cmdName, " "), args...)
 	}
 
 	log.Fatal().

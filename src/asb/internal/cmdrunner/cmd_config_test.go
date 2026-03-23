@@ -150,3 +150,72 @@ func TestPipNewConfig(t *testing.T) {
 		}
 	}
 }
+
+func TestGoExecDockerImage(t *testing.T) {
+	t.Parallel()
+	if got := CmdTypeGoExec.getDockerImage(); got != _goDockerImage {
+		t.Errorf("CmdTypeGoExec.getDockerImage() = %q, want %q", got, _goDockerImage)
+	}
+}
+
+func TestGoExecArgs(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name     string
+		cmdType  CmdType
+		args     []string
+		wantArgs []string
+	}{
+		{
+			name:     "go-exec with package path prepends go run",
+			cmdType:  CmdTypeGoExec,
+			args:     []string{"github.com/aquasecurity/trivy@latest"},
+			wantArgs: []string{"go", "run", "github.com/aquasecurity/trivy@latest"},
+		},
+		{
+			name:     "go-exec with package path and subcommand prepends go run",
+			cmdType:  CmdTypeGoExec,
+			args:     []string{"github.com/aquasecurity/trivy@latest", "image", "alpine"},
+			wantArgs: []string{"go", "run", "github.com/aquasecurity/trivy@latest", "image", "alpine"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := tt.cmdType.getArgs(tt.args)
+			if len(got) != len(tt.wantArgs) {
+				t.Fatalf("getArgs() = %v, want %v", got, tt.wantArgs)
+			}
+			for i := range got {
+				if got[i] != tt.wantArgs[i] {
+					t.Errorf("getArgs()[%d] = %q, want %q", i, got[i], tt.wantArgs[i])
+				}
+			}
+		})
+	}
+}
+
+func TestGoExecNewConfig(t *testing.T) {
+	t.Parallel()
+	cfg := NewConfig(CmdTypeGoExec,
+		SetWorkingDir("/tmp"),
+		SetArgs([]string{"github.com/aquasecurity/trivy@latest"}),
+		SetNetworkType(NetworkHost),
+	)
+	if cfg.dockerBaseImage != _goDockerImage {
+		t.Errorf("dockerBaseImage = %q, want %q", cfg.dockerBaseImage, _goDockerImage)
+	}
+	if cfg.cmdType != CmdTypeGoExec {
+		t.Errorf("cmdType = %q, want %q", cfg.cmdType, CmdTypeGoExec)
+	}
+	wantArgs := []string{"go", "run", "github.com/aquasecurity/trivy@latest"}
+	if len(cfg.args) != len(wantArgs) {
+		t.Fatalf("args = %v, want %v", cfg.args, wantArgs)
+	}
+	for i := range cfg.args {
+		if cfg.args[i] != wantArgs[i] {
+			t.Errorf("args[%d] = %q, want %q", i, cfg.args[i], wantArgs[i])
+		}
+	}
+}

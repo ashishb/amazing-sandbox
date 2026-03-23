@@ -142,3 +142,11 @@ func cabalExecCmd() *cobra.Command {
 	}
 	return createCmd(cmd, cmdrunner.CmdTypeHaskellCabalExec)
 }
+
+func goExecCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "go-exec",
+		Short: "Run a Go-based binary package using go run",
+	}
+	return createCmd(cmd, cmdrunner.CmdTypeGoExec)
+}
