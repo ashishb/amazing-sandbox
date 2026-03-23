@@ -29,7 +29,7 @@ Configurable via CLI parameters
 - [x] Provide Read-only access to the referenced directories via `-r`
 - [x] Disable network access - via `-n`
 - [x] Disable `.env` file loading via `--load-env=false`
-- [x] Add ability pass a custom Docker image via `-i`
+- [x] Add ability to pass a custom Docker image via `-i`
 
 ## Supported
 
@@ -50,12 +50,12 @@ Configurable via CLI parameters
 
 ### Caches config of the following coding agents
 
-The config of the following coding agents is mapped to the corresponding directories in
-your home directory, so, they will work seamlessly inside the sandbox without needing to
+The configuration of the following coding agents is mapped to the corresponding directories in
+your home directory, so they will work seamlessly inside the sandbox without needing to
 re-authenticate or re-configure them.
 
 1. [Claude code](https://code.claude.com/docs/en/overview)
-1. [Open AI Codex](https://openai.com/codex/)
+1. [OpenAI Codex](https://openai.com/codex/)
 1. [Google Gemini CLI](https://github.com/google-gemini/gemini-cli)
 
 ### Installation
