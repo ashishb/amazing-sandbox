@@ -21,6 +21,7 @@ const (
 	// Note that node:25-bookworm-slim does not contain C/C++ build tools and that makes anything
 	// using node-gyp to fail. Hence we use the full image here.
 	_npmDockerImage  = "node:25-bookworm"
+	_nodeDockerImage = _npmDockerImage
 	_yarnDockerImage = _npmDockerImage
 	_npxDockerImage  = _npmDockerImage
 	_pnpmDockerImage = _npmDockerImage
@@ -170,6 +171,8 @@ func (cmdType CmdType) getDockerImage() string {
 	switch cmdType {
 	case CmdTypeBun:
 		return _bunDockerImage
+	case CmdTypeNode:
+		return _nodeDockerImage
 	case CmdTypeNpm:
 		return _npmDockerImage
 	case CmdTypeYarn:
@@ -204,6 +207,7 @@ func (cmdType CmdType) getArgs(args []string) []string {
 		CmdTypeRustCargo: "cargo",
 		// Javascript related
 		CmdTypeBun:  "bun",
+		CmdTypeNode: "node",
 		CmdTypeNpm:  "npm",
 		CmdTypeNpx:  "npx",
 		CmdTypePnpm: "npx --yes pnpm", // npx handles downloading and caching pnpm automatically

@@ -50,6 +50,7 @@ func getRootCmd() *cobra.Command {
 
 	// Javascript related
 	rootCmd.AddCommand(bunCmd())
+	rootCmd.AddCommand(nodeCmd())
 	rootCmd.AddCommand(npmCmd())
 	rootCmd.AddCommand(npxCmd())
 	rootCmd.AddCommand(pnpmCmd())

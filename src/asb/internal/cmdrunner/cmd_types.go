@@ -17,6 +17,7 @@ const (
 	CmdTypePythonPoetry  CmdType = "python_poetry"
 
 	CmdTypeBun  CmdType = "bun" // Ref: https://bun.sh/
+	CmdTypeNode CmdType = "node"
 	CmdTypeNpm  CmdType = "npm"
 	CmdTypeNpx  CmdType = "npx"
 	CmdTypePnpm CmdType = "pnpm"

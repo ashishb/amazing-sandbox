@@ -87,6 +87,14 @@ func bunCmd() *cobra.Command {
 	return createCmd(cmd, cmdrunner.CmdTypeBun)
 }
 
+func nodeCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "node",
+		Short: "Run a node command",
+	}
+	return createCmd(cmd, cmdrunner.CmdTypeNode)
+}
+
 func npmCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "npm",
