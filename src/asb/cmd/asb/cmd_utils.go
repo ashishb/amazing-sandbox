@@ -72,6 +72,17 @@ func getBoolFlagOrFail(cmd *cobra.Command, name string) bool {
 	return value
 }
 
+func getStringArrayFlagOrFail(cmd *cobra.Command, name string) []string {
+	value, err := cmd.Flags().GetStringArray(name)
+	if err != nil {
+		log.Fatal().
+			Err(err).
+			Str("flagName", name).
+			Msg("Failed to fetch flag")
+	}
+	return value
+}
+
 func getCmdConfig(cmd *cobra.Command, args []string) []cmdrunner.Option {
 	directory := getStringFlagOrFail(cmd, "directory")
 	enableNetwork := !getBoolFlagOrFail(cmd, "no-network")
@@ -80,6 +91,7 @@ func getCmdConfig(cmd *cobra.Command, args []string) []cmdrunner.Option {
 	noDiskAccess := getBoolFlagOrFail(cmd, "no-disk-access")
 	loadEnv := getBoolFlagOrFail(cmd, "load-env")
 	customDockerImage := getStringFlagOrFail(cmd, "custom-docker-image") // Optional
+	mountRODirs := getStringArrayFlagOrFail(cmd, "mount-ro")              // Optional
 
 	// Note that, readWrite is true by default
 	if noDiskAccess || readOnly {
@@ -139,6 +151,14 @@ func getCmdConfig(cmd *cobra.Command, args []string) []cmdrunner.Option {
 			Str("customDockerImage", customDockerImage).
 			Msg("Using custom Docker image for the sandbox")
 		options = append(options, cmdrunner.SetCustomDockerImage(customDockerImage))
+	}
+
+	if len(mountRODirs) > 0 {
+		log.Debug().
+			Ctx(cmd.Context()).
+			Strs("mountRODirs", mountRODirs).
+			Msg("Mounting additional directories as read-only inside the sandbox")
+		options = append(options, cmdrunner.SetExtraMountRODirs(mountRODirs))
 	}
 
 	return options

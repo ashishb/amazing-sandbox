@@ -30,6 +30,7 @@ func getRootCmd() *cobra.Command {
 	_ = rootCmd.PersistentFlags().BoolP("no-disk-access", "x", false, "Disable disk access inside the sandbox")
 	_ = rootCmd.PersistentFlags().BoolP("load-env", "e", true, "Load .env file from working directory")
 	_ = rootCmd.PersistentFlags().StringP("custom-docker-image", "i", "", "Use a custom Docker image for the sandbox")
+	_ = rootCmd.PersistentFlags().StringArrayP("mount-ro", "m", nil, "Mount a directory as read-only inside the sandbox (can be specified multiple times)")
 
 	rootCmd.AddCommand(versionCmd())
 

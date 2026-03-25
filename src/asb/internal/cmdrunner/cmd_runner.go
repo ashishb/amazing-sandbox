@@ -162,6 +162,18 @@ func getDockerRunCmd(config Config) ([]string, error) {
 		dockerRunCmd = append(dockerRunCmd, "--env-file="+filepath.Join(config.workingDir, ".env"))
 	}
 
+	for _, dir := range config.extraMountRODirs {
+		absDir := getAbsolutePath(config.workingDir, dir)
+		if _, err := os.Stat(absDir); os.IsNotExist(err) {
+			log.Warn().
+				Str("dir", absDir).
+				Msg("Extra read-only mount directory does not exist, skipping")
+			continue
+		}
+		dockerRunCmd = append(dockerRunCmd,
+			"--mount=type=bind,"+fmt.Sprintf("source=%s,target=%s,readonly", absDir, absDir))
+	}
+
 	dockerArgs, err := setupDirMappingsForCodingAgents(config)
 	if err != nil {
 		return nil, err

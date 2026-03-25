@@ -63,6 +63,8 @@ type Config struct {
 	mountReferencedDirRO bool // Whether to mount the referenced directory into the container as read-only
 	mountReferencedDirRW bool // Whether to mount the referenced directory into the container as read-write
 
+	extraMountRODirs []string // Additional directories to mount as read-only inside the container
+
 	runAsNonRoot bool        // Whether to run the container as non-root user
 	networkType  NetworkType // Network type for the container
 	loadDotEnv   bool        // Whether to load .env file from working directory
@@ -127,6 +129,12 @@ func SetMountWorkingDirReadWrite(mountRW bool) Option {
 func SetLoadDotEnv(loadDotEnv bool) Option {
 	return func(c *Config) {
 		c.loadDotEnv = loadDotEnv
+	}
+}
+
+func SetExtraMountRODirs(dirs []string) Option {
+	return func(c *Config) {
+		c.extraMountRODirs = append([]string(nil), dirs...)
 	}
 }
 

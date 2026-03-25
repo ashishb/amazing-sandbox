@@ -219,3 +219,30 @@ func TestGoExecNewConfig(t *testing.T) {
 		}
 	}
 }
+
+func TestSetExtraMountRODirs(t *testing.T) {
+	t.Parallel()
+	dirs := []string{"/data/secrets", "/etc/certs"}
+	cfg := NewConfig(CmdTypeNode,
+		SetWorkingDir("/tmp"),
+		SetExtraMountRODirs(dirs),
+	)
+	if len(cfg.extraMountRODirs) != len(dirs) {
+		t.Fatalf("extraMountRODirs = %v, want %v", cfg.extraMountRODirs, dirs)
+	}
+	for i := range dirs {
+		if cfg.extraMountRODirs[i] != dirs[i] {
+			t.Errorf("extraMountRODirs[%d] = %q, want %q", i, cfg.extraMountRODirs[i], dirs[i])
+		}
+	}
+}
+
+func TestSetExtraMountRODirsEmpty(t *testing.T) {
+	t.Parallel()
+	cfg := NewConfig(CmdTypeNode,
+		SetWorkingDir("/tmp"),
+	)
+	if len(cfg.extraMountRODirs) != 0 {
+		t.Errorf("extraMountRODirs = %v, want empty", cfg.extraMountRODirs)
+	}
+}
