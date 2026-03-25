@@ -91,7 +91,7 @@ func getCmdConfig(cmd *cobra.Command, args []string) []cmdrunner.Option {
 	noDiskAccess := getBoolFlagOrFail(cmd, "no-disk-access")
 	loadEnv := getBoolFlagOrFail(cmd, "load-env")
 	customDockerImage := getStringFlagOrFail(cmd, "custom-docker-image") // Optional
-	mountRODirs := getStringArrayFlagOrFail(cmd, "mount-ro")              // Optional
+	mountRODirs := getStringArrayFlagOrFail(cmd, "mount-ro")             // Optional
 
 	// Note that, readWrite is true by default
 	if noDiskAccess || readOnly {
