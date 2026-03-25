@@ -27,7 +27,7 @@ jobs:
 
   # Run it locally with https://github.com/nektos/act
   # act -j lintGo
-  lintGo:
+  lintAndTestGo:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -65,3 +65,7 @@ jobs:
           skip-cache: true
           # Directory containing go.mod file
           working-directory: "src/asb"
+
+      - name: Run tests
+        working-directory: "src/asb"
+        run: "make test"
