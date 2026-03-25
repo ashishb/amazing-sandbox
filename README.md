@@ -33,20 +33,21 @@ Configurable via CLI parameters
 
 ## Supported
 
+- Python
+   - [x] `pip`
+   - [x] `poetry`
+   - [x] `uv`
+   - [x] `uvx`
 - JavaScript/Typescript
    - [x] `npx`
    - [x] `npm`
    - [x] `yarn`
    - [x] `pnpm`
    - [x] `bun`
+- [x] Go `go-exec`
 - [x] Rust `cargo` and `cargo-exec`
 - [x] Ruby `gem` and `gem-exec`
 - [x] Haskell `cabal` and `cabal-exec`
-- Python
-   - [x] `pip`
-   - [x] `poetry`
-   - [x] `uv`
-   - [x] `uvx`
 
 ### Caches config of the following coding agents
 
@@ -142,13 +143,20 @@ Usage:
 
 Available Commands:
   bun         Run a bun command
+  cabal       Run a Haskell cabal command
+  cabal-exec  Run a Haskell-based binary already installed inside sandbox
   cargo       Run a cargo command
   cargo-exec  Run a Rust-based binary package already installed inside sandbox
   completion  Generate the autocompletion script for the specified shell
   gem         Run a Ruby gem-based CLI tool
+  go-exec     Run a Go-based binary package using go run
   help        Help about any command
+  node        Run a node command
   npm         Run an npm command
   npx         Run an npx command
+  pip         Install Python packages using pip
+  pip-exec    Run a Python-based package already installed inside sandbox
+  pnpm        Run a pnpm command
   poetry      Run a poetry command
   uv          Run a uv command
   uvx         Run a Python-based package already installed inside sandbox using uvx
