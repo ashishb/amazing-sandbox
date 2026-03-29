@@ -193,3 +193,7 @@ containing `asb npx htmlhint "$@"` and add `.local/bin` to the `$PATH` in `~/.ba
    Further, the developer experience for trying to run a simple tool like `htmlhint` or `yamllint` is sub-par.
 1. Why not use `sandbox-exec` on Mac OS?
    `sandbox-exec` is [deprecated](https://github.com/openai/codex/issues/215)
+1. Why not use [ai-jail](https://github.com/akitaonrails/ai-jail)?
+   `ai-jail` uses OS-level sandboxing via `bwrap` on Linux and the deprecated `sandbox-exec` on macOS.
+   It has no Windows support.
+   In contrast, `asb` uses Docker, which works consistently across Linux, macOS, and Windows, and also provides build caching for faster repeated runs.
