@@ -197,3 +197,6 @@ containing `asb npx htmlhint "$@"` and add `.local/bin` to the `$PATH` in `~/.ba
    `ai-jail` uses OS-level sandboxing via `bwrap` on Linux and the deprecated `sandbox-exec` on macOS.
    It has no Windows support.
    In contrast, `asb` uses Docker, which works consistently across Linux, macOS, and Windows.
+1. Why not use [drop](https://github.com/wrr/drop)?
+   `drop` uses Linux mount namespaces for sandboxing and only supports Linux.
+   In contrast, `asb` uses Docker, which works consistently across Linux, macOS, and Windows.
