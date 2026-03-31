@@ -185,18 +185,18 @@ containing `asb npx htmlhint "$@"` and add `.local/bin` to the `$PATH` in `~/.ba
 
 ## FAQ
 
-1. Why not use [bubblewrap](https://github.com/containers/bubblewrap)?
-   It only [supports](https://github.com/containers/bubblewrap/issues/396) GNU/Linux.
+1. Why not use [bubblewrap](https://github.com/containers/bubblewrap)?  
+   It only [supports](https://github.com/containers/bubblewrap/issues/396) GNU/Linux.  
    Further, the developer experience for trying to run a simple tool like `htmlhint` or `yamllint` is sub-par.
-1. Why not use [Firejail](https://github.com/netblue30/firejail)?
-   No support for Mac OS or Windows.
+1. Why not use [Firejail](https://github.com/netblue30/firejail)?  
+   No support for Mac OS or Windows.  
    Further, the developer experience for trying to run a simple tool like `htmlhint` or `yamllint` is sub-par.
-1. Why not use `sandbox-exec` on Mac OS?
-   `sandbox-exec` is [deprecated](https://github.com/openai/codex/issues/215)
+1. Why not use `sandbox-exec` on Mac OS?  
+   `sandbox-exec` is [deprecated](https://github.com/openai/codex/issues/215)  
 1. Why not use [ai-jail](https://github.com/akitaonrails/ai-jail)?
-   `ai-jail` uses OS-level sandboxing via `bwrap` on Linux and the deprecated `sandbox-exec` on macOS.
-   It has no Windows support.
+   `ai-jail` uses OS-level sandboxing via `bwrap` on Linux and the deprecated `sandbox-exec` on macOS.  
+   It has no Windows support.  
    In contrast, `asb` uses Docker, which works consistently across Linux, macOS, and Windows.
-1. Why not use [drop](https://github.com/wrr/drop)?
-   `drop` uses Linux mount namespaces for sandboxing and only supports Linux.
+1. Why not use [drop](https://github.com/wrr/drop)?  
+   `drop` uses Linux mount namespaces for sandboxing and only supports Linux.  
    In contrast, `asb` uses Docker, which works consistently across Linux, macOS, and Windows.
