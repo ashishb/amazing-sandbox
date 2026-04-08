@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -97,13 +98,30 @@ func generateSandboxProfile(config Config) string {
 		fmt.Fprintf(&sb, "(allow file-read* file-write* (subpath %q))\n", p)
 	}
 
-	// Allow /dev access
-	sb.WriteString("(allow file-read* file-write* (subpath \"/dev\"))\n")
+	// Allow access to specific device files only
+	for _, p := range []string{"/dev/null", "/dev/zero", "/dev/urandom", "/dev/random", "/dev/tty", "/dev/ptmx"} {
+		fmt.Fprintf(&sb, "(allow file-read* file-write* (literal %q))\n", p)
+	}
+	// Allow pseudo-terminal devices
+	sb.WriteString("(allow file-read* file-write* (subpath \"/dev/pts\"))\n")
+	sb.WriteString("(allow file-read* file-write* (subpath \"/dev/fd\"))\n")
 
-	// Allow reading home directory (tool configs, caches, etc.)
+	// Allow reading specific home directory subdirectories commonly needed by tools
 	homeDir, err := os.UserHomeDir()
 	if err == nil {
-		fmt.Fprintf(&sb, "(allow file-read* (subpath %q))\n", homeDir)
+		for _, subDir := range []string{
+			".cache",       // General tool caches
+			".config",      // General tool configs
+			".local/share", // Local tool data
+			".npm",         // npm cache
+			".yarn",        // yarn cache
+			".cargo",       // Rust cargo data
+			".nvm",         // Node version manager
+			".pyenv",       // Python version manager
+			".rbenv",       // Ruby version manager
+		} {
+			fmt.Fprintf(&sb, "(allow file-read* (subpath %q))\n", filepath.Join(homeDir, subDir))
+		}
 	}
 
 	// Working directory access
