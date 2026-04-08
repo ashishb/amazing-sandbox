@@ -3,6 +3,7 @@ package cmdrunner
 type (
 	CmdType     string
 	NetworkType string
+	SandboxMode string
 )
 
 // Eventually, more command types will be added here
@@ -37,4 +38,11 @@ const (
 	NetworkHost   NetworkType = "host"
 	NetworkNone   NetworkType = "none"
 	NetworkBridge NetworkType = "bridge"
+)
+
+const (
+	// SandboxModeDocker runs the command inside a Docker container (default).
+	SandboxModeDocker SandboxMode = "docker"
+	// SandboxModeSandbox runs the command using macOS sandbox-exec (macOS only).
+	SandboxModeSandbox SandboxMode = "sandbox"
 )

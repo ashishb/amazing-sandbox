@@ -1,6 +1,7 @@
 package cmdrunner
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -244,5 +245,53 @@ func TestSetExtraMountRODirsEmpty(t *testing.T) {
 	)
 	if len(cfg.extraMountRODirs) != 0 {
 		t.Errorf("extraMountRODirs = %v, want empty", cfg.extraMountRODirs)
+	}
+}
+
+func TestDefaultSandboxMode(t *testing.T) {
+	t.Parallel()
+	cfg := NewConfig(CmdTypeNode, SetWorkingDir("/tmp"))
+	if cfg.sandboxMode != SandboxModeDocker {
+		t.Errorf("default sandboxMode = %q, want %q", cfg.sandboxMode, SandboxModeDocker)
+	}
+}
+
+func TestSetSandboxMode(t *testing.T) {
+	t.Parallel()
+	cfg := NewConfig(CmdTypeNode,
+		SetWorkingDir("/tmp"),
+		SetSandboxMode(SandboxModeSandbox),
+	)
+	if cfg.sandboxMode != SandboxModeSandbox {
+		t.Errorf("sandboxMode = %q, want %q", cfg.sandboxMode, SandboxModeSandbox)
+	}
+}
+
+func TestGenerateSandboxProfileNetworkAllowed(t *testing.T) {
+	t.Parallel()
+	cfg := NewConfig(CmdTypeNode,
+		SetWorkingDir("/tmp/testdir"),
+		SetMountWorkingDirReadWrite(true),
+		SetNetworkType(NetworkHost),
+	)
+	profile := generateSandboxProfile(cfg)
+	if !strings.Contains(profile, "(allow network*)") {
+		t.Errorf("expected network allow in profile, got:\n%s", profile)
+	}
+	if !strings.Contains(profile, `"/tmp/testdir"`) {
+		t.Errorf("expected working dir in profile, got:\n%s", profile)
+	}
+}
+
+func TestGenerateSandboxProfileNetworkDisabled(t *testing.T) {
+	t.Parallel()
+	cfg := NewConfig(CmdTypeNode,
+		SetWorkingDir("/tmp/testdir"),
+		SetMountWorkingDirReadWrite(true),
+		SetNetworkType(NetworkNone),
+	)
+	profile := generateSandboxProfile(cfg)
+	if strings.Contains(profile, "(allow network*)") {
+		t.Errorf("expected no network allow in profile, got:\n%s", profile)
 	}
 }

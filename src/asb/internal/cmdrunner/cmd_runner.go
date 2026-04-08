@@ -14,9 +14,14 @@ import (
 	isatty "github.com/mattn/go-isatty"
 )
 
-// RunCmd runs the npx command with the given arguments.
+// RunCmd runs the given command with the given configuration.
+// Depending on config.sandboxMode, it either uses Docker or macOS sandbox-exec.
 // args can be empty list as well
 func RunCmd(ctx context.Context, config Config) error {
+	if config.sandboxMode == SandboxModeSandbox {
+		return runSandboxCmd(ctx, config)
+	}
+
 	client, err := getDockerClient()
 	if err != nil {
 		return err

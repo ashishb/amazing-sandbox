@@ -68,6 +68,7 @@ type Config struct {
 	runAsNonRoot bool        // Whether to run the container as non-root user
 	networkType  NetworkType // Network type for the container
 	loadDotEnv   bool        // Whether to load .env file from working directory
+	sandboxMode  SandboxMode // Whether to use Docker or macOS sandbox-exec
 }
 
 type Option func(*Config)
@@ -138,6 +139,12 @@ func SetExtraMountRODirs(dirs []string) Option {
 	}
 }
 
+func SetSandboxMode(mode SandboxMode) Option {
+	return func(c *Config) {
+		c.sandboxMode = mode
+	}
+}
+
 func (c Config) getReferencedFiles() []string {
 	// Go through args and find any referenced files/directories
 	// For simplicity, we assume any arg that begins with "/" or ".." is a reference to a file/directory
@@ -194,6 +201,7 @@ func getDefaultConfig() Config {
 		runAsNonRoot:         true,
 		networkType:          NetworkHost,
 		loadDotEnv:           false,
+		sandboxMode:          SandboxModeDocker,
 	}
 }
 

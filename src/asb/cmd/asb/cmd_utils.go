@@ -92,6 +92,20 @@ func getCmdConfig(cmd *cobra.Command, args []string) []cmdrunner.Option {
 	loadEnv := getBoolFlagOrFail(cmd, "load-env")
 	customDockerImage := getStringFlagOrFail(cmd, "custom-docker-image") // Optional
 	mountRODirs := getStringArrayFlagOrFail(cmd, "mount-ro")             // Optional
+	mode := getStringFlagOrFail(cmd, "mode")
+
+	sandboxMode := cmdrunner.SandboxModeDocker
+	switch mode {
+	case string(cmdrunner.SandboxModeDocker):
+		sandboxMode = cmdrunner.SandboxModeDocker
+	case string(cmdrunner.SandboxModeSandbox):
+		sandboxMode = cmdrunner.SandboxModeSandbox
+	default:
+		log.Fatal().
+			Ctx(cmd.Context()).
+			Str("mode", mode).
+			Msg("Invalid --mode value; must be 'docker' or 'sandbox'")
+	}
 
 	// Note that, readWrite is true by default
 	if noDiskAccess || readOnly {
@@ -115,6 +129,7 @@ func getCmdConfig(cmd *cobra.Command, args []string) []cmdrunner.Option {
 		cmdrunner.SetWorkingDir(directory),
 		cmdrunner.SetArgs(getCmdArgs(cmd)),
 		cmdrunner.SetRunAsNonRoot(true),
+		cmdrunner.SetSandboxMode(sandboxMode),
 	}
 
 	if readWrite {
