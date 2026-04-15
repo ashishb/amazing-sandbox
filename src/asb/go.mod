@@ -5,7 +5,7 @@ go 1.26
 require (
 	github.com/fsouza/go-dockerclient v1.13.1
 	github.com/joho/godotenv v1.5.1
-	github.com/mattn/go-isatty v0.0.20
+	github.com/mattn/go-isatty v0.0.21
 	github.com/rs/zerolog v1.35.0
 	github.com/spf13/cobra v1.10.2
 )
