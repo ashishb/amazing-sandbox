@@ -3,6 +3,7 @@ package cmdrunner
 type (
 	CmdType     string
 	NetworkType string
+	ExecMode    string
 )
 
 // Eventually, more command types will be added here
@@ -37,4 +38,9 @@ const (
 	NetworkHost   NetworkType = "host"
 	NetworkNone   NetworkType = "none"
 	NetworkBridge NetworkType = "bridge"
+)
+
+const (
+	ExecModeDocker ExecMode = "docker"
+	ExecModeNative ExecMode = "native"
 )

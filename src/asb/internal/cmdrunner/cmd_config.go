@@ -68,6 +68,8 @@ type Config struct {
 	runAsNonRoot bool        // Whether to run the container as non-root user
 	networkType  NetworkType // Network type for the container
 	loadDotEnv   bool        // Whether to load .env file from working directory
+	// As of now, native is only supported on macOS
+	execMode ExecMode // Execution mode (docker or native)
 }
 
 type Option func(*Config)
@@ -138,6 +140,22 @@ func SetExtraMountRODirs(dirs []string) Option {
 	}
 }
 
+func SetExecMode(execMode ExecMode) Option {
+	return func(c *Config) {
+		switch execMode {
+		case ExecModeDocker:
+			c.execMode = execMode
+			// Docker is the default mode, so we don't need to do anything here
+		case ExecModeNative:
+			c.execMode = execMode
+		default:
+			log.Fatal().
+				Str("execMode", string(execMode)).
+				Msg("Unsupported execution mode")
+		}
+	}
+}
+
 func (c Config) getReferencedFiles() []string {
 	// Go through args and find any referenced files/directories
 	// For simplicity, we assume any arg that begins with "/" or ".." is a reference to a file/directory
@@ -163,6 +181,34 @@ func (c Config) getReferencedFiles() []string {
 		}
 	}
 	return dirs
+}
+
+func (c Config) getDirsToMount() []_FilePathToMount {
+	result := make([]_FilePathToMount, 0)
+	if c.mountWorkingDirRW {
+		result = append(result, newFilePathToMount(c.workingDir, c.workingDir, false))
+	} else if c.mountWorkingDirRO {
+		result = append(result, newFilePathToMount(c.workingDir, c.workingDir, true))
+	}
+
+	if c.getReferencedFiles() != nil {
+		for _, dir := range c.getReferencedFiles() {
+			result = append(result, newFilePathToMount(dir, dir, c.mountReferencedDirRO))
+		}
+	}
+
+	for _, dir := range c.extraMountRODirs {
+		absDir := getAbsolutePath(c.workingDir, dir)
+		if _, err := os.Stat(absDir); os.IsNotExist(err) {
+			log.Warn().
+				Str("dir", absDir).
+				Msg("Extra read-only mount directory does not exist, skipping")
+			continue
+		}
+		result = append(result, newFilePathToMount(absDir, absDir, true))
+	}
+
+	return result
 }
 
 func getAbsolutePath(baseDir string, relativeDir string) string {

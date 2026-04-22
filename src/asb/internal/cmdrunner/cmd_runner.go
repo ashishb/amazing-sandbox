@@ -6,17 +6,47 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 
+	"github.com/mattn/go-isatty"
 	"github.com/rs/zerolog/log"
 
 	docker "github.com/fsouza/go-dockerclient"
-	isatty "github.com/mattn/go-isatty"
 )
+
+// This can be a file or a directory to mount into the Docker container.
+type _FilePathToMount struct {
+	hostFilePath      string
+	containerFilePath string // Usually, same as hostFilePath
+	readOnly          bool
+}
+
+func newFilePathToMount(hostDir, containerDir string, readOnly bool) _FilePathToMount {
+	return _FilePathToMount{
+		hostFilePath:      hostDir,
+		containerFilePath: containerDir,
+		readOnly:          readOnly,
+	}
+}
+
+type EnvVar struct {
+	key   string
+	value string
+}
 
 // RunCmd runs the npx command with the given arguments.
 // args can be empty list as well
 func RunCmd(ctx context.Context, config Config) error {
+	// Now run the image with the config
+	switch config.execMode {
+	case ExecModeDocker:
+		return runCmdInDocker(ctx, config)
+	case ExecModeNative:
+		log.Fatal().Msg("Running in native execution mode is not supported yet")
+	}
+	return nil
+}
+
+func runCmdInDocker(ctx context.Context, config Config) error {
 	client, err := getDockerClient()
 	if err != nil {
 		return err
@@ -32,8 +62,7 @@ func RunCmd(ctx context.Context, config Config) error {
 		return fmt.Errorf("failed to run %s command: %w", config.cmdType, err)
 	}
 
-	// Now run the image with the config
-	if err := runDockerContainer1(ctx, config); err != nil {
+	if err := runDockerContainer(ctx, config); err != nil {
 		return fmt.Errorf("failed to run %s command: %w", config.cmdType, err)
 	}
 	return nil
@@ -91,7 +120,7 @@ func pullDockerImageIfNotExists(ctx context.Context, client *docker.Client, imag
 	return nil
 }
 
-func runDockerContainer1(ctx context.Context, config Config) error {
+func runDockerContainer(ctx context.Context, config Config) error {
 	dockerRunCmd, err := getDockerRunCmd(config)
 	if err != nil {
 		return err
@@ -129,140 +158,6 @@ func runDockerContainer1(ctx context.Context, config Config) error {
 		Strs("dockerRunCmd", dockerRunCmd).
 		Msg("Docker container ran successfully")
 	return nil
-}
-
-func getDockerRunCmd(config Config) ([]string, error) {
-	// If this is an interactive terminal then inform the process about this
-	dockerRunCmd := []string{"docker", "run", "--rm", "--init"}
-	if isInteractiveTerminal() {
-		dockerRunCmd = append(dockerRunCmd, "--interactive", "--tty")
-	}
-
-	if config.mountWorkingDirRW {
-		dockerRunCmd = append(dockerRunCmd,
-			"--mount=type=bind,"+fmt.Sprintf("source=%s,target=%s", config.workingDir, config.workingDir))
-	} else if config.mountWorkingDirRO {
-		dockerRunCmd = append(dockerRunCmd,
-			"--mount=type=bind,"+fmt.Sprintf("source=%s,target=%s,readonly", config.workingDir, config.workingDir))
-	}
-
-	if config.getReferencedFiles() != nil {
-		for _, dir := range config.getReferencedFiles() {
-			if config.mountReferencedDirRW {
-				dockerRunCmd = append(dockerRunCmd,
-					"--mount=type=bind,"+fmt.Sprintf("source=%s,target=%s", dir, dir))
-			} else if config.mountReferencedDirRO {
-				dockerRunCmd = append(dockerRunCmd,
-					"--mount=type=bind,"+fmt.Sprintf("source=%s,target=%s,readonly", dir, dir))
-			}
-		}
-	}
-
-	if config.loadDotEnv {
-		dockerRunCmd = append(dockerRunCmd, "--env-file="+filepath.Join(config.workingDir, ".env"))
-	}
-
-	for _, dir := range config.extraMountRODirs {
-		absDir := getAbsolutePath(config.workingDir, dir)
-		if _, err := os.Stat(absDir); os.IsNotExist(err) {
-			log.Warn().
-				Str("dir", absDir).
-				Msg("Extra read-only mount directory does not exist, skipping")
-			continue
-		}
-		dockerRunCmd = append(dockerRunCmd,
-			"--mount=type=bind,"+fmt.Sprintf("source=%s,target=%s,readonly", absDir, absDir))
-	}
-
-	dockerArgs, err := setupDirMappingsForCodingAgents(config)
-	if err != nil {
-		return nil, err
-	}
-
-	dockerRunCmd = append(dockerRunCmd, dockerArgs...)
-	dockerRunCmd = append(dockerRunCmd,
-		// Warning: without volume names, the volumes are usually deleted when the container is removed
-		"--mount=type=volume,src=npm1,target=/.npm",                      // to persist npm cache across runs
-		"--mount=type=volume,src=npm2,target=/root/.npm",                 // to persist npm cache across runs
-		"--mount=type=volume,src=bun1,target=/root/.bun/install/cache",   // to persist bun cache across runs
-		"--mount=type=volume,src=ruby1,target=/usr/local/bundle/",        // to persist Ruby gem cache across runs
-		"--mount=type=volume,src=ruby2,target=/root/.gem/ruby/",          // to persist Ruby gem cache across runs
-		"--mount=type=volume,src=ruby3,target=/usr/local/lib/ruby/gems/", // to persist Ruby gem cache across runs
-		"--mount=type=volume,src=ruby4,target=/root/.cache/gem/specs",    // to persist Ruby gem cache across runs
-		"--mount=type=volume,src=ruby5,target=/root/.rbenv/",             // to persist Ruby gem cache across runs
-		"--mount=type=volume,src=cargo1,target=/usr/local/cargo",         // to persist Rust cargo cache across runs
-		"--mount=type=volume,src=cabal1,target=/root/.cabal/",            // to persist Haskell cabal cache across runs
-		"--mount=type=volume,src=go1,target=/go",                         // to persist Go module cache across runs
-		"--mount=type=volume,src=go2,target=/root/.cache/go-build",       // to persist Go build cache across runs
-
-		// to persist pip cache across runs
-		"--mount=type=volume,src=pip312,target=/usr/local/lib/python3.12/",
-		"--mount=type=volume,src=pip313,target=/usr/local/lib/python3.13/",
-		"--mount=type=volume,src=pip314,target=/usr/local/lib/python3.14/",
-		"--mount=type=volume,src=pip315,target=/usr/local/lib/python3.15/",
-		"--mount=type=volume,src=uv1,target=/root/.cache/uv/",
-		"--mount=type=volume,src=uv2,target=/root/.local/share/uv/",
-		"--mount=type=volume,src=poetry1,target=/root/.cache/pypoetry",
-		"--network="+string(config.networkType),
-		"--workdir="+config.workingDir,
-		config.dockerBaseImage)
-
-	// TODO: Use os.Getuid() and os.Getgid() to get the current user and group IDs
-	// and run the container as that user if config.runAsNonRoot is true
-	return dockerRunCmd, nil
-}
-
-func setupDirMappingsForCodingAgents(config Config) ([]string, error) {
-	if config.cmdType != CmdTypeNpx {
-		return make([]string, 0), nil
-	}
-
-	if !config.mountReferencedDirRW && !config.mountReferencedDirRO {
-		log.Debug().
-			Msg("No disk access enabled inside the sandbox, skipping directory mappings for coding agents")
-		return make([]string, 0), nil
-	}
-
-	dockerArgs := make([]string, 0)
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get user home directory: %w", err)
-	}
-
-	claudeConfigFile := filepath.Join(homeDir, ".claude.json")
-	if err = touchFile(claudeConfigFile); err != nil {
-		return nil, fmt.Errorf("failed to touch %s: %w", claudeConfigFile, err)
-	}
-
-	// For claude add IS_SANDBOX=1 (https://github.com/ashishb/amazing-sandbox/issues/16)
-	dockerArgs = append(dockerArgs, "--env=IS_SANDBOX=1")
-
-	// /tmp/claude.json mapped to /root/.claude.json (inside Docker)
-	dockerArgs = append(dockerArgs,
-		fmt.Sprintf("--mount=type=bind,src=%s,target=/root/.claude.json", claudeConfigFile))
-
-	dirsToMap := []string{
-		".config", // General config directory
-		".claude", // Anthropic Claude code config
-		".codex",  // OpenAI Codex config
-		".gemini", // Google Gemini CLI config
-	}
-
-	for _, dirName := range dirsToMap {
-		dirPath := filepath.Join(homeDir, dirName)
-		if err = os.MkdirAll(dirPath, 0o700); err != nil {
-			return nil, fmt.Errorf("failed to create directory %s: %w", dirPath, err)
-		}
-
-		var mountStr string
-		if config.mountReferencedDirRO {
-			mountStr = fmt.Sprintf("--mount=type=bind,src=%s,target=/root/%s,readonly", dirPath, dirName)
-		} else {
-			mountStr = fmt.Sprintf("--mount=type=bind,src=%s,target=/root/%s", dirPath, dirName)
-		}
-		dockerArgs = append(dockerArgs, mountStr)
-	}
-	return dockerArgs, nil
 }
 
 func isInteractiveTerminal() bool {
