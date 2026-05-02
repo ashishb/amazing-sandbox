@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"os/exec"
 
 	"github.com/mattn/go-isatty"
 	"github.com/rs/zerolog/log"
@@ -41,29 +40,7 @@ func RunCmd(ctx context.Context, config Config) error {
 	case ExecModeDocker:
 		return runCmdInDocker(ctx, config)
 	case ExecModeNative:
-		log.Fatal().Msg("Running in native execution mode is not supported yet")
-	}
-	return nil
-}
-
-func runCmdInDocker(ctx context.Context, config Config) error {
-	client, err := getDockerClient()
-	if err != nil {
-		return err
-	}
-
-	// 1. Check that docker is installed and running
-	if err := checkDockerInstalled(client); err != nil {
-		return fmt.Errorf("failed to run %s command: %w", config.cmdType, err)
-	}
-
-	// Download the docker image
-	if err := pullDockerImageIfNotExists(ctx, client, config.dockerBaseImage); err != nil {
-		return fmt.Errorf("failed to run %s command: %w", config.cmdType, err)
-	}
-
-	if err := runDockerContainer(ctx, config); err != nil {
-		return fmt.Errorf("failed to run %s command: %w", config.cmdType, err)
+		return runCmdInNative(ctx, config)
 	}
 	return nil
 }
@@ -117,46 +94,6 @@ func pullDockerImageIfNotExists(ctx context.Context, client *docker.Client, imag
 			Msg("Successfully pulled docker image")
 	}
 
-	return nil
-}
-
-func runDockerContainer(ctx context.Context, config Config) error {
-	dockerRunCmd, err := getDockerRunCmd(config)
-	if err != nil {
-		return err
-	}
-
-	dockerRunCmd = append(dockerRunCmd, config.args...)
-	// fmt.Println(dockerRunCmd)
-	log.Debug().
-		Strs("dockerRunCmd", dockerRunCmd).
-		Msg("Running docker container with command")
-
-	// Execute the docker run command
-	// Note: This is a blocking call
-	//nolint:gosec  // User is deliberately executing a command
-	cmdCtx := exec.CommandContext(ctx, dockerRunCmd[0], dockerRunCmd[1:]...)
-	if isInteractiveTerminal() {
-		cmdCtx.Stdin = os.Stdin
-		cmdCtx.Stdout = os.Stdout
-		cmdCtx.Stderr = os.Stderr
-	}
-	// cmdCtx.Stdout = log.Logger.Level(zerolog.InfoLevel).With().Logger()
-	// cmdCtx.Stderr = log.Logger.Level(zerolog.ErrorLevel).With().Strs("dockerRunCmd", dockerRunCmd).Logger()
-	err = cmdCtx.Run()
-	var exitErr *exec.ExitError
-	if errors.As(err, &exitErr) {
-		os.Exit(exitErr.ExitCode())
-	}
-
-	// Check for other errors and return them as-is
-	if err != nil {
-		return fmt.Errorf("failed to run docker container: %w", err)
-	}
-
-	log.Debug().
-		Strs("dockerRunCmd", dockerRunCmd).
-		Msg("Docker container ran successfully")
 	return nil
 }
 

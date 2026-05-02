@@ -1,12 +1,50 @@
 package cmdrunner
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/rs/zerolog/log"
 )
+
+func runCmdInDocker(ctx context.Context, config Config) error {
+	client, err := getDockerClient()
+	if err != nil {
+		return err
+	}
+
+	// 1. Check that docker is installed and running
+	if err := checkDockerInstalled(client); err != nil {
+		return fmt.Errorf("failed to run %s command: %w", config.cmdType, err)
+	}
+
+	// Download the docker image
+	if err := pullDockerImageIfNotExists(ctx, client, config.dockerBaseImage); err != nil {
+		return fmt.Errorf("failed to run %s command: %w", config.cmdType, err)
+	}
+
+	if err := runDockerContainer(ctx, config); err != nil {
+		return fmt.Errorf("failed to run %s command: %w", config.cmdType, err)
+	}
+	return nil
+}
+
+func runDockerContainer(ctx context.Context, config Config) error {
+	dockerRunCmd, err := getDockerRunCmd(config)
+	if err != nil {
+		return err
+	}
+
+	dockerRunCmd = append(dockerRunCmd, config.args...)
+	// fmt.Println(dockerRunCmd)
+	log.Debug().
+		Strs("dockerRunCmd", dockerRunCmd).
+		Msg("Running docker container with command")
+
+	return runShellCommand(ctx, dockerRunCmd)
+}
 
 func getDockerRunCmd(config Config) ([]string, error) {
 	// If this is an interactive terminal then inform the process about this
