@@ -1,7 +1,9 @@
 package main
 
 import (
+	"errors"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -31,6 +33,15 @@ func createCmd(cmd *cobra.Command, cmdType cmdrunner.CmdType) *cobra.Command {
 		cfg := cmdrunner.NewConfig(cmdType, options...)
 		err := cmdrunner.RunCmd(cmd.Context(), cfg)
 		if err != nil {
+			var exitErr *exec.ExitError
+			if errors.As(err, &exitErr) {
+				log.Error().
+					Ctx(cmd.Context()).
+					Err(err).
+					Msg("Error running command")
+				os.Exit(exitErr.ExitCode())
+			}
+
 			log.Fatal().
 				Ctx(cmd.Context()).
 				Err(err).

@@ -2,7 +2,6 @@ package cmdrunner
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -24,11 +23,6 @@ func runShellCommand(ctx context.Context, shellCmd []string) error {
 	// cmdCtx.Stdout = log.Logger.Level(zerolog.InfoLevel).With().Logger()
 	// cmdCtx.Stderr = log.Logger.Level(zerolog.ErrorLevel).With().Strs("shellCmd", shellCmd).Logger()
 	err := cmdCtx.Run()
-	var exitErr *exec.ExitError
-	if errors.As(err, &exitErr) {
-		os.Exit(exitErr.ExitCode())
-	}
-
 	// Check for other errors and return them as-is
 	if err != nil {
 		return fmt.Errorf("failed to run command: %w", err)
