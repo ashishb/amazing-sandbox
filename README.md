@@ -7,7 +7,9 @@
 [![Lint Go](https://github.com/ashishb/amazing-sandbox/actions/workflows/lint-go.yaml/badge.svg)](https://github.com/ashishb/amazing-sandbox/actions/workflows/lint-go.yaml)
 [![Validate Go code formatting](https://github.com/ashishb/amazing-sandbox/actions/workflows/format-go.yaml/badge.svg)](https://github.com/ashishb/amazing-sandbox/actions/workflows/format-go.yaml)
 
-Amazing Sandbox (AS) is for running various tools inside a Docker sandbox.
+Amazing Sandbox (AS) is for running various tools inside a Docker-based sandbox (by default) or under
+[seatbelt-based](https://igorstechnoclub.com/sandbox-exec/)
+ sandbox on Mac OS.
 
 - [x] Prevents [malicious packages](https://www.kaspersky.com/about/press-releases/kaspersky-uncovers-500k-crypto-heist-through-malicious-packages-targeting-cursor-developers) from having full disk access and stealing data
 - [x] Prevents AI agents from [mistakenly](https://www.theregister.com/2025/12/01/google_antigravity_wipes_d_drive/) deleting all files on your disk
@@ -133,10 +135,10 @@ $ asb -n cabal-exec hadolint Dockerfile
 ## To see the full usage
 
 ```bash
-$ asb --help
 asb is CLI tool for running tools inside Sandbox
-See https://ashishb.net/programming/run-tools-inside-docker/ for reasoning behind this tool
+See https://ashishb.net/programming/amazing-sandbox/ for reasoning behind this tool
 
+$ asb --help
 Usage:
   asb [flags]
   asb [command]
@@ -168,12 +170,13 @@ Flags:
   -d, --directory string             Working directory for this command (default "<current directory>")
   -h, --help                         help for asb
   -e, --load-env                     Load .env file from working directory (default true)
+      --mode string                  Sandbox mode to use (docker or native) (default "docker")
+  -m, --mount-ro stringArray         Mount a directory as read-only inside the sandbox (can be specified multiple times)
   -x, --no-disk-access               Disable disk access inside the sandbox
   -n, --no-network                   Disable network access inside the sandbox
   -r, --read-only                    Load working directory and referenced directories as read-only
   -w, --read-write                   Load working directory and referenced directories as read-write (default true)
 
-Use "asb [command] --help" for more information about a command.
 ```
 
 ## How I use it
@@ -192,7 +195,8 @@ containing `asb npx htmlhint "$@"` and add `.local/bin` to the `$PATH` in `~/.ba
    No support for Mac OS or Windows.  
    Further, the developer experience for trying to run a simple tool like `htmlhint` or `yamllint` is sub-par.
 1. Why not use `sandbox-exec` on Mac OS?  
-   `sandbox-exec` is [deprecated](https://github.com/openai/codex/issues/215)  
+   `sandbox-exec` is [deprecated](https://github.com/openai/codex/issues/215)
+   but if you want you can use `asb` to use `sandbox-exec` via `asb --mode=sandbox-exec)
 1. Why not use [ai-jail](https://github.com/akitaonrails/ai-jail)?
    `ai-jail` uses OS-level sandboxing via `bwrap` on Linux and the deprecated `sandbox-exec` on macOS.  
    It has no Windows support.  
