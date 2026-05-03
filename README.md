@@ -7,7 +7,7 @@
 [![Lint Go](https://github.com/ashishb/amazing-sandbox/actions/workflows/lint-go.yaml/badge.svg)](https://github.com/ashishb/amazing-sandbox/actions/workflows/lint-go.yaml)
 [![Validate Go code formatting](https://github.com/ashishb/amazing-sandbox/actions/workflows/format-go.yaml/badge.svg)](https://github.com/ashishb/amazing-sandbox/actions/workflows/format-go.yaml)
 
-Amazing Sandbox (AS) is for running various tools inside a Docker-based sandbox (by default) or under
+Amazing Sandbox (AS) is for running various tools inside a Docker-based sandbox (by default) or inside
 [seatbelt-based](https://igorstechnoclub.com/sandbox-exec/)
  sandbox on Mac OS.
 
