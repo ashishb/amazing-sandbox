@@ -13,4 +13,4 @@ run: build
 	LOG_LEVEL=DEBUG ./bin/asb
 
 test:
-	go test -v ./...
+	go test -v ./... -args -mode=native
