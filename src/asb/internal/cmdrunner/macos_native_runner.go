@@ -41,6 +41,7 @@ func runCmdInNative(ctx context.Context, config Config) error {
 		`(allow file-read* (subpath "/private/tmp"))`,
 		`(allow file-read* (literal "/dev/null"))`,
 		`(allow file-read* (literal "/dev/random"))`,
+		`(allow file-read* (literal "/private/etc/ssl/openssl.cnf"))`, // Required for cargo
 		`(allow file-write* (subpath "/tmp"))`,
 		`(allow file-write* (subpath "/var/tmp"))`,
 		`(allow file-write* (subpath "/var/folders"))`,
