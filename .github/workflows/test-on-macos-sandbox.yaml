@@ -1,0 +1,85 @@
+---
+name: Test Go
+
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: [main, master]
+    paths:
+      - "**.go"
+      - ".github/workflows/test-on-macos-sandbox.yaml"
+  pull_request:
+    branches: [main, master]
+    paths:
+      - "**.go"
+      - ".github/workflows/test-on-macos-sandbox.yaml"
+
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Ref: https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/controlling-permissions-for-github_token
+permissions:
+  contents: read
+
+jobs:
+
+  # Run it locally with https://github.com/nektos/act
+  # act -j testGo
+  testOnMacOSSandbox:
+    runs-on: macos-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          cache-dependency-path: "src/asb/go.mod"
+          go-version-file: "src/asb/go.mod"
+
+      # Ref: https://github.com/actions/cache/blob/main/examples.md#go---modules
+      - uses: actions/cache@v5
+        with:
+          path: |
+            ~/Library/Caches/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Build
+        working-directory: "src/asb"
+        run: "make build"  # output in bin/asb
+
+      - name: Test basic CLI commands
+        run: |
+          ./src/asb/bin/asb --mode=native help > /dev/null
+          ./src/asb/bin/asb --mode=native version
+
+#      - name: Test important CLI commands
+#        run: |
+#          # Now the commands
+#          # ./src/asb/bin/asb --mode=native --mode=native cabal --version
+#          ./src/asb/bin/asb --mode=native --mode=native yarn --version
+#          asb --mode=native bun
+#          asb cabal-exec
+#          asb cargo
+#          asb cargo-exec
+#          asb completion
+#          asb gem
+#          asb go-exec
+#          asb node
+#          asb npm
+#          asb npx
+#          asb pip
+#          asb pip-exec
+#          asb pnpm
+#          asb poetry
+#          asb uv
+#          asb uvx
+#          asb yarn

@@ -117,7 +117,7 @@ func runCmdInNative(ctx context.Context, config Config) error {
 	// One can see the config with
 	// os.WriteFile("/tmp/debug.sb", []byte(strings.Join(sandboxConfig, "\n")), 0o644)
 	cmd = append(cmd, cmdArgs[1:]...)
-	log.Info().
+	log.Debug().
 		Strs("cmd", cmd).
 		Msg("Running command in native execution mode with sandbox-exec")
 	return runShellCommand(ctx, cmd)
