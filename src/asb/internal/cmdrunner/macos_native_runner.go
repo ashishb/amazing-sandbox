@@ -24,10 +24,13 @@ func runCmdInNative(ctx context.Context, config Config) error {
 		"(allow file-read-metadata)",
 		"(deny file-write*)",
 		"(deny file-read*)",
+		// Explicitly allow process forking as "gem" needs it
+		`(allow process-fork)`,
 
 		`(allow process-exec (subpath "/bin"))`,
 		`(allow process-exec (subpath "/usr/bin"))`,
 		`(allow process-exec (subpath "/opt/homebrew"))`,
+		fmt.Sprintf(`(allow process-exec (subpath "%s"))`, os.ExpandEnv("$HOME/.rbenv")),
 
 		// Some more paths to mount
 		`(allow file-read* (subpath "/opt/homebrew"))`,
@@ -36,11 +39,14 @@ func runCmdInNative(ctx context.Context, config Config) error {
 		`(allow file-read* (subpath "/var/folders"))`,
 		`(allow file-read* (subpath "/private/var/folders"))`,
 		`(allow file-read* (subpath "/private/tmp"))`,
+		`(allow file-read* (literal "/dev/null"))`,
+		`(allow file-read* (literal "/dev/random"))`,
 		`(allow file-write* (subpath "/tmp"))`,
 		`(allow file-write* (subpath "/var/tmp"))`,
 		`(allow file-write* (subpath "/var/folders"))`,
 		`(allow file-write* (subpath "/private/var/folders"))`,
 		`(allow file-write* (subpath "/private/tmp"))`,
+		`(allow file-write* (literal "/dev/null"))`,
 	}
 	if config.networkType == NetworkNone {
 		sandboxConfig = append(sandboxConfig, "(deny network*)", "(deny system-socket)")
@@ -65,6 +71,7 @@ func runCmdInNative(ctx context.Context, config Config) error {
 		os.ExpandEnv("$HOME/.cabal"),
 		os.ExpandEnv("$HOME/.cache"),
 		os.ExpandEnv("$HOME/.local"),
+		os.ExpandEnv("$HOME/.rbenv"),
 	}
 
 	roPathsToMount := []string{
