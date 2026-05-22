@@ -91,7 +91,7 @@ jobs:
           # JavaScript related
           asb bun --version
           asb node --version
-          # asb pnpm --version
+          asb pnpm --version
           asb npm --version
           asb npx --version
           asb yarn --version

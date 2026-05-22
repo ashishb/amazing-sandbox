@@ -83,6 +83,10 @@ func SetWorkingDir(workingDir string) Option {
 func SetArgs(args []string) Option {
 	return func(c *Config) {
 		c.args = c.cmdType.getArgs(args)
+		// TODO: eliminate special case
+		if c.cmdType == CmdTypePnpm && c.args[0] == "npx" {
+			c.cmdType = CmdTypeNpx
+		}
 	}
 }
 
