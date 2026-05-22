@@ -48,6 +48,12 @@ func runCmdInNative(ctx context.Context, config Config) error {
 		`(allow file-write* (subpath "/private/var/folders"))`,
 		`(allow file-write* (subpath "/private/tmp"))`,
 		`(allow file-write* (literal "/dev/null"))`,
+		// To get user info allow read access to /etc/passwd.
+		`(allow file-read-data (literal "/private/etc/passwd"))`,
+
+		// Needed for user information
+		`(allow mach-lookup (global-name "com.apple.SystemConfiguration.configd"))`,
+		`(allow mach-lookup (global-name "com.apple.system.opendirectoryd.libinfo"))`,
 	}
 	if config.networkType == NetworkNone {
 		sandboxConfig = append(sandboxConfig, "(deny network*)", "(deny system-socket)")
@@ -60,26 +66,29 @@ func runCmdInNative(ctx context.Context, config Config) error {
 		"/var/tmp",
 		"/var/folders",
 		"/private/var/folders",
-		os.ExpandEnv("$HOME/.local"),
-		os.ExpandEnv("$HOME/.cache"),
 		os.ExpandEnv("$HOME/Library/Caches/Homebrew"),
+		os.ExpandEnv("$HOME/Library/Developer/Xcode"),
 
 		// Caches for various package managers
 		os.ExpandEnv("$HOME/Library/Caches/pip"),
 		os.ExpandEnv("$HOME/.npm"),
 		os.ExpandEnv("$HOME/.bun"),
-		os.ExpandEnv("$HOME/.gem"),
 		os.ExpandEnv("$HOME/.cabal"),
 		os.ExpandEnv("$HOME/.cache"),
+		os.ExpandEnv("$HOME/.cargo"),
+		os.ExpandEnv("$HOME/.rustup"),
+		os.ExpandEnv("$HOME/.gem"),
 		os.ExpandEnv("$HOME/.local"),
 		os.ExpandEnv("$HOME/.rbenv"),
 	}
 
 	roPathsToMount := []string{
 		"/opt/homebrew",
+		"/Library/Developer/CommandLineTools",
 		"/Library/Frameworks",
 		"/Library/Preferences",
 		"/System/Library/Frameworks",
+		"/System/Library/Preferences/Logging",
 		"/bin",
 		"/usr/bin",
 		os.ExpandEnv("$HOME/Library/Python"),
