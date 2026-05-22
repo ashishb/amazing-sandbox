@@ -12,6 +12,7 @@ on:  # yamllint disable-line rule:truthy
     paths:
       - "**.go"
       - ".github/workflows/test-on-macos-sandbox.yaml"
+  workflow_dispatch: 
 
 
 concurrency:
