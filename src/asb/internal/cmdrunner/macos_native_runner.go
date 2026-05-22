@@ -40,6 +40,7 @@ func runCmdInNative(ctx context.Context, config Config) error {
 		fmt.Sprintf(`(allow process-exec (subpath "%s"))`, os.ExpandEnv("$HOME/.rbenv")),
 		fmt.Sprintf(`(allow process-exec (subpath "%s"))`, os.ExpandEnv("$HOME/.rustup")),
 		fmt.Sprintf(`(allow process-exec (subpath "%s"))`, os.ExpandEnv("$HOME/.yarn")),
+		fmt.Sprintf(`(allow process-exec (subpath "%s"))`, os.ExpandEnv("$HOME/setup-pnpm")),
 
 		// Some more paths to mount
 		`(allow file-read* (subpath "/opt/homebrew"))`,
@@ -63,11 +64,15 @@ func runCmdInNative(ctx context.Context, config Config) error {
 		`(allow file-read-data (subpath "/usr/share/locale/"))`,
 		`(allow file-read-data (subpath "/private/var/db/timezone"))`,
 
+		// For dtrace support, allow access to dtracehelper
+		`(allow file-ioctl (literal "/dev/dtracehelper"))`,
+
 		// Needed for user information
 		`(allow mach-lookup (global-name "com.apple.SystemConfiguration.configd"))`,
 		`(allow mach-lookup (global-name "com.apple.system.opendirectoryd.libinfo"))`,
 		`(allow mach-lookup (global-name "com.apple.logd"))`,
 		`(allow mach-lookup (global-name "com.apple.system.notification_center"))`,
+		`(allow ipc-posix-shm-read-data (ipc-posix-name "apple.shm.notification_center"))`,
 	}
 	if config.networkType == NetworkNone {
 		sandboxConfig = append(sandboxConfig, "(deny network*)", "(deny system-socket)")
@@ -80,6 +85,8 @@ func runCmdInNative(ctx context.Context, config Config) error {
 		"/var/tmp",
 		"/var/folders",
 		"/private/var/folders",
+
+		"/dev/dtracehelper", // Ref: https://apple.stackexchange.com/questions/384593/apple-dtracehelper-file
 		os.ExpandEnv("$HOME/Library/Caches/Homebrew"),
 		os.ExpandEnv("$HOME/Library/Developer/Xcode"),
 
@@ -99,7 +106,6 @@ func runCmdInNative(ctx context.Context, config Config) error {
 
 	roPathsToMount := []string{
 		"/bin",
-		"/dev/dtracehelper",
 		"/opt/homebrew",
 		"/usr/bin",
 		"/Library/Developer/CommandLineTools",
@@ -110,6 +116,11 @@ func runCmdInNative(ctx context.Context, config Config) error {
 		"/System/Volumes/Preboot/Cryptexes/OS",
 		os.ExpandEnv("$HOME/Library/Python"),
 		os.ExpandEnv("$HOME/Library/Preferences"),
+		// GitHub Actions put tools inside $HOME/hostedtoolcache
+		// e.g. uv is in /Users/runner/hostedtoolcache/uv/0.11.16/aarch64/uv
+		// Ref: https://devopsdirective.com/posts/2025/07/github-actions-tool-cache/
+		os.ExpandEnv("$HOME/hostedtoolcache"),
+		os.ExpandEnv("$HOME/setup-pnpm"), // For pnpm
 	}
 
 	// For each referenced file/directory, we need to allow read access to it
