@@ -61,17 +61,16 @@ jobs:
           ./src/asb/bin/asb --mode=native help > /dev/null
           ./src/asb/bin/asb --mode=native version
 
-#      - name: Test important CLI commands
-#        run: |
-#          # Now the commands
+      - name: Test important CLI commands
+        run: |
+          # Now the commands
+          ./src/asb/bin/asb --mode=native gem --version
+          # LOG_LEVEL=DEBUG ./src/asb/bin/asb --mode=native cargo --version
 #          # ./src/asb/bin/asb --mode=native --mode=native cabal --version
 #          ./src/asb/bin/asb --mode=native --mode=native yarn --version
 #          asb --mode=native bun
 #          asb cabal-exec
-#          asb cargo
-#          asb cargo-exec
 #          asb completion
-#          asb gem
 #          asb go-exec
 #          asb node
 #          asb npm
@@ -83,3 +82,11 @@ jobs:
 #          asb uv
 #          asb uvx
 #          asb yarn
+
+      # Print logs in case the test fails, to help debugging
+      - name: Print logs
+        if: failure()
+        run: |
+          echo "Printing logs for debugging..."
+          # Print the last 100 lines of the log file
+          log show --style compact --last 2m --predicate 'sender == "Sandbox"' | tail -n 50
