@@ -1,4 +1,4 @@
-# Amazing Sandbox (`asb`)
+# Amazing Sandbox (`asb`) ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/ashishb/amazing-sandbox/total)
 
 [![Lint GitHub Actions](https://github.com/ashishb/amazing-sandbox/actions/workflows/lint-github-actions.yaml/badge.svg)](https://github.com/ashishb/amazing-sandbox/actions/workflows/lint-github-actions.yaml)
 [![Lint Markdown](https://github.com/ashishb/amazing-sandbox/actions/workflows/lint-markdown.yaml/badge.svg)](https://github.com/ashishb/amazing-sandbox/actions/workflows/lint-markdown.yaml)
