@@ -68,20 +68,22 @@ jobs:
           shopt -s expand_aliases
           alias asb="./src/asb/bin/asb --mode=native"
           # Now the commands
-          # asb cargo --version
-          asb gem --version
+          # Python related
+          # asb pip --version
           # asb pnpm --version
           # asb poetry --version
           # asb uv --version
           # asb uvx --version
-          # asb yarn --version
-#          # asb cabal --version
-#          asb --mode=native bun
-#          asb completion
-#          asb node
-#          asb npm
-#          asb npx
-#          asb pip
+          # JavaScript related
+          # asb bun --version  # bun is not pre-installed on macOS runners, so we skip it for now
+          asb node --version
+          asb npm --version
+          asb npx --version
+          asb yarn --version
+          # Others
+          # asb cabal --version
+          # asb cargo --version
+          asb gem --version
 
       # Print logs in case the test fails, to help debugging
       - name: Print logs
