@@ -65,9 +65,11 @@ jobs:
       - name: Install uv for testing it under the sandbox
         uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b  # v8.1.0
 
-      - name: Install and configure Poetry
+      - name: Install poetry for testing it under the sandbox
         uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a  # v1.4.1
 
+      - name: Install bun for testing it under the sandbox
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6  # v2.2.0
 
       - name: Test important CLI commands
         # env:
@@ -82,7 +84,7 @@ jobs:
           asb uv --version
           asb uvx --version 
           # JavaScript related
-          # asb bun --version  # bun is not pre-installed on macOS runners, so we skip it for now
+          asb bun --version
           asb node --version
           # asb pnpm --version # pnpm is not pre-installed on macOS runners, so we skip it for now
           asb npm --version
