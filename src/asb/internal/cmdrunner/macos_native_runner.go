@@ -12,6 +12,7 @@ import (
 func runCmdInNative(ctx context.Context, config Config) error {
 	cmdArgs := config.cmdType.getArgs(config.args)
 	log.Debug().
+		Str("args", strings.Join(cmdArgs, " ")).
 		Strs("cmdArgs", cmdArgs).
 		Msg("Running command in native execution mode")
 
@@ -37,6 +38,7 @@ func runCmdInNative(ctx context.Context, config Config) error {
 		`(allow process-exec (subpath "/Users/runner/hostedtoolcache"))`,
 		fmt.Sprintf(`(allow process-exec (subpath "%s"))`, os.ExpandEnv("$HOME/.bun")),
 		fmt.Sprintf(`(allow process-exec (subpath "%s"))`, os.ExpandEnv("$HOME/.local/venv")),
+		fmt.Sprintf(`(allow process-exec (subpath "%s"))`, os.ExpandEnv("$HOME/.npm/")),
 		fmt.Sprintf(`(allow process-exec (subpath "%s"))`, os.ExpandEnv("$HOME/.rbenv")),
 		fmt.Sprintf(`(allow process-exec (subpath "%s"))`, os.ExpandEnv("$HOME/.rustup")),
 		fmt.Sprintf(`(allow process-exec (subpath "%s"))`, os.ExpandEnv("$HOME/.yarn")),
@@ -51,6 +53,7 @@ func runCmdInNative(ctx context.Context, config Config) error {
 		`(allow file-read* (subpath "/private/tmp"))`,
 		`(allow file-read* (literal "/dev/null"))`,
 		`(allow file-read* (literal "/dev/random"))`,
+		`(allow file-read* (literal "/dev/tty"))`,
 		`(allow file-read* (literal "/private/etc/ssl/openssl.cnf"))`, // Required for cargo
 		`(allow file-write* (subpath "/tmp"))`,
 		`(allow file-write* (subpath "/var/tmp"))`,
