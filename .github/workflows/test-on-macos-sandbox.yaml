@@ -63,7 +63,11 @@ jobs:
           ./src/asb/bin/asb --mode=native version
 
       - name: Install uv for testing it under the sandbox
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b  # v8.1.0
+
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a  # v1.4.1
+
 
       - name: Test important CLI commands
         # env:
@@ -74,7 +78,7 @@ jobs:
           # Now the commands
           # Python related
           asb pip --version
-          # asb poetry --version # poetry is not pre-installed on macOS runners, so we skip it for now
+          asb poetry --version
           asb uv --version
           asb uvx --version 
           # JavaScript related

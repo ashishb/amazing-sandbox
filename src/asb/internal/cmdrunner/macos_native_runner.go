@@ -35,6 +35,7 @@ func runCmdInNative(ctx context.Context, config Config) error {
 		// e.g. uv is in /Users/runner/hostedtoolcache/uv/0.11.16/aarch64/uv
 		// Ref: https://devopsdirective.com/posts/2025/07/github-actions-tool-cache/
 		`(allow process-exec (subpath "/Users/runner/hostedtoolcache"))`,
+		fmt.Sprintf(`(allow process-exec (subpath "%s"))`, os.ExpandEnv("$HOME/.local/venv")),
 		fmt.Sprintf(`(allow process-exec (subpath "%s"))`, os.ExpandEnv("$HOME/.rbenv")),
 		fmt.Sprintf(`(allow process-exec (subpath "%s"))`, os.ExpandEnv("$HOME/.rustup")),
 		fmt.Sprintf(`(allow process-exec (subpath "%s"))`, os.ExpandEnv("$HOME/.yarn")),
