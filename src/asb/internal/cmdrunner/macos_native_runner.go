@@ -30,6 +30,7 @@ func runCmdInNative(ctx context.Context, config Config) error {
 		`(allow process-exec (subpath "/bin"))`,
 		`(allow process-exec (subpath "/usr/bin"))`,
 		`(allow process-exec (subpath "/opt/homebrew"))`,
+		`(allow process-exec (subpath "/Library/Frameworks/Python.framework"))`,
 		fmt.Sprintf(`(allow process-exec (subpath "%s"))`, os.ExpandEnv("$HOME/.rbenv")),
 		fmt.Sprintf(`(allow process-exec (subpath "%s"))`, os.ExpandEnv("$HOME/.rustup")),
 		fmt.Sprintf(`(allow process-exec (subpath "%s"))`, os.ExpandEnv("$HOME/.yarn")),
