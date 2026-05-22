@@ -31,6 +31,7 @@ func runCmdInNative(ctx context.Context, config Config) error {
 		`(allow process-exec (subpath "/usr/bin"))`,
 		`(allow process-exec (subpath "/opt/homebrew"))`,
 		fmt.Sprintf(`(allow process-exec (subpath "%s"))`, os.ExpandEnv("$HOME/.rbenv")),
+		fmt.Sprintf(`(allow process-exec (subpath "%s"))`, os.ExpandEnv("$HOME/.rustup")),
 		fmt.Sprintf(`(allow process-exec (subpath "%s"))`, os.ExpandEnv("$HOME/.yarn")),
 
 		// Some more paths to mount
@@ -58,6 +59,8 @@ func runCmdInNative(ctx context.Context, config Config) error {
 		// Needed for user information
 		`(allow mach-lookup (global-name "com.apple.SystemConfiguration.configd"))`,
 		`(allow mach-lookup (global-name "com.apple.system.opendirectoryd.libinfo"))`,
+		`(allow mach-lookup (global-name "com.apple.logd"))`,
+		`(allow mach-lookup (global-name "com.apple.system.notification_center"))`,
 	}
 	if config.networkType == NetworkNone {
 		sandboxConfig = append(sandboxConfig, "(deny network*)", "(deny system-socket)")
@@ -88,15 +91,18 @@ func runCmdInNative(ctx context.Context, config Config) error {
 	}
 
 	roPathsToMount := []string{
+		"/bin",
+		"/dev/dtracehelper",
 		"/opt/homebrew",
+		"/usr/bin",
 		"/Library/Developer/CommandLineTools",
 		"/Library/Frameworks",
 		"/Library/Preferences",
 		"/System/Library/Frameworks",
 		"/System/Library/Preferences/Logging",
-		"/bin",
-		"/usr/bin",
+		"/System/Volumes/Preboot/Cryptexes/OS",
 		os.ExpandEnv("$HOME/Library/Python"),
+		os.ExpandEnv("$HOME/Library/Preferences"),
 	}
 
 	// For each referenced file/directory, we need to allow read access to it

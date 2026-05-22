@@ -82,7 +82,7 @@ jobs:
           asb yarn --version
           # Others
           # asb cabal --version
-          # asb cargo --version
+          asb cargo --version
           asb gem --version
 
       # Print logs in case the test fails, to help debugging
