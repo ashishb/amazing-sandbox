@@ -31,6 +31,7 @@ func runCmdInNative(ctx context.Context, config Config) error {
 		`(allow process-exec (subpath "/usr/bin"))`,
 		`(allow process-exec (subpath "/opt/homebrew"))`,
 		fmt.Sprintf(`(allow process-exec (subpath "%s"))`, os.ExpandEnv("$HOME/.rbenv")),
+		fmt.Sprintf(`(allow process-exec (subpath "%s"))`, os.ExpandEnv("$HOME/.yarn")),
 
 		// Some more paths to mount
 		`(allow file-read* (subpath "/opt/homebrew"))`,
@@ -50,6 +51,9 @@ func runCmdInNative(ctx context.Context, config Config) error {
 		`(allow file-write* (literal "/dev/null"))`,
 		// To get user info allow read access to /etc/passwd.
 		`(allow file-read-data (literal "/private/etc/passwd"))`,
+		// For timezone information allow reading these files
+		`(allow file-read-data (subpath "/usr/share/locale/"))`,
+		`(allow file-read-data (subpath "/private/var/db/timezone"))`,
 
 		// Needed for user information
 		`(allow mach-lookup (global-name "com.apple.SystemConfiguration.configd"))`,
@@ -71,15 +75,16 @@ func runCmdInNative(ctx context.Context, config Config) error {
 
 		// Caches for various package managers
 		os.ExpandEnv("$HOME/Library/Caches/pip"),
-		os.ExpandEnv("$HOME/.npm"),
 		os.ExpandEnv("$HOME/.bun"),
 		os.ExpandEnv("$HOME/.cabal"),
 		os.ExpandEnv("$HOME/.cache"),
 		os.ExpandEnv("$HOME/.cargo"),
-		os.ExpandEnv("$HOME/.rustup"),
 		os.ExpandEnv("$HOME/.gem"),
 		os.ExpandEnv("$HOME/.local"),
+		os.ExpandEnv("$HOME/.npm"),
+		os.ExpandEnv("$HOME/.rustup"),
 		os.ExpandEnv("$HOME/.rbenv"),
+		os.ExpandEnv("$HOME/.yarn"),
 	}
 
 	roPathsToMount := []string{

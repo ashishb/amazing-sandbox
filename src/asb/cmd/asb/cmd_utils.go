@@ -37,6 +37,7 @@ func createCmd(cmd *cobra.Command, cmdType cmdrunner.CmdType) *cobra.Command {
 			if errors.As(err, &exitErr) {
 				log.Error().
 					Ctx(cmd.Context()).
+					Str("name", cmd.Name()).
 					Err(err).
 					Msg("Error running command")
 				os.Exit(exitErr.ExitCode())
