@@ -62,26 +62,26 @@ jobs:
           ./src/asb/bin/asb --mode=native version
 
       - name: Test important CLI commands
+        # env:
+        #    LOG_LEVEL: DEBUG  # Set log level to DEBUG for more verbose output
         run: |
+          shopt -s expand_aliases
+          alias asb="./src/asb/bin/asb --mode=native"
           # Now the commands
-          ./src/asb/bin/asb --mode=native gem --version
-          # LOG_LEVEL=DEBUG ./src/asb/bin/asb --mode=native cargo --version
-#          # ./src/asb/bin/asb --mode=native --mode=native cabal --version
-#          ./src/asb/bin/asb --mode=native --mode=native yarn --version
+          # asb cargo --version
+          asb gem --version
+          # asb pnpm --version
+          # asb poetry --version
+          # asb uv --version
+          # asb uvx --version
+          # asb yarn --version
+#          # asb cabal --version
 #          asb --mode=native bun
-#          asb cabal-exec
 #          asb completion
-#          asb go-exec
 #          asb node
 #          asb npm
 #          asb npx
 #          asb pip
-#          asb pip-exec
-#          asb pnpm
-#          asb poetry
-#          asb uv
-#          asb uvx
-#          asb yarn
 
       # Print logs in case the test fails, to help debugging
       - name: Print logs
