@@ -62,6 +62,9 @@ jobs:
           ./src/asb/bin/asb --mode=native help > /dev/null
           ./src/asb/bin/asb --mode=native version
 
+      - name: Install uv for testing it under the sandbox
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+
       - name: Test important CLI commands
         # env:
         #    LOG_LEVEL: DEBUG  # Set log level to DEBUG for more verbose output
@@ -72,8 +75,8 @@ jobs:
           # Python related
           asb pip --version
           # asb poetry --version # poetry is not pre-installed on macOS runners, so we skip it for now
-          # asb uv --version  # uv is not pre-installed on macOS runners, so we skip it for now
-          # asb uvx --version  # uvx is not pre-installed on macOS runners, so we skip it for now
+          asb uv --version
+          asb uvx --version 
           # JavaScript related
           # asb bun --version  # bun is not pre-installed on macOS runners, so we skip it for now
           asb node --version
