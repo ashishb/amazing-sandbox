@@ -114,7 +114,7 @@ $ asb npx @google/gemini-cli@latest
 ...
 ```
 
-### Run [fd tool](https://github.com/sharkdp/fd) inside the sandbox with no Internet access
+### Run [fd tool](https://github.com/sharkdp/fd) inside the sandbox with no Internet access (air-gapped)
 
 ```bash
 $ asb cargo install fd-find  # One time install
@@ -195,8 +195,8 @@ containing `asb npx htmlhint "$@"` and add `.local/bin` to the `$PATH` in `~/.ba
    No support for Mac OS or Windows.  
    Further, the developer experience for trying to run a simple tool like `htmlhint` or `yamllint` is sub-par.
 1. Why not use `sandbox-exec` on Mac OS?  
-   `sandbox-exec` is [deprecated](https://github.com/openai/codex/issues/215)
-   but if you want you can use `asb` to use `sandbox-exec` via `asb --mode=sandbox-exec)
+   `sandbox-exec` is [deprecated](https://github.com/openai/codex/issues/215).
+   But if you want, you can use `asb` to use `sandbox-exec` via `asb --mode=native)
 1. Why not use [ai-jail](https://github.com/akitaonrails/ai-jail)?
    `ai-jail` uses OS-level sandboxing via `bwrap` on Linux and the deprecated `sandbox-exec` on macOS.  
    It has no Windows support.  
