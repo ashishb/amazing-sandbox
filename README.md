@@ -50,6 +50,7 @@ Configurable via CLI parameters
 - [x] Rust `cargo` and `cargo-exec`
 - [x] Ruby `gem` and `gem-exec`
 - [x] Haskell `cabal` and `cabal-exec`
+- [x] Zig `zig`
 
 ### Caches config of the following coding agents
 
@@ -132,6 +133,16 @@ $ asb -n cabal-exec hadolint Dockerfile
 ...
 ```
 
+### Run [acoustid-index](https://github.com/acoustid/acoustid-index) build using Zig inside the sandbox
+
+```bash
+$ git clone https://github.com/acoustid/acoustid-index.git
+...
+$ cd acoustid-index
+$ asb zig build
+...
+```
+
 ## To see the full usage
 
 ```bash
@@ -164,6 +175,7 @@ Available Commands:
   uvx         Run a Python-based package already installed inside sandbox using uvx
   version     Display asb version
   yarn        Run a yarn command
+  zig         Run a Zig command
 
 Flags:
   -i, --custom-docker-image string   Use a custom Docker image for the sandbox

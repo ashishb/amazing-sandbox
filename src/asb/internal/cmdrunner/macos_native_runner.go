@@ -117,6 +117,7 @@ func runCmdInNative(ctx context.Context, config Config) error {
 		"/System/Library/Frameworks",
 		"/System/Library/Preferences/Logging",
 		"/System/Volumes/Preboot/Cryptexes/OS",
+		"/System/Library/CoreServices/SystemVersion.plist", // For Zig to get macOS version
 		os.ExpandEnv("$HOME/Library/Python"),
 		os.ExpandEnv("$HOME/Library/Preferences"),
 		// GitHub Actions put tools inside $HOME/hostedtoolcache

@@ -65,5 +65,8 @@ func getRootCmd() *cobra.Command {
 	// Go related
 	rootCmd.AddCommand(goExecCmd())
 
+	// Zig related
+	rootCmd.AddCommand(zigCmd())
+
 	return rootCmd
 }

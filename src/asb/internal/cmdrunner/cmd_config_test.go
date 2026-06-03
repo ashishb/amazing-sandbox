@@ -220,6 +220,62 @@ func TestGoExecNewConfig(t *testing.T) {
 	}
 }
 
+func TestZigDockerImage(t *testing.T) {
+	t.Parallel()
+	if got := CmdTypeZig.getDockerImage(); got != _zigDockerImage {
+		t.Errorf("CmdTypeZig.getDockerImage() = %q, want %q", got, _zigDockerImage)
+	}
+}
+
+func TestZigArgs(t *testing.T) {
+	t.Parallel()
+	assertArgsEqual := func(t *testing.T, got []string, want []string, description string) {
+		t.Helper()
+		if len(got) != len(want) {
+			t.Fatalf("getArgs(%s) = %v, want %v", description, got, want)
+		}
+		for i := range got {
+			if got[i] != want[i] {
+				t.Errorf("getArgs(%s)[%d] = %q, want %q", description, i, got[i], want[i])
+			}
+		}
+	}
+
+	t.Run("zig build prepends zig", func(t *testing.T) {
+		t.Parallel()
+		assertArgsEqual(t, CmdTypeZig.getArgs([]string{"build"}), []string{"zig", "build"}, "build")
+	})
+
+	t.Run("zig with no args", func(t *testing.T) {
+		t.Parallel()
+		assertArgsEqual(t, CmdTypeZig.getArgs([]string{}), []string{"zig"}, "empty")
+	})
+}
+
+func TestZigNewConfig(t *testing.T) {
+	t.Parallel()
+	cfg := NewConfig(CmdTypeZig,
+		SetWorkingDir("/tmp"),
+		SetArgs([]string{"build"}),
+		SetNetworkType(NetworkHost),
+	)
+	if cfg.dockerBaseImage != _zigDockerImage {
+		t.Errorf("dockerBaseImage = %q, want %q", cfg.dockerBaseImage, _zigDockerImage)
+	}
+	if cfg.cmdType != CmdTypeZig {
+		t.Errorf("cmdType = %q, want %q", cfg.cmdType, CmdTypeZig)
+	}
+	wantArgs := []string{"zig", "build"}
+	if len(cfg.args) != len(wantArgs) {
+		t.Fatalf("args = %v, want %v", cfg.args, wantArgs)
+	}
+	for i := range cfg.args {
+		if cfg.args[i] != wantArgs[i] {
+			t.Errorf("args[%d] = %q, want %q", i, cfg.args[i], wantArgs[i])
+		}
+	}
+}
+
 func TestSetExtraMountRODirs(t *testing.T) {
 	t.Parallel()
 	dirs := []string{"/data/secrets", "/etc/certs"}
