@@ -35,22 +35,22 @@ Configurable via CLI parameters
 
 ## Supported
 
-- Python
-   - [x] `pip`
-   - [x] `poetry`
-   - [x] `uv`
-   - [x] `uvx`
+- [Python](https://www.python.org/)
+   - [x] [`pip`](https://pip.pypa.io/en/latest/cli/)
+   - [x] [`poetry`](https://python-poetry.org/docs/cli/)
+   - [x] [`uv`](https://docs.astral.sh/uv/)
+   - [x] [`uvx`](https://docs.astral.sh/uv/guides/tools/)
 - JavaScript/Typescript
-   - [x] `npx`
-   - [x] `npm`
-   - [x] `yarn`
-   - [x] `pnpm`
-   - [x] `bun`
-- [x] Go `go-exec`
-- [x] Rust `cargo` and `cargo-exec`
-- [x] Ruby `gem` and `gem-exec`
-- [x] Haskell `cabal` and `cabal-exec`
-- [x] Zig `zig`
+   - [x] [`npx`](https://docs.npmjs.com/cli/v8/commands/npx)
+   - [x] [`npm`](https://docs.npmjs.com/cli/v11/commands)
+   - [x] [`yarn`](https://yarnpkg.com/cli)
+   - [x] [`pnpm`](https://pnpm.io/pnpm-cli)
+   - [x] [`bun`](https://bun.com/docs/guides)
+- [x] [Go](https://go.dev/) `go-exec`
+- [x] [Rust](https://rust-lang.org/) `cargo` and `cargo-exec`
+- [x] [Ruby](https://www.ruby-lang.org/en/) `gem` and `gem-exec`
+- [x] [Haskell](https://www.haskell.org/) `cabal` and `cabal-exec`
+- [x] [Zig](https://ziglang.org/) `zig`
 
 ### Caches config of the following coding agents
 
