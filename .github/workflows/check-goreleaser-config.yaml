@@ -5,11 +5,15 @@ on:  # yamllint disable-line rule:truthy
   push:
     branches: [main, master]
     paths:
+      - "**/go.mod"
+      - "**/go.sum"
       - ".goreleaser.yaml"
       - ".github/workflows/check-goreleaser-config.yaml"
   pull_request:
     branches: [main, master]
     paths:
+      - "**/go.mod"
+      - "**/go.sum"
       - ".goreleaser.yaml"
       - ".github/workflows/check-goreleaser-config.yaml"
 

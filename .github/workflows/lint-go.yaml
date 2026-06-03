@@ -6,11 +6,15 @@ on:  # yamllint disable-line rule:truthy
   push:
     branches: [main, master]
     paths:
+      - "**/go.mod"
+      - "**/go.sum"
       - "**.go"
       - ".github/workflows/lint-go.yaml"
   pull_request:
     branches: [main, master]
     paths:
+      - "**/go.mod"
+      - "**/go.sum"
       - "**.go"
       - ".github/workflows/lint-go.yaml"
   workflow_dispatch:

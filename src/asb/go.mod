@@ -1,6 +1,6 @@
 module github.com/ashishb/amazing-sandbox/src/asb
 
-go 1.26
+go 1.26.4
 
 require (
 	github.com/fsouza/go-dockerclient v1.13.1
