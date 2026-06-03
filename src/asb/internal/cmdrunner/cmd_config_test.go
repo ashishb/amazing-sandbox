@@ -229,7 +229,7 @@ func TestZigDockerImage(t *testing.T) {
 
 func TestZigArgs(t *testing.T) {
 	t.Parallel()
-	assertArgsEqual := func(got []string, want []string, description string) {
+	assertArgsEqual := func(t *testing.T, got []string, want []string, description string) {
 		t.Helper()
 		if len(got) != len(want) {
 			t.Fatalf("getArgs(%s) = %v, want %v", description, got, want)
@@ -241,8 +241,15 @@ func TestZigArgs(t *testing.T) {
 		}
 	}
 
-	assertArgsEqual(CmdTypeZig.getArgs([]string{"build"}), []string{"zig", "build"}, "build")
-	assertArgsEqual(CmdTypeZig.getArgs([]string{}), []string{"zig"}, "empty")
+	t.Run("zig build prepends zig", func(t *testing.T) {
+		t.Parallel()
+		assertArgsEqual(t, CmdTypeZig.getArgs([]string{"build"}), []string{"zig", "build"}, "build")
+	})
+
+	t.Run("zig with no args", func(t *testing.T) {
+		t.Parallel()
+		assertArgsEqual(t, CmdTypeZig.getArgs([]string{}), []string{"zig"}, "empty")
+	})
 }
 
 func TestZigNewConfig(t *testing.T) {

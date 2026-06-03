@@ -78,9 +78,10 @@ func pullDockerImageIfNotExists(ctx context.Context, client *docker.Client, imag
 			Msg("Docker image not found locally, pulling from registry")
 
 		pullOpts := docker.PullImageOptions{
-			Context:      ctx,
-			Repository:   image,
-			OutputStream: os.Stdout,
+			Context:       ctx,
+			Repository:    image,
+			OutputStream:  os.Stdout,
+			RawJSONStream: false,
 		}
 		authOpts := docker.AuthConfiguration{}
 
