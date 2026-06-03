@@ -229,39 +229,26 @@ func TestZigDockerImage(t *testing.T) {
 
 func TestZigArgs(t *testing.T) {
 	t.Parallel()
-	tests := []struct {
-		name     string
-		cmdType  CmdType
-		args     []string
-		wantArgs []string
-	}{
-		{
-			name:     "zig build prepends zig",
-			cmdType:  CmdTypeZig,
-			args:     []string{"build"},
-			wantArgs: []string{"zig", "build"},
-		},
-		{
-			name:     "zig with no args",
-			cmdType:  CmdTypeZig,
-			args:     []string{},
-			wantArgs: []string{"zig"},
-		},
+	gotBuild := CmdTypeZig.getArgs([]string{"build"})
+	wantBuild := []string{"zig", "build"}
+	if len(gotBuild) != len(wantBuild) {
+		t.Fatalf("getArgs(build) = %v, want %v", gotBuild, wantBuild)
+	}
+	for i := range gotBuild {
+		if gotBuild[i] != wantBuild[i] {
+			t.Errorf("getArgs(build)[%d] = %q, want %q", i, gotBuild[i], wantBuild[i])
+		}
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			got := tt.cmdType.getArgs(tt.args)
-			if len(got) != len(tt.wantArgs) {
-				t.Fatalf("getArgs() = %v, want %v", got, tt.wantArgs)
-			}
-			for i := range got {
-				if got[i] != tt.wantArgs[i] {
-					t.Errorf("getArgs()[%d] = %q, want %q", i, got[i], tt.wantArgs[i])
-				}
-			}
-		})
+	gotEmpty := CmdTypeZig.getArgs([]string{})
+	wantEmpty := []string{"zig"}
+	if len(gotEmpty) != len(wantEmpty) {
+		t.Fatalf("getArgs(empty) = %v, want %v", gotEmpty, wantEmpty)
+	}
+	for i := range gotEmpty {
+		if gotEmpty[i] != wantEmpty[i] {
+			t.Errorf("getArgs(empty)[%d] = %q, want %q", i, gotEmpty[i], wantEmpty[i])
+		}
 	}
 }
 
