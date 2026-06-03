@@ -71,7 +71,7 @@ jobs:
 
       - uses: actions/setup-go@v6
         with:
-          go-version: stable
+          go-version-file: "src/asb/go.mod"
           cache: false  # Disable caching to avoid cache poisoning
 
       # More assembly might be required: Docker logins, GPG, etc. It all depends
