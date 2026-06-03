@@ -229,27 +229,20 @@ func TestZigDockerImage(t *testing.T) {
 
 func TestZigArgs(t *testing.T) {
 	t.Parallel()
-	gotBuild := CmdTypeZig.getArgs([]string{"build"})
-	wantBuild := []string{"zig", "build"}
-	if len(gotBuild) != len(wantBuild) {
-		t.Fatalf("getArgs(build) = %v, want %v", gotBuild, wantBuild)
-	}
-	for i := range gotBuild {
-		if gotBuild[i] != wantBuild[i] {
-			t.Errorf("getArgs(build)[%d] = %q, want %q", i, gotBuild[i], wantBuild[i])
+	assertArgsEqual := func(got []string, want []string, description string) {
+		t.Helper()
+		if len(got) != len(want) {
+			t.Fatalf("getArgs(%s) = %v, want %v", description, got, want)
+		}
+		for i := range got {
+			if got[i] != want[i] {
+				t.Errorf("getArgs(%s)[%d] = %q, want %q", description, i, got[i], want[i])
+			}
 		}
 	}
 
-	gotEmpty := CmdTypeZig.getArgs([]string{})
-	wantEmpty := []string{"zig"}
-	if len(gotEmpty) != len(wantEmpty) {
-		t.Fatalf("getArgs(empty) = %v, want %v", gotEmpty, wantEmpty)
-	}
-	for i := range gotEmpty {
-		if gotEmpty[i] != wantEmpty[i] {
-			t.Errorf("getArgs(empty)[%d] = %q, want %q", i, gotEmpty[i], wantEmpty[i])
-		}
-	}
+	assertArgsEqual(CmdTypeZig.getArgs([]string{"build"}), []string{"zig", "build"}, "build")
+	assertArgsEqual(CmdTypeZig.getArgs([]string{}), []string{"zig"}, "empty")
 }
 
 func TestZigNewConfig(t *testing.T) {
