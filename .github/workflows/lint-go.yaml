@@ -17,6 +17,7 @@ on:  # yamllint disable-line rule:truthy
       - "**/go.sum"
       - "**.go"
       - ".github/workflows/lint-go.yaml"
+  workflow_dispatch:
 
 
 concurrency:
