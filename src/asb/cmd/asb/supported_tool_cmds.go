@@ -150,3 +150,11 @@ func goExecCmd() *cobra.Command {
 	}
 	return createCmd(cmd, cmdrunner.CmdTypeGoExec)
 }
+
+func zigCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "zig",
+		Short: "Run a Zig command",
+	}
+	return createCmd(cmd, cmdrunner.CmdTypeZig)
+}

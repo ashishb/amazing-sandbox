@@ -18,6 +18,7 @@ const (
 	_rubyDockerImage      = "ruby:3-bookworm"
 	_haskellDockerImage   = "haskell:9.10"
 	_goDockerImage        = "golang:1.26"
+	_zigDockerImage       = "ziglang/zig:0.14.0"
 
 	// Note that node:25-bookworm-slim does not contain C/C++ build tools and that makes anything
 	// using node-gyp to fail. Hence we use the full image here.
@@ -48,6 +49,7 @@ var _dockerImageMap = map[CmdType]string{
 	CmdTypeHaskellCabal:     _haskellDockerImage,
 	CmdTypeHaskellCabalExec: _haskellDockerImage,
 	CmdTypeGoExec:           _goDockerImage,
+	CmdTypeZig:              _zigDockerImage,
 }
 
 type Config struct {
@@ -283,6 +285,8 @@ func (cmdType CmdType) getArgs(args []string) []string {
 		CmdTypeHaskellCabalExec: "",
 		// Go related
 		CmdTypeGoExec: "go run",
+		// Zig related
+		CmdTypeZig: "zig",
 	}
 
 	if cmdType == CmdTypeRubyGem {
