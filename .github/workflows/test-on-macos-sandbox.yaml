@@ -5,11 +5,15 @@ on:  # yamllint disable-line rule:truthy
   push:
     branches: [main, master]
     paths:
+      - "**/go.mod"
+      - "**/go.sum"
       - "**.go"
       - ".github/workflows/test-on-macos-sandbox.yaml"
   pull_request:
     branches: [main, master]
     paths:
+      - "**/go.mod"
+      - "**/go.sum"
       - "**.go"
       - ".github/workflows/test-on-macos-sandbox.yaml"
   workflow_dispatch:
