@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/rs/zerolog/log"
@@ -35,7 +36,9 @@ func runCmdInNative(ctx context.Context, config Config) error {
 		// GitHub Actions put tools inside $HOME/hostedtoolcache
 		// e.g. uv is in /Users/runner/hostedtoolcache/uv/0.11.16/aarch64/uv
 		// Ref: https://devopsdirective.com/posts/2025/07/github-actions-tool-cache/
-		`(allow process-exec (subpath "/Users/runner/hostedtoolcache"))`,
+		fmt.Sprintf(`(allow process-exec (subpath "%s"))`, os.ExpandEnv("$HOME/hostedtoolcache")),
+		// Some package managers on GitHub Actions install binaries in the home directory, so allow executing from there as well
+		fmt.Sprintf(`(allow process-exec (subpath "%s"))`, os.ExpandEnv("$HOME/work/_temp")),
 		fmt.Sprintf(`(allow process-exec (subpath "%s"))`, os.ExpandEnv("$HOME/.bun")),
 		fmt.Sprintf(`(allow process-exec (subpath "%s"))`, os.ExpandEnv("$HOME/.local/venv")),
 		fmt.Sprintf(`(allow process-exec (subpath "%s"))`, os.ExpandEnv("$HOME/.npm/")),
@@ -105,6 +108,16 @@ func runCmdInNative(ctx context.Context, config Config) error {
 		os.ExpandEnv("$HOME/.rustup"),
 		os.ExpandEnv("$HOME/.rbenv"),
 		os.ExpandEnv("$HOME/.yarn"),
+		os.ExpandEnv(filepath.Join(GetCwdOrFail(), ".zig-cache")), // For Zig's build cache
+	}
+
+	for _, env := range []string{"UV_CACHE_DIR", "ZIG_GLOBAL_CACHE_DIR", "ZIG_LOCAL_CACHE_DIR"} {
+		if os.Getenv(env) != "" {
+			log.Debug().
+				Str(env, os.Getenv(env)).
+				Msgf("Adding cache dir %s to read/write path mounts", env)
+			rwPathsToMount = append(rwPathsToMount, os.ExpandEnv(os.Getenv(env)))
+		}
 	}
 
 	roPathsToMount := []string{
@@ -118,13 +131,17 @@ func runCmdInNative(ctx context.Context, config Config) error {
 		"/System/Library/Preferences/Logging",
 		"/System/Volumes/Preboot/Cryptexes/OS",
 		"/System/Library/CoreServices/SystemVersion.plist", // For Zig to get macOS version
+		"/Library/Application Support/CrashReporter/DiagnosticMessagesHistory.plist", // For Zig to decide on crash reporting
 		os.ExpandEnv("$HOME/Library/Python"),
 		os.ExpandEnv("$HOME/Library/Preferences"),
 		// GitHub Actions put tools inside $HOME/hostedtoolcache
 		// e.g. uv is in /Users/runner/hostedtoolcache/uv/0.11.16/aarch64/uv
 		// Ref: https://devopsdirective.com/posts/2025/07/github-actions-tool-cache/
 		os.ExpandEnv("$HOME/hostedtoolcache"),
+		// Some package managers on GitHub Actions install binaries in the home directory, so allow executing from there as well
+		os.ExpandEnv("$HOME/work/_temp"),
 		os.ExpandEnv("$HOME/setup-pnpm"), // For pnpm
+
 	}
 
 	// For each referenced file/directory, we need to allow read access to it
@@ -163,4 +180,14 @@ func runCmdInNative(ctx context.Context, config Config) error {
 		Strs("cmd", cmd).
 		Msg("Running command in native execution mode with sandbox-exec")
 	return runShellCommand(ctx, cmd)
+}
+
+func GetCwdOrFail() string {
+	cwd, err := os.Getwd()
+	if err != nil {
+		log.Fatal().
+			Err(err).
+			Msg("Error getting current working directory")
+	}
+	return cwd
 }

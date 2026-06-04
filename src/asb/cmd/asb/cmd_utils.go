@@ -52,16 +52,6 @@ func createCmd(cmd *cobra.Command, cmdType cmdrunner.CmdType) *cobra.Command {
 	return cmd
 }
 
-func getCwdOrFail() string {
-	cwd, err := os.Getwd()
-	if err != nil {
-		log.Fatal().
-			Err(err).
-			Msg("Error getting current working directory")
-	}
-	return cwd
-}
-
 func getStringFlagOrFail(cmd *cobra.Command, name string) string {
 	value, err := cmd.Flags().GetString(name)
 	if err != nil {

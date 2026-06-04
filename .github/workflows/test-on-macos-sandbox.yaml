@@ -80,12 +80,17 @@ jobs:
         with:
           version: 11
 
+      - name: Install zig for testing it under the sandbox
+        uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29  # v2.2.1
+        with:
+          version: latest
+
       - name: Test important CLI commands
         # env:
         #    LOG_LEVEL: DEBUG  # Set log level to DEBUG for more verbose output
         run: |
           shopt -s expand_aliases
-          alias asb="./src/asb/bin/asb --mode=native"
+          alias asb="${PWD}/src/asb/bin/asb --mode=native"
           # Now the commands
           # Python related
           asb pip --version
@@ -103,6 +108,7 @@ jobs:
           # asb cabal --version
           asb cargo --version
           asb gem --version
+          asb zig version
 
       # Print logs in case the test fails, to help debugging
       - name: Print logs
