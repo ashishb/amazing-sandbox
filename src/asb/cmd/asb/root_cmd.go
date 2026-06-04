@@ -3,6 +3,8 @@ package main
 import (
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
+
+	"github.com/ashishb/amazing-sandbox/src/asb/internal/cmdrunner"
 )
 
 const _description = "asb is CLI tool for running tools inside Sandbox\n" +
@@ -23,7 +25,7 @@ func getRootCmd() *cobra.Command {
 		},
 	}
 
-	_ = rootCmd.PersistentFlags().StringP("directory", "d", getCwdOrFail(), "Working directory for this command")
+	_ = rootCmd.PersistentFlags().StringP("directory", "d", cmdrunner.GetCwdOrFail(), "Working directory for this command")
 	_ = rootCmd.PersistentFlags().BoolP("no-network", "n", false, "Disable network access inside the sandbox")
 	_ = rootCmd.PersistentFlags().BoolP("read-only", "r", false, "Load working directory and referenced directories as read-only")
 	_ = rootCmd.PersistentFlags().BoolP("read-write", "w", true, "Load working directory and referenced directories as read-write")

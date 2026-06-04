@@ -102,6 +102,7 @@ func getDockerRunCmd(config Config) ([]string, error) {
 		"--mount=type=volume,src=uv2,target=/root/.local/share/uv/",
 		"--mount=type=volume,src=poetry1,target=/root/.cache/pypoetry",
 		"--mount=type=volume,src=zig1,target=/root/.cache/zig", // to persist Zig cache across runs
+		"--mount=type=volume,src=zig2,target=/root/.zig-cache", // to persist Zig cache across runs
 		"--network="+string(config.networkType),
 		"--workdir="+config.workingDir,
 		config.dockerBaseImage)
