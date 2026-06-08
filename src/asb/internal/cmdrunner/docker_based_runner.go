@@ -80,18 +80,19 @@ func getDockerRunCmd(config Config) ([]string, error) {
 
 	dockerRunCmd = append(dockerRunCmd,
 		// Warning: without volume names, the volumes are usually deleted when the container is removed
-		"--mount=type=volume,src=npm1,target=/.npm",                      // to persist npm cache across runs
-		"--mount=type=volume,src=npm2,target=/root/.npm",                 // to persist npm cache across runs
-		"--mount=type=volume,src=bun1,target=/root/.bun/install/cache",   // to persist bun cache across runs
-		"--mount=type=volume,src=ruby1,target=/usr/local/bundle/",        // to persist Ruby gem cache across runs
-		"--mount=type=volume,src=ruby2,target=/root/.gem/ruby/",          // to persist Ruby gem cache across runs
-		"--mount=type=volume,src=ruby3,target=/usr/local/lib/ruby/gems/", // to persist Ruby gem cache across runs
-		"--mount=type=volume,src=ruby4,target=/root/.cache/gem/specs",    // to persist Ruby gem cache across runs
-		"--mount=type=volume,src=ruby5,target=/root/.rbenv/",             // to persist Ruby gem cache across runs
-		"--mount=type=volume,src=cargo1,target=/usr/local/cargo",         // to persist Rust cargo cache across runs
-		"--mount=type=volume,src=cabal1,target=/root/.cabal/",            // to persist Haskell cabal cache across runs
-		"--mount=type=volume,src=go1,target=/go",                         // to persist Go module cache across runs
-		"--mount=type=volume,src=go2,target=/root/.cache/go-build",       // to persist Go build cache across runs
+		"--mount=type=volume,src=npm1,target=/.npm",                       // to persist npm cache across runs
+		"--mount=type=volume,src=npm2,target=/root/.npm",                  // to persist npm cache across runs
+		"--mount=type=volume,src=npm3,target=/usr/local/lib/node_modules", // to persist "npm install -g" cache across runs
+		"--mount=type=volume,src=bun1,target=/root/.bun/install/cache",    // to persist bun cache across runs
+		"--mount=type=volume,src=ruby1,target=/usr/local/bundle/",         // to persist Ruby gem cache across runs
+		"--mount=type=volume,src=ruby2,target=/root/.gem/ruby/",           // to persist Ruby gem cache across runs
+		"--mount=type=volume,src=ruby3,target=/usr/local/lib/ruby/gems/",  // to persist Ruby gem cache across runs
+		"--mount=type=volume,src=ruby4,target=/root/.cache/gem/specs",     // to persist Ruby gem cache across runs
+		"--mount=type=volume,src=ruby5,target=/root/.rbenv/",              // to persist Ruby gem cache across runs
+		"--mount=type=volume,src=cargo1,target=/usr/local/cargo",          // to persist Rust cargo cache across runs
+		"--mount=type=volume,src=cabal1,target=/root/.cabal/",             // to persist Haskell cabal cache across runs
+		"--mount=type=volume,src=go1,target=/go",                          // to persist Go module cache across runs
+		"--mount=type=volume,src=go2,target=/root/.cache/go-build",        // to persist Go build cache across runs
 
 		// to persist pip cache across runs
 		"--mount=type=volume,src=pip312,target=/usr/local/lib/python3.12/",
