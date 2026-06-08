@@ -78,32 +78,13 @@ func getDockerRunCmd(config Config) ([]string, error) {
 		dockerRunCmd = append(dockerRunCmd, "--env-file="+filepath.Join(config.workingDir, ".env"))
 	}
 
-	dockerRunCmd = append(dockerRunCmd,
+	for volumeName, containerPath := range getCacheMounts() {
 		// Warning: without volume names, the volumes are usually deleted when the container is removed
-		"--mount=type=volume,src=npm1,target=/.npm",                       // to persist npm cache across runs
-		"--mount=type=volume,src=npm2,target=/root/.npm",                  // to persist npm cache across runs
-		"--mount=type=volume,src=npm3,target=/usr/local/lib/node_modules", // to persist "npm install -g" cache across runs
-		"--mount=type=volume,src=bun1,target=/root/.bun/install/cache",    // to persist bun cache across runs
-		"--mount=type=volume,src=ruby1,target=/usr/local/bundle/",         // to persist Ruby gem cache across runs
-		"--mount=type=volume,src=ruby2,target=/root/.gem/ruby/",           // to persist Ruby gem cache across runs
-		"--mount=type=volume,src=ruby3,target=/usr/local/lib/ruby/gems/",  // to persist Ruby gem cache across runs
-		"--mount=type=volume,src=ruby4,target=/root/.cache/gem/specs",     // to persist Ruby gem cache across runs
-		"--mount=type=volume,src=ruby5,target=/root/.rbenv/",              // to persist Ruby gem cache across runs
-		"--mount=type=volume,src=cargo1,target=/usr/local/cargo",          // to persist Rust cargo cache across runs
-		"--mount=type=volume,src=cabal1,target=/root/.cabal/",             // to persist Haskell cabal cache across runs
-		"--mount=type=volume,src=go1,target=/go",                          // to persist Go module cache across runs
-		"--mount=type=volume,src=go2,target=/root/.cache/go-build",        // to persist Go build cache across runs
+		dockerRunCmd = append(dockerRunCmd,
+			fmt.Sprintf("--mount=type=volume,src=%s,target=%s", volumeName, containerPath))
+	}
 
-		// to persist pip cache across runs
-		"--mount=type=volume,src=pip312,target=/usr/local/lib/python3.12/",
-		"--mount=type=volume,src=pip313,target=/usr/local/lib/python3.13/",
-		"--mount=type=volume,src=pip314,target=/usr/local/lib/python3.14/",
-		"--mount=type=volume,src=pip315,target=/usr/local/lib/python3.15/",
-		"--mount=type=volume,src=uv1,target=/root/.cache/uv/",
-		"--mount=type=volume,src=uv2,target=/root/.local/share/uv/",
-		"--mount=type=volume,src=poetry1,target=/root/.cache/pypoetry",
-		"--mount=type=volume,src=zig1,target=/root/.cache/zig", // to persist Zig cache across runs
-		"--mount=type=volume,src=zig2,target=/root/.zig-cache", // to persist Zig cache across runs
+	dockerRunCmd = append(dockerRunCmd,
 		"--network="+string(config.networkType),
 		"--workdir="+config.workingDir,
 		config.dockerBaseImage)
@@ -111,6 +92,47 @@ func getDockerRunCmd(config Config) ([]string, error) {
 	// TODO: Use os.Getuid() and os.Getgid() to get the current user and group IDs
 	// and run the container as that user if config.runAsNonRoot is true
 	return dockerRunCmd, nil
+}
+
+type (
+	_VolumeName        = string
+	_ContainerFilePath = string
+)
+
+func getCacheMounts() map[_VolumeName]_ContainerFilePath {
+	return map[_VolumeName]_ContainerFilePath{
+		// Javascript/TypeScript
+		"npm1": "/.npm",
+		"npm2": "/root/.npm",
+		"npm3": "/usr/local/lib/node_modules", // to persist "npm install -g" cache across runs
+		"bun1": "/root/.bun/install/cache",
+
+		// Ruby
+		"ruby1": "/usr/local/bundle/",
+		"ruby2": "/root/.gem/ruby/",
+		"ruby3": "/usr/local/lib/ruby/gems/",
+		"ruby4": "/root/.cache/gem/specs",
+		"ruby5": "/root/.rbenv/",
+
+		"cargo1": "/usr/local/cargo",      // Rust
+		"cabal1": "/root/.cabal/",         // Haskell
+		"go1":    "/go",                   // Go module cache
+		"go2":    "/root/.cache/go-build", // Go build cache
+
+		// Python cache
+		"pip312":  "/usr/local/lib/python3.12/",
+		"pip313":  "/usr/local/lib/python3.13/",
+		"pip314":  "/usr/local/lib/python3.14/",
+		"pip315":  "/usr/local/lib/python3.15/",
+		"uv1":     "/root/.cache/uv/",
+		"uv2":     "/root/.local/share/uv/",
+		"poetry1": "/root/.cache/pypoetry",
+
+		"zig1": "/root/.cache/zig", // to persist Zig cache across runs
+		"zig2": "/root/.zig-cache", // to persist Zig build cache across runs
+
+		"bin1": "/usr/local/bin", // to persist binaries installed via "npm install -g" or "pip install --user" across runs
+	}
 }
 
 func setupDirMappingsForCodingAgents(config Config) ([]EnvVar, []_FilePathToMount, error) {
