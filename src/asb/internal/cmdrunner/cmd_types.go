@@ -13,6 +13,7 @@ const (
 
 	CmdTypePythonPip     CmdType = "python_pip"
 	CmdTypePythonPipExec CmdType = "python_pip_exec"
+	CmdTypePython        CmdType = "python"
 	CmdTypePythonUv      CmdType = "python_uv"
 	CmdTypePythonUvx     CmdType = "python_uvx"
 	CmdTypePythonPoetry  CmdType = "python_poetry"
