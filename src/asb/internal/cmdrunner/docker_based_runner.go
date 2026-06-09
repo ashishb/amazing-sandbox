@@ -130,8 +130,6 @@ func getCacheMounts() map[_VolumeName]_ContainerFilePath {
 
 		"zig1": "/root/.cache/zig", // to persist Zig cache across runs
 		"zig2": "/root/.zig-cache", // to persist Zig build cache across runs
-
-		"bin1": "/usr/local/bin", // to persist binaries installed via "npm install -g" or "pip install --user" across runs
 	}
 }
 
