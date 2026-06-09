@@ -1,0 +1,107 @@
+---
+name: Test on Docker Sandbox
+
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: [main, master]
+    paths:
+      - "src/asb/internal/cmdrunner/**.go"
+      - ".github/workflows/test-on-docker-sandbox.yaml"
+  pull_request:
+    branches: [main, master]
+    paths:
+      - "src/asb/internal/cmdrunner/**.go"
+      - ".github/workflows/test-on-docker-sandbox.yaml"
+  workflow_dispatch:
+
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Ref: https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/controlling-permissions-for-github_token
+permissions:
+  contents: read
+
+jobs:
+
+  # Run it locally with https://github.com/nektos/act
+  # act -j testOnDockerSandbox
+  testOnDockerSandbox:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          cache-dependency-path: "src/asb/go.mod"
+          go-version-file: "src/asb/go.mod"
+
+      # Ref: https://github.com/actions/cache/blob/main/examples.md#go---modules
+      - uses: actions/cache@v5
+        with:
+          path: |
+            ~/Library/Caches/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Build
+        working-directory: "src/asb"
+        run: "make build"  # output in bin/asb
+
+      - name: Test basic CLI commands
+        run: |
+          ./src/asb/bin/asb --mode=docker help > /dev/null
+          ./src/asb/bin/asb --mode=docker version
+
+      - name: Install uv for testing it under the sandbox
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39  # v8.2.0
+
+      - name: Install poetry for testing it under the sandbox
+        uses: snok/install-poetry@a783c322200f0519c7926aa6faa857c4e23e9263  # v1.4.2
+
+      - name: Install bun for testing it under the sandbox
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6  # v2.2.0
+
+      - name: Install pnpm for testing it under the sandbox
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093  # v6.0.8
+        with:
+          version: 11
+
+      - name: Install zig for testing it under the sandbox
+        uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29  # v2.2.1
+        with:
+          version: latest
+
+      - name: Test important CLI commands
+        # env:
+        #    LOG_LEVEL: DEBUG  # Set log level to DEBUG for more verbose output
+        run: |
+          shopt -s expand_aliases
+          alias asb="${PWD}/src/asb/bin/asb --mode=docker"
+          # Now the commands
+          # Python related
+          asb pip --version
+          asb poetry --version
+          asb uv --version
+          asb uvx --version 
+          # JavaScript related
+          asb bun --version
+          asb node --version
+          asb pnpm --version
+          asb npm --version
+          asb npx --version
+          asb yarn --version
+          # Others
+          # asb cabal --version
+          asb cargo --version
+          asb gem --version
+          asb zig version
