@@ -30,6 +30,14 @@ func pipCmd() *cobra.Command {
 	return createCmd(cmd, cmdrunner.CmdTypePythonPip)
 }
 
+func pythonCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "python",
+		Short: "Run a python command",
+	}
+	return createCmd(cmd, cmdrunner.CmdTypePython)
+}
+
 func pipExecCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "pip-exec",

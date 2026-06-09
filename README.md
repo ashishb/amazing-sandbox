@@ -36,6 +36,7 @@ Configurable via CLI parameters
 ## Supported
 
 - [Python](https://www.python.org/)
+   - [x] [`python`](https://docs.python.org/3/using/cmdline.html)
    - [x] [`pip`](https://pip.pypa.io/en/latest/cli/)
    - [x] [`poetry`](https://python-poetry.org/docs/cli/)
    - [x] [`uv`](https://docs.astral.sh/uv/)
@@ -171,6 +172,7 @@ Available Commands:
   pip-exec    Run a Python-based package already installed inside sandbox
   pnpm        Run a pnpm command
   poetry      Run a poetry command
+  python      Run a python command
   uv          Run a uv command
   uvx         Run a Python-based package already installed inside sandbox using uvx
   version     Display asb version
@@ -221,3 +223,10 @@ containing `asb npx htmlhint "$@"` and add `.local/bin` to the `$PATH` in `~/.ba
    That's a really high bar; someone would need to burn a 0-day on that. Taken from [here](https://news.ycombinator.com/item?id=47612726)
 1. I want to use a custom rootless image or a different version of Python instead of the [default images](https://github.com/ashishb/amazing-sandbox/blob/c23f6e3a4830d3ce188518d75679c68c019010d4/src/asb/internal/cmdrunner/cmd_config.go#L12-L31)?
    You can provide any custom image via `-i` CLI parameter.
+
+   ```bash
+   $ asb -i astral/uv:python3.12-bookworm-slim python --version
+   Python 3.12.12
+   $ asb -i astral/uv:python3.14-bookworm-slim python --version
+   Python 3.14.2
+   ```

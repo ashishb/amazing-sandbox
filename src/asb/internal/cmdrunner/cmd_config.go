@@ -39,6 +39,7 @@ var _dockerImageMap = map[CmdType]string{
 	CmdTypeRustCargoExec:    _rustCargoDockerImage,
 	CmdTypePythonPip:        _pipDockerImage,
 	CmdTypePythonPipExec:    _pipDockerImage,
+	CmdTypePython:           _uvDockerImage,
 	CmdTypePythonUv:         _uvDockerImage,
 	CmdTypePythonUvx:        _uvDockerImage,
 	CmdTypePythonPoetry:     _poetryDockerImage,
@@ -273,6 +274,7 @@ func (cmdType CmdType) getArgs(args []string) []string {
 		CmdTypeYarn: "yarn",
 		// Python related
 		CmdTypePythonPip:    "pip",
+		CmdTypePython:       "python",
 		CmdTypePythonUv:     "uv",
 		CmdTypePythonUvx:    "uvx",
 		CmdTypePythonPoetry: "uvx poetry",

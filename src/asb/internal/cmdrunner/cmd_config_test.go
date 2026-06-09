@@ -4,6 +4,13 @@ import (
 	"testing"
 )
 
+type _TestData struct {
+	name     string
+	cmdType  CmdType
+	args     []string
+	wantArgs []string
+}
+
 func TestNodeDockerImage(t *testing.T) {
 	t.Parallel()
 	if got := CmdTypeNode.getDockerImage(); got != _nodeDockerImage {
@@ -13,12 +20,7 @@ func TestNodeDockerImage(t *testing.T) {
 
 func TestNodeArgs(t *testing.T) {
 	t.Parallel()
-	tests := []struct {
-		name     string
-		cmdType  CmdType
-		args     []string
-		wantArgs []string
-	}{
+	tests := []_TestData{
 		{
 			name:     "node with script prepends node",
 			cmdType:  CmdTypeNode,
@@ -33,6 +35,11 @@ func TestNodeArgs(t *testing.T) {
 		},
 	}
 
+	runTests(t, tests)
+}
+
+func runTests(t *testing.T, tests []_TestData) {
+	t.Helper()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
@@ -85,12 +92,7 @@ func TestPipDockerImage(t *testing.T) {
 
 func TestPipArgs(t *testing.T) {
 	t.Parallel()
-	tests := []struct {
-		name     string
-		cmdType  CmdType
-		args     []string
-		wantArgs []string
-	}{
+	tests := []_TestData{
 		{
 			name:     "pip install prepends pip",
 			cmdType:  CmdTypePythonPip,
@@ -111,20 +113,7 @@ func TestPipArgs(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			got := tt.cmdType.getArgs(tt.args)
-			if len(got) != len(tt.wantArgs) {
-				t.Fatalf("getArgs() = %v, want %v", got, tt.wantArgs)
-			}
-			for i := range got {
-				if got[i] != tt.wantArgs[i] {
-					t.Errorf("getArgs()[%d] = %q, want %q", i, got[i], tt.wantArgs[i])
-				}
-			}
-		})
-	}
+	runTests(t, tests)
 }
 
 func TestPipNewConfig(t *testing.T) {
@@ -151,6 +140,57 @@ func TestPipNewConfig(t *testing.T) {
 	}
 }
 
+func TestPythonDockerImage(t *testing.T) {
+	t.Parallel()
+	if got := CmdTypePython.getDockerImage(); got != _uvDockerImage {
+		t.Errorf("CmdTypePython.getDockerImage() = %q, want %q", got, _uvDockerImage)
+	}
+}
+
+func TestPythonArgs(t *testing.T) {
+	t.Parallel()
+	tests := []_TestData{
+		{
+			name:     "python script prepends python",
+			cmdType:  CmdTypePython,
+			args:     []string{"main.py"},
+			wantArgs: []string{"python", "main.py"},
+		},
+		{
+			name:     "python with no args",
+			cmdType:  CmdTypePython,
+			args:     []string{},
+			wantArgs: []string{"python"},
+		},
+	}
+
+	runTests(t, tests)
+}
+
+func TestPythonNewConfig(t *testing.T) {
+	t.Parallel()
+	cfg := NewConfig(CmdTypePython,
+		SetWorkingDir("/tmp"),
+		SetArgs([]string{"main.py"}),
+		SetNetworkType(NetworkHost),
+	)
+	if cfg.dockerBaseImage != _uvDockerImage {
+		t.Errorf("dockerBaseImage = %q, want %q", cfg.dockerBaseImage, _uvDockerImage)
+	}
+	if cfg.cmdType != CmdTypePython {
+		t.Errorf("cmdType = %q, want %q", cfg.cmdType, CmdTypePython)
+	}
+	wantArgs := []string{"python", "main.py"}
+	if len(cfg.args) != len(wantArgs) {
+		t.Fatalf("args = %v, want %v", cfg.args, wantArgs)
+	}
+	for i := range cfg.args {
+		if cfg.args[i] != wantArgs[i] {
+			t.Errorf("args[%d] = %q, want %q", i, cfg.args[i], wantArgs[i])
+		}
+	}
+}
+
 func TestGoExecDockerImage(t *testing.T) {
 	t.Parallel()
 	if got := CmdTypeGoExec.getDockerImage(); got != _goDockerImage {
@@ -160,12 +200,7 @@ func TestGoExecDockerImage(t *testing.T) {
 
 func TestGoExecArgs(t *testing.T) {
 	t.Parallel()
-	tests := []struct {
-		name     string
-		cmdType  CmdType
-		args     []string
-		wantArgs []string
-	}{
+	tests := []_TestData{
 		{
 			name:     "go-exec with package path prepends go run",
 			cmdType:  CmdTypeGoExec,
@@ -180,20 +215,7 @@ func TestGoExecArgs(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			got := tt.cmdType.getArgs(tt.args)
-			if len(got) != len(tt.wantArgs) {
-				t.Fatalf("getArgs() = %v, want %v", got, tt.wantArgs)
-			}
-			for i := range got {
-				if got[i] != tt.wantArgs[i] {
-					t.Errorf("getArgs()[%d] = %q, want %q", i, got[i], tt.wantArgs[i])
-				}
-			}
-		})
-	}
+	runTests(t, tests)
 }
 
 func TestGoExecNewConfig(t *testing.T) {

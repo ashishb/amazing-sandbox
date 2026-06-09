@@ -38,6 +38,7 @@ func getRootCmd() *cobra.Command {
 	rootCmd.AddCommand(versionCmd())
 
 	// Python related
+	rootCmd.AddCommand(pythonCmd())
 	rootCmd.AddCommand(pipCmd())
 	rootCmd.AddCommand(pipExecCmd())
 	rootCmd.AddCommand(uvCmd())
