@@ -5,16 +5,12 @@ on:  # yamllint disable-line rule:truthy
   push:
     branches: [main, master]
     paths:
-      - "**/go.mod"
-      - "**/go.sum"
-      - "**.go"
+      - "src/asb/internal/cmdrunner/**.go"
       - ".github/workflows/test-on-docker-sandbox.yaml"
   pull_request:
     branches: [main, master]
     paths:
-      - "**/go.mod"
-      - "**/go.sum"
-      - "**.go"
+      - "src/asb/internal/cmdrunner/**.go"
       - ".github/workflows/test-on-docker-sandbox.yaml"
   workflow_dispatch:
 
