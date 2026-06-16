@@ -218,10 +218,10 @@ containing `asb npx htmlhint "$@"` and add `.local/bin` to the `$PATH` in `~/.ba
 1. Why not use [drop](https://github.com/wrr/drop)?  
    `drop` uses Linux mount namespaces for sandboxing and only supports Linux.  
    In contrast, `asb` uses Docker, which works consistently across Linux, macOS, and Windows.
-1. I heard that Docker is not a [security boundary](https://kayssel.substack.com/p/docker-escape-breaking-out-of-containers)?
+1. I heard that Docker is not a [security boundary](https://kayssel.substack.com/p/docker-escape-breaking-out-of-containers)?  
    Containers aren't as strong a security boundary as VMs; however, this means that a successful attack now requires infection of the container AND a concurrent container-escape vulnerability.
    That's a really high bar; someone would need to burn a 0-day on that. Taken from [here](https://news.ycombinator.com/item?id=47612726)
-1. I want to use a custom rootless image or a different version of Python instead of the [default images](https://github.com/ashishb/amazing-sandbox/blob/c23f6e3a4830d3ce188518d75679c68c019010d4/src/asb/internal/cmdrunner/cmd_config.go#L12-L31)?
+1. I want to use a custom rootless image or a different version of Python instead of the [default images](https://github.com/ashishb/amazing-sandbox/blob/c23f6e3a4830d3ce188518d75679c68c019010d4/src/asb/internal/cmdrunner/cmd_config.go#L12-L31)?  
    You can provide any custom image via `-i` CLI parameter.
 
    ```bash
