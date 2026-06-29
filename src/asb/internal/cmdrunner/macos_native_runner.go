@@ -10,7 +10,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func runCmdInNative(ctx context.Context, config Config) error {
+func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 	cmdArgs := config.cmdType.getArgs(config.args)
 	log.Debug().
 		Str("args", strings.Join(cmdArgs, " ")).
@@ -147,7 +147,7 @@ func runCmdInNative(ctx context.Context, config Config) error {
 	// For each referenced file/directory, we need to allow read access to it
 	_, filesToMount, err := setupDirMappingsForCodingAgents(config)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	filePathsToMount := config.getDirsToMount()
