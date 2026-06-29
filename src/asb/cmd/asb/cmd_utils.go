@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"syscall"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -35,12 +36,24 @@ func createCmd(cmd *cobra.Command, cmdType cmdrunner.CmdType) *cobra.Command {
 		if err != nil {
 			var exitErr *exec.ExitError
 			if errors.As(err, &exitErr) {
+				exitCode := exitErr.ExitCode()
+				// SIGINT = Graceful termination of "Interactive foreground tasks"
+				// SIGTERM = Graceful termination of "Background tasks"
+				// SIGKILL = Forceful termination of "unresponsive tasks"
+				// Note that, shell's exitCode = 128 + signal number
+				if slices.Contains([]syscall.Signal{syscall.SIGKILL, syscall.SIGTERM, syscall.SIGINT},
+					syscall.Signal(exitCode-128)) {
+					os.Exit(exitCode - 128)
+					return
+				}
+
 				log.Error().
 					Ctx(cmd.Context()).
 					Str("name", cmd.Name()).
+					Int("exitCode", exitCode).
 					Err(err).
 					Msg("Error running command")
-				os.Exit(exitErr.ExitCode())
+				os.Exit(exitCode)
 			}
 
 			log.Fatal().
