@@ -32,35 +32,44 @@ func createCmd(cmd *cobra.Command, cmdType cmdrunner.CmdType) *cobra.Command {
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		options := getCmdConfig(cmd, args)
 		cfg := cmdrunner.NewConfig(cmdType, options...)
-		err := cmdrunner.RunCmd(cmd.Context(), cfg)
-		if err != nil {
-			var exitErr *exec.ExitError
-			if errors.As(err, &exitErr) {
-				exitCode := exitErr.ExitCode()
-				// SIGINT = Graceful termination of "Interactive foreground tasks"
-				// SIGTERM = Graceful termination of "Background tasks"
-				// SIGKILL = Forceful termination of "unresponsive tasks"
-				// Note that, shell's exitCode = 128 + signal number
-				if slices.Contains([]syscall.Signal{syscall.SIGKILL, syscall.SIGTERM, syscall.SIGINT},
-					syscall.Signal(exitCode-128)) {
-					os.Exit(exitCode - 128)
-					return
-				}
+		shellResult, err := cmdrunner.RunCmd(cmd.Context(), cfg)
+		if err == nil {
+			return
+		}
 
-				log.Error().
-					Ctx(cmd.Context()).
-					Str("name", cmd.Name()).
-					Int("exitCode", exitCode).
-					Err(err).
-					Msg("Error running command")
-				os.Exit(exitCode)
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) {
+			exitCode := exitErr.ExitCode()
+			// SIGINT = Graceful termination of "Interactive foreground tasks"
+			// SIGTERM = Graceful termination of "Background tasks"
+			// SIGKILL = Forceful termination of "unresponsive tasks"
+			// Note that, shell's exitCode = 128 + signal number
+			if slices.Contains([]syscall.Signal{syscall.SIGKILL, syscall.SIGTERM, syscall.SIGINT},
+				syscall.Signal(exitCode-128)) {
+				os.Exit(exitCode - 128)
+				return
 			}
 
-			log.Fatal().
+			// If the command has already printed something to stdout or stderr,
+			//  then we don't want to print verbose error message
+			if shellResult.NumBytesStdOut() > 0 || shellResult.NumBytesStdErr() > 0 {
+				os.Exit(exitCode)
+				return
+			}
+
+			log.Error().
 				Ctx(cmd.Context()).
+				Str("name", cmd.Name()).
+				Int("exitCode", exitCode).
 				Err(err).
 				Msg("Error running command")
+			os.Exit(exitCode)
 		}
+
+		log.Fatal().
+			Ctx(cmd.Context()).
+			Err(err).
+			Msg("Error running command")
 	}
 	return cmd
 }

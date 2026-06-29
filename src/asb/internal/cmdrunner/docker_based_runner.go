@@ -9,32 +9,32 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func runCmdInDocker(ctx context.Context, config Config) error {
+func runCmdInDocker(ctx context.Context, config Config) (*ShellResult, error) {
 	client, err := getDockerClient()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// 1. Check that docker is installed and running
 	if err := checkDockerInstalled(client); err != nil {
-		return fmt.Errorf("failed to run %s command: %w", config.cmdType, err)
+		return nil, fmt.Errorf("failed to run %s command: %w", config.cmdType, err)
 	}
 
 	// Download the docker image
 	if err := pullDockerImageIfNotExists(ctx, client, config.dockerBaseImage); err != nil {
-		return fmt.Errorf("failed to run %s command: %w", config.cmdType, err)
+		return nil, fmt.Errorf("failed to run %s command: %w", config.cmdType, err)
 	}
 
-	if err := runDockerContainer(ctx, config); err != nil {
-		return fmt.Errorf("failed to run %s command: %w", config.cmdType, err)
+	if result, err := runDockerContainer(ctx, config); err != nil {
+		return result, fmt.Errorf("failed to run %s command: %w", config.cmdType, err)
 	}
-	return nil
+	return nil, nil
 }
 
-func runDockerContainer(ctx context.Context, config Config) error {
+func runDockerContainer(ctx context.Context, config Config) (*ShellResult, error) {
 	dockerRunCmd, err := getDockerRunCmd(config)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	dockerRunCmd = append(dockerRunCmd, config.args...)

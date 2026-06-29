@@ -34,7 +34,7 @@ type EnvVar struct {
 
 // RunCmd runs the npx command with the given arguments.
 // args can be empty list as well
-func RunCmd(ctx context.Context, config Config) error {
+func RunCmd(ctx context.Context, config Config) (*ShellResult, error) {
 	// Now run the image with the config
 	switch config.execMode {
 	case ExecModeDocker:
@@ -42,7 +42,7 @@ func RunCmd(ctx context.Context, config Config) error {
 	case ExecModeNative:
 		return runCmdInNative(ctx, config)
 	}
-	return nil
+	return nil, fmt.Errorf("unsupported exec mode: %s", config.execMode)
 }
 
 func checkDockerInstalled(client *docker.Client) error {
