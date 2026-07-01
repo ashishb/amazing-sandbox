@@ -52,7 +52,7 @@ func createCmd(cmd *cobra.Command, cmdType cmdrunner.CmdType) *cobra.Command {
 
 			// If the command has already printed something to stdout or stderr,
 			//  then we don't want to print verbose error message
-			if shellResult.NumBytesStdOut() > 0 || shellResult.NumBytesStdErr() > 0 {
+			if shellResult != nil && (shellResult.NumBytesStdOut() > 0 || shellResult.NumBytesStdErr() > 0) {
 				os.Exit(exitCode)
 				return
 			}
