@@ -9,6 +9,9 @@ lint:
 build:
 	go build -o bin/asb cmd/asb/*.go
 
+update_deps:
+	go get -t -u ./...
+
 run: build
 	LOG_LEVEL=DEBUG ./bin/asb
 
