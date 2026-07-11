@@ -7,9 +7,11 @@
 [![Lint Go](https://github.com/ashishb/amazing-sandbox/actions/workflows/lint-go.yaml/badge.svg)](https://github.com/ashishb/amazing-sandbox/actions/workflows/lint-go.yaml)
 [![Validate Go code formatting](https://github.com/ashishb/amazing-sandbox/actions/workflows/format-go.yaml/badge.svg)](https://github.com/ashishb/amazing-sandbox/actions/workflows/format-go.yaml)
 
-Amazing Sandbox (AS) is for running various tools inside a [Docker](https://ashishb.net/programming/docker-101/)-based sandbox (by default) or inside
-[seatbelt-based](https://igorstechnoclub.com/sandbox-exec/)
- sandbox on Mac OS.
+Amazing Sandbox (AS) is for running various tools inside
+
+- a [Docker](https://ashishb.net/programming/docker-101/)-based sandbox (by default)
+- [seatbelt-based](https://igorstechnoclub.com/sandbox-exec/) sandbox on Mac OS
+- [bubblewrap](https://github.com/containers/bubblewrap) sandbox on GNU/Linux
 
 - [x] Prevents [malicious packages](https://www.kaspersky.com/about/press-releases/kaspersky-uncovers-500k-crypto-heist-through-malicious-packages-targeting-cursor-developers) from having full disk access and stealing data
 - [x] Prevents AI agents from [mistakenly](https://www.theregister.com/2025/12/01/google_antigravity_wipes_d_drive/) deleting all files on your disk
@@ -210,7 +212,7 @@ containing `asb npx htmlhint "$@"` and add `.local/bin` to the `$PATH` in `~/.ba
    Further, the developer experience for trying to run a simple tool like `htmlhint` or `yamllint` is sub-par.
 1. Why not use `sandbox-exec` on Mac OS?  
    `sandbox-exec` is [deprecated](https://github.com/openai/codex/issues/215).
-   But if you want, you can use `asb` to use `sandbox-exec` via `asb --mode=native)
+   But if you want, you can use `asb` to use `sandbox-exec`/`bubblewrap` via `asb --mode=native)
 1. Why not use [ai-jail](https://github.com/akitaonrails/ai-jail)?
    `ai-jail` uses OS-level sandboxing via `bwrap` on Linux and the deprecated `sandbox-exec` on macOS.  
    It has no Windows support.  
