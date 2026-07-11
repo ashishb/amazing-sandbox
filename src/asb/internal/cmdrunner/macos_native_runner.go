@@ -1,3 +1,5 @@
+//go:build darwin
+
 package cmdrunner
 
 import (
@@ -180,14 +182,4 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 		Strs("cmd", cmd).
 		Msg("Running command in native execution mode with sandbox-exec")
 	return runShellCommand(ctx, cmd)
-}
-
-func GetCwdOrFail() string {
-	cwd, err := os.Getwd()
-	if err != nil {
-		log.Fatal().
-			Err(err).
-			Msg("Error getting current working directory")
-	}
-	return cwd
 }

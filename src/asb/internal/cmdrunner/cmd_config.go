@@ -71,7 +71,7 @@ type Config struct {
 	runAsNonRoot bool        // Whether to run the container as non-root user
 	networkType  NetworkType // Network type for the container
 	loadDotEnv   bool        // Whether to load .env file from working directory
-	// As of now, native is only supported on macOS
+	// Native mode uses sandbox-exec on macOS and bubblewrap (bwrap) on Linux
 	execMode ExecMode // Execution mode (docker or native)
 }
 
@@ -216,6 +216,18 @@ func (c Config) getDirsToMount() []_FilePathToMount {
 	}
 
 	return result
+}
+
+// GetCwdOrFail returns the current working directory, aborting the process if it
+// cannot be determined.
+func GetCwdOrFail() string {
+	cwd, err := os.Getwd()
+	if err != nil {
+		log.Fatal().
+			Err(err).
+			Msg("Error getting current working directory")
+	}
+	return cwd
 }
 
 func getAbsolutePath(baseDir string, relativeDir string) string {
