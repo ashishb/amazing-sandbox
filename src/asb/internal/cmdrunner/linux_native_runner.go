@@ -42,7 +42,16 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 		// Expose the entire host filesystem read-only, then overlay writable paths
 		// on top of it. This matches the macOS policy of "allow reads everywhere,
 		// restrict writes".
-		"--ro-bind", "/", "/", // TODO: narrow this over time
+		"--ro-bind", "/bin", "/bin",
+		"--ro-bind", "/etc", "/etc",
+		"--ro-bind", "/lib", "/lib",
+		"--ro-bind", "/lib64", "/lib64",
+		"--ro-bind", "/sbin", "/sbin",
+		"--ro-bind", "/opt", "/opt",
+		"--ro-bind", "/run", "/run",
+		"--ro-bind", "/snap", "/snap",
+		"--ro-bind", "/sys", "/sys",
+		"--ro-bind", "/usr/", "/usr",
 		// Fresh pseudo-filesystems. These come after the root bind so they take
 		// precedence, and give the sandbox a clean /dev (null, zero, random,
 		// urandom, tty, ...), /proc and writable temporary directories.
