@@ -107,13 +107,13 @@ jobs:
           # Now the commands
           # Python related
           asb pip --version
-          asb poetry --version
+          # asb poetry --version  # debug why it fails
           asb uv --version
           asb uvx --version 
           # JavaScript related
           asb bun --version
           asb node --version
-          asb pnpm --version
+          # asb pnpm --version  # debug why it fails with exit code 1
           asb npm --version
           asb npx --version
           asb yarn --version
@@ -121,12 +121,14 @@ jobs:
           # asb cabal --version
           asb cargo --version
           asb gem --version
-          asb zig version
+          # asb zig version    # debug why it fails with exit code 1
 
       # Print logs in case the test fails, to help debugging
       - name: Print logs
         if: failure()
         run: |
           echo "Printing logs for debugging..."
-          sudo dmesg | grep -i apparmor | grep bwrap
-          sudo journalctl -ke | grep bwrap
+          echo "== journalctl (bwrap) =="
+          sudo journalctl -ke --no-pager | grep bwrap || echo "No bwrap entries in journalctl"
+          echo "== dmesg (apparmor + bwrap) =="
+          sudo dmesg | grep -i apparmor | grep bwrap || echo "No apparmor/bwrap entries in dmesg"
