@@ -86,7 +86,7 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 		os.ExpandEnv("$HOME/go"), // Go module and build cache
 	}
 
-	rwPathsToMount = append(rwPathsToMount, getCachesForPackageManagers())
+	rwPathsToMount = append(rwPathsToMount, getCachesForPackageManagers()...)
 	for _, env := range []string{"UV_CACHE_DIR", "ZIG_GLOBAL_CACHE_DIR", "ZIG_LOCAL_CACHE_DIR"} {
 		if os.Getenv(env) != "" {
 			log.Debug().
