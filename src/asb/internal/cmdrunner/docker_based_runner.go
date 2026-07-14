@@ -2,10 +2,13 @@ package cmdrunner
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
+	docker "github.com/fsouza/go-dockerclient"
 	"github.com/rs/zerolog/log"
 )
 
@@ -25,30 +28,142 @@ func runCmdInDocker(ctx context.Context, config Config) (*ShellResult, error) {
 		return nil, fmt.Errorf("failed to run %s command: %w", config.cmdType, err)
 	}
 
-	if result, err := runDockerContainer(ctx, config); err != nil {
+	if result, err := runDockerContainer(ctx, client, config); err != nil {
 		return result, fmt.Errorf("failed to run %s command: %w", config.cmdType, err)
 	}
 	return nil, nil
 }
 
-func runDockerContainer(ctx context.Context, config Config) (*ShellResult, error) {
-	dockerRunCmd, err := getDockerRunCmd(config)
+func runDockerContainer(ctx context.Context, client *docker.Client, config Config) (*ShellResult, error) {
+	containerName := fmt.Sprintf("asb-%d", time.Now().UnixNano())
+
+	dockerRunCmd, err := getDockerRunCmd(config, containerName)
 	if err != nil {
 		return nil, err
 	}
 
 	dockerRunCmd = append(dockerRunCmd, config.args...)
-	// fmt.Println(dockerRunCmd)
 	log.Debug().
 		Strs("dockerRunCmd", dockerRunCmd).
 		Msg("Running docker container with command")
 
-	return runShellCommand(ctx, dockerRunCmd)
+	statsCtx, statsCancel := context.WithCancel(ctx)
+	var rxBytes, txBytes uint64
+	statsGoroutineDone := make(chan struct{})
+
+	go func() {
+		defer close(statsGoroutineDone)
+		collectContainerNetworkStats(statsCtx, client, containerName, &rxBytes, &txBytes)
+	}()
+
+	result, runErr := runShellCommand(ctx, dockerRunCmd)
+
+	statsCancel()
+	<-statsGoroutineDone
+
+	fmt.Fprintf(os.Stderr, "\nNetwork usage: received %s, sent %s\n",
+		formatBytes(rxBytes), formatBytes(txBytes))
+
+	if removeErr := client.RemoveContainer(docker.RemoveContainerOptions{
+		ID:    containerName,
+		Force: true,
+	}); removeErr != nil {
+		log.Debug().Err(removeErr).Str("container", containerName).Msg("Failed to remove container")
+	}
+
+	return result, runErr
 }
 
-func getDockerRunCmd(config Config) ([]string, error) {
-	// If this is an interactive terminal then inform the process about this
-	dockerRunCmd := []string{"docker", "run", "--rm", "--init"}
+// collectContainerNetworkStats streams Docker stats for the named container and
+// writes the cumulative rx/tx byte totals into rxBytes and txBytes. It retries
+// if the container has not yet started, and stops when ctx is cancelled.
+func collectContainerNetworkStats(ctx context.Context, client *docker.Client, containerName string, rxBytes, txBytes *uint64) {
+	for {
+		statsCh := make(chan *docker.Stats, 10)
+		errCh := make(chan error, 1)
+
+		go func(ch chan<- *docker.Stats) {
+			errCh <- client.Stats(docker.StatsOptions{
+				ID:      containerName,
+				Stats:   ch,
+				Stream:  true,
+				Context: ctx,
+			})
+		}(statsCh)
+
+		var lastStats *docker.Stats
+		for s := range statsCh {
+			if s != nil {
+				lastStats = s
+			}
+		}
+
+		statsErr := <-errCh
+
+		// Context was cancelled (container run finished): use last collected stats.
+		if ctx.Err() != nil {
+			if lastStats != nil {
+				sumNetworkStats(lastStats, rxBytes, txBytes)
+			}
+			return
+		}
+
+		if statsErr == nil {
+			// Streaming ended normally (container removed while still running).
+			if lastStats != nil {
+				sumNetworkStats(lastStats, rxBytes, txBytes)
+			}
+			return
+		}
+
+		// Container not found yet – retry after a short delay.
+		var nsErr *docker.NoSuchContainer
+		if !errors.As(statsErr, &nsErr) {
+			log.Debug().Err(statsErr).Msg("Unexpected error collecting container stats")
+			return
+		}
+
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(50 * time.Millisecond):
+		}
+	}
+}
+
+// sumNetworkStats aggregates rx/tx bytes across all networks in a Stats snapshot.
+func sumNetworkStats(s *docker.Stats, rxBytes, txBytes *uint64) {
+	for _, n := range s.Networks {
+		*rxBytes += n.RxBytes
+		*txBytes += n.TxBytes
+	}
+	// Fallback for single-network containers that only populate Network (not Networks).
+	if len(s.Networks) == 0 {
+		*rxBytes += s.Network.RxBytes
+		*txBytes += s.Network.TxBytes
+	}
+}
+
+// formatBytes returns a human-readable byte count (e.g. "1.2 MB").
+func formatBytes(n uint64) string {
+	const unit = uint64(1000)
+	if n < unit {
+		return fmt.Sprintf("%d B", n)
+	}
+	div := unit
+	exp := 0
+	for v := n / unit; v >= unit; v /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %cB", float64(n)/float64(div), "kMGTPE"[exp])
+}
+
+func getDockerRunCmd(config Config, containerName string) ([]string, error) {
+	// If this is an interactive terminal then inform the process about this.
+	// Note: --rm is intentionally omitted; the container is removed manually after
+	// collecting network stats.
+	dockerRunCmd := []string{"docker", "run", "--init", "--name=" + containerName}
 	if isInteractiveTerminal() {
 		dockerRunCmd = append(dockerRunCmd, "--interactive", "--tty")
 	}
