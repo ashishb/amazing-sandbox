@@ -168,6 +168,9 @@ func setupDirMappingsForCodingAgents(config Config) ([]EnvVar, []_FilePathToMoun
 		".claude", // Anthropic Claude code config
 		".codex",  // OpenAI Codex config
 		".gemini", // Google Gemini CLI config
+
+		// xAI Grok binary is stored at `~/.grok/bin`
+		".grok", // xAI Grok config - https://docs.x.ai/build/settings
 	}
 
 	for _, dirName := range dirsToMap {
