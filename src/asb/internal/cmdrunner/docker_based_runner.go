@@ -34,8 +34,17 @@ func runCmdInDocker(ctx context.Context, config Config) (*ShellResult, error) {
 	return nil, nil
 }
 
+// _containerNamePrefix is the prefix used for automatically-named sandbox containers.
+const _containerNamePrefix = "asb-sandbox"
+
+// _networkResult holds the final network byte counters collected from a container.
+type _networkResult struct {
+	rxBytes uint64
+	txBytes uint64
+}
+
 func runDockerContainer(ctx context.Context, client *docker.Client, config Config) (*ShellResult, error) {
-	containerName := fmt.Sprintf("asb-%d", time.Now().UnixNano())
+	containerName := fmt.Sprintf("%s-%d", _containerNamePrefix, time.Now().UnixNano())
 
 	dockerRunCmd, err := getDockerRunCmd(config, containerName)
 	if err != nil {
@@ -48,12 +57,16 @@ func runDockerContainer(ctx context.Context, client *docker.Client, config Confi
 		Msg("Running docker container with command")
 
 	statsCtx, statsCancel := context.WithCancel(ctx)
-	var rxBytes, txBytes uint64
+	// statsResultCh carries the final rx/tx counters out of the goroutine so that
+	// there is no shared-variable data race: the goroutine writes exclusively, the
+	// main goroutine reads only after receiving on statsGoroutineDone.
+	statsResultCh := make(chan _networkResult, 1)
 	statsGoroutineDone := make(chan struct{})
 
 	go func() {
 		defer close(statsGoroutineDone)
-		collectContainerNetworkStats(statsCtx, client, containerName, &rxBytes, &txBytes)
+		rx, tx := collectContainerNetworkStats(statsCtx, client, containerName)
+		statsResultCh <- _networkResult{rxBytes: rx, txBytes: tx}
 	}()
 
 	result, runErr := runShellCommand(ctx, dockerRunCmd)
@@ -61,8 +74,9 @@ func runDockerContainer(ctx context.Context, client *docker.Client, config Confi
 	statsCancel()
 	<-statsGoroutineDone
 
+	ns := <-statsResultCh
 	fmt.Fprintf(os.Stderr, "\nNetwork usage: received %s, sent %s\n",
-		formatBytes(rxBytes), formatBytes(txBytes))
+		formatBytes(ns.rxBytes), formatBytes(ns.txBytes))
 
 	if removeErr := client.RemoveContainer(docker.RemoveContainerOptions{
 		ID:    containerName,
@@ -75,9 +89,9 @@ func runDockerContainer(ctx context.Context, client *docker.Client, config Confi
 }
 
 // collectContainerNetworkStats streams Docker stats for the named container and
-// writes the cumulative rx/tx byte totals into rxBytes and txBytes. It retries
-// if the container has not yet started, and stops when ctx is cancelled.
-func collectContainerNetworkStats(ctx context.Context, client *docker.Client, containerName string, rxBytes, txBytes *uint64) {
+// returns the final cumulative rx/tx byte totals. It retries if the container
+// has not yet started, and stops when ctx is cancelled.
+func collectContainerNetworkStats(ctx context.Context, client *docker.Client, containerName string) (rxBytes, txBytes uint64) {
 	for {
 		statsCh := make(chan *docker.Stats, 10)
 		errCh := make(chan error, 1)
@@ -103,7 +117,7 @@ func collectContainerNetworkStats(ctx context.Context, client *docker.Client, co
 		// Context was cancelled (container run finished): use last collected stats.
 		if ctx.Err() != nil {
 			if lastStats != nil {
-				sumNetworkStats(lastStats, rxBytes, txBytes)
+				rxBytes, txBytes = sumNetworkStats(lastStats)
 			}
 			return
 		}
@@ -111,7 +125,7 @@ func collectContainerNetworkStats(ctx context.Context, client *docker.Client, co
 		if statsErr == nil {
 			// Streaming ended normally (container removed while still running).
 			if lastStats != nil {
-				sumNetworkStats(lastStats, rxBytes, txBytes)
+				rxBytes, txBytes = sumNetworkStats(lastStats)
 			}
 			return
 		}
@@ -132,19 +146,21 @@ func collectContainerNetworkStats(ctx context.Context, client *docker.Client, co
 }
 
 // sumNetworkStats aggregates rx/tx bytes across all networks in a Stats snapshot.
-func sumNetworkStats(s *docker.Stats, rxBytes, txBytes *uint64) {
+func sumNetworkStats(s *docker.Stats) (rxBytes, txBytes uint64) {
 	for _, n := range s.Networks {
-		*rxBytes += n.RxBytes
-		*txBytes += n.TxBytes
+		rxBytes += n.RxBytes
+		txBytes += n.TxBytes
 	}
 	// Fallback for single-network containers that only populate Network (not Networks).
 	if len(s.Networks) == 0 {
-		*rxBytes += s.Network.RxBytes
-		*txBytes += s.Network.TxBytes
+		rxBytes += s.Network.RxBytes
+		txBytes += s.Network.TxBytes
 	}
+	return
 }
 
-// formatBytes returns a human-readable byte count (e.g. "1.2 MB").
+// formatBytes returns a human-readable byte count using SI decimal prefixes
+// (1 kB = 1000 B), matching Docker's own network I/O display convention.
 func formatBytes(n uint64) string {
 	const unit = uint64(1000)
 	if n < unit {
