@@ -71,5 +71,8 @@ func getRootCmd() *cobra.Command {
 	// Zig related
 	rootCmd.AddCommand(zigCmd())
 
+	// Generic tools
+	rootCmd.AddCommand(bashCmd())
+
 	return rootCmd
 }

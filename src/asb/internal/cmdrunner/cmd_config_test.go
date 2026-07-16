@@ -298,6 +298,63 @@ func TestZigNewConfig(t *testing.T) {
 	}
 }
 
+func TestBashDockerImage(t *testing.T) {
+	t.Parallel()
+	if got := CmdTypeBash.getDockerImage(); got != _bashDockerImage {
+		t.Errorf("CmdTypeBash.getDockerImage() = %q, want %q", got, _bashDockerImage)
+	}
+}
+
+func TestBashArgs(t *testing.T) {
+	t.Parallel()
+	tests := []_TestData{
+		{
+			name:     "bash with script prepends bash",
+			cmdType:  CmdTypeBash,
+			args:     []string{"script.sh"},
+			wantArgs: []string{"bash", "script.sh"},
+		},
+		{
+			name:     "bash with -c prepends bash",
+			cmdType:  CmdTypeBash,
+			args:     []string{"-c", "echo hello"},
+			wantArgs: []string{"bash", "-c", "echo hello"},
+		},
+		{
+			name:     "bash with no args",
+			cmdType:  CmdTypeBash,
+			args:     []string{},
+			wantArgs: []string{"bash"},
+		},
+	}
+
+	runTests(t, tests)
+}
+
+func TestBashNewConfig(t *testing.T) {
+	t.Parallel()
+	cfg := NewConfig(CmdTypeBash,
+		SetWorkingDir("/tmp"),
+		SetArgs([]string{"-c", "echo hello"}),
+		SetNetworkType(NetworkHost),
+	)
+	if cfg.dockerBaseImage != _bashDockerImage {
+		t.Errorf("dockerBaseImage = %q, want %q", cfg.dockerBaseImage, _bashDockerImage)
+	}
+	if cfg.cmdType != CmdTypeBash {
+		t.Errorf("cmdType = %q, want %q", cfg.cmdType, CmdTypeBash)
+	}
+	wantArgs := []string{"bash", "-c", "echo hello"}
+	if len(cfg.args) != len(wantArgs) {
+		t.Fatalf("args = %v, want %v", cfg.args, wantArgs)
+	}
+	for i := range cfg.args {
+		if cfg.args[i] != wantArgs[i] {
+			t.Errorf("args[%d] = %q, want %q", i, cfg.args[i], wantArgs[i])
+		}
+	}
+}
+
 func TestSetExtraMountRODirs(t *testing.T) {
 	t.Parallel()
 	dirs := []string{"/data/secrets", "/etc/certs"}

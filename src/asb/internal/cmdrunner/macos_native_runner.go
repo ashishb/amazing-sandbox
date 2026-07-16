@@ -66,6 +66,7 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 		`(allow file-write* (subpath "/private/tmp"))`,
 		`(allow file-write* (literal "/dev/null"))`,
 		// To get user info allow read access to /etc/passwd.
+		`(allow file-read-data (subpath "/usr/lib/"))`,
 		`(allow file-read-data (literal "/private/etc/passwd"))`,
 		// For timezone information allow reading these files
 		`(allow file-read-data (subpath "/usr/share/locale/"))`,
