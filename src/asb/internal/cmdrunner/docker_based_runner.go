@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 
 	"github.com/rs/zerolog/log"
 )
@@ -134,7 +135,10 @@ func getCacheMounts() map[_VolumeName]_ContainerFilePath {
 }
 
 func setupDirMappingsForCodingAgents(config Config) ([]EnvVar, []_FilePathToMount, error) {
-	if config.cmdType != CmdTypeNpx {
+	if !slices.Contains([]CmdType{CmdTypeBash, CmdTypeNpx}, config.cmdType) {
+		log.Debug().
+			Str("cmdType", string(config.cmdType)).
+			Msg("Not likely a coding agent command, skipping coding agent directory mounting")
 		return nil, nil, nil
 	}
 

@@ -146,6 +146,19 @@ $ asb zig build
 ...
 ```
 
+### Run [Grok Build](https://x.ai/cli) inside it
+
+```bash
+$ asb bash
+<inside the sandboxed shell>
+# One-time setup
+$ apt-get update -y
+$ apt-get install -y curl
+$ curl -fsSL https://x.ai/cli/install.sh | bash
+# Do this to run it from now on
+$ /root/.grok/bin/grok # To start it
+```
+
 ## To see the full usage
 
 ```bash
