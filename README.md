@@ -13,10 +13,12 @@ Amazing Sandbox (AS) is for running various tools inside
 - [seatbelt-based](https://igorstechnoclub.com/sandbox-exec/) sandbox on Mac OS
 - [bubblewrap](https://github.com/containers/bubblewrap) sandbox on GNU/Linux
 
+```mermaid
 graph TD
     AS[Amazing Sandbox] -->|Default| D[Docker-based Sandbox]
     AS -->|Mac OS| S[Seatbelt-based Sandbox]
     AS -->|GNU/Linux| B[Bubblewrap Sandbox]
+```
 
 - [x] Prevents [malicious packages](https://www.kaspersky.com/about/press-releases/kaspersky-uncovers-500k-crypto-heist-through-malicious-packages-targeting-cursor-developers) from having full disk access and stealing data
 - [x] Prevents AI agents from [mistakenly](https://www.theregister.com/2025/12/01/google_antigravity_wipes_d_drive/) deleting all files on your disk
