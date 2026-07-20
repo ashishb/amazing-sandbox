@@ -9,15 +9,11 @@
 
 Amazing Sandbox (AS) is for running various tools inside
 
-- a [Docker](https://ashishb.net/programming/docker-101/)-based sandbox (by default)
-- [seatbelt-based](https://igorstechnoclub.com/sandbox-exec/) sandbox on Mac OS
-- [bubblewrap](https://github.com/containers/bubblewrap) sandbox on GNU/Linux
-
 ```mermaid
 graph TD
-    AS[Amazing Sandbox] -->|Default| D[Docker-based Sandbox]
-    AS -->|Mac OS| S[Seatbelt-based Sandbox]
-    AS -->|GNU/Linux| B[Bubblewrap Sandbox]
+    AS[Amazing Sandbox] -->|Default| D[<a href='https://ashishb.net/programming/docker-101/'>Docker-based Sandbox</a>]
+    AS -->|Mac OS| S[<a href='https://igorstechnoclub.com/sandbox-exec/'>Seatbelt-based Sandbox</a>]
+    AS -->|GNU/Linux| B[<a href='https://github.com/containers/bubblewrap'>Bubblewrap Sandbox</a>]
 ```
 
 - [x] Prevents [malicious packages](https://www.kaspersky.com/about/press-releases/kaspersky-uncovers-500k-crypto-heist-through-malicious-packages-targeting-cursor-developers) from having full disk access and stealing data
