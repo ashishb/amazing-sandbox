@@ -42,7 +42,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           cache-dependency-path: "src/asb/go.mod"
           go-version-file: "src/asb/go.mod"
@@ -67,7 +67,7 @@ jobs:
           ./src/asb/bin/asb --mode=native version
 
       - name: Install uv for testing it under the sandbox
-        uses: astral-sh/setup-uv@f98e06938123ccabd21905ea5d0069192241f9f1  # v8.3.1
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9  # v9.0.0
 
       - name: Install poetry for testing it under the sandbox
         uses: snok/install-poetry@a783c322200f0519c7926aa6faa857c4e23e9263  # v1.4.2

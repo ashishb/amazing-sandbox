@@ -43,7 +43,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           cache-dependency-path: "src/asb/go.mod"
           go-version-file: "src/asb/go.mod"

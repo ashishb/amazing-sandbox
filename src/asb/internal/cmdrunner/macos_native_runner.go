@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/rs/zerolog/log"
@@ -67,6 +66,7 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 		`(allow file-write* (subpath "/private/tmp"))`,
 		`(allow file-write* (literal "/dev/null"))`,
 		// To get user info allow read access to /etc/passwd.
+		`(allow file-read-data (subpath "/usr/lib/"))`,
 		`(allow file-read-data (literal "/private/etc/passwd"))`,
 		// For timezone information allow reading these files
 		`(allow file-read-data (subpath "/usr/share/locale/"))`,
@@ -97,21 +97,8 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 		"/dev/dtracehelper", // Ref: https://apple.stackexchange.com/questions/384593/apple-dtracehelper-file
 		os.ExpandEnv("$HOME/Library/Caches/Homebrew"),
 		os.ExpandEnv("$HOME/Library/Developer/Xcode"),
-
-		// Caches for various package managers
-		os.ExpandEnv("$HOME/Library/Caches/pip"),
-		os.ExpandEnv("$HOME/.bun"),
-		os.ExpandEnv("$HOME/.cabal"),
-		os.ExpandEnv("$HOME/.cache"),
-		os.ExpandEnv("$HOME/.cargo"),
-		os.ExpandEnv("$HOME/.gem"),
-		os.ExpandEnv("$HOME/.local"),
-		os.ExpandEnv("$HOME/.npm"),
-		os.ExpandEnv("$HOME/.rustup"),
-		os.ExpandEnv("$HOME/.rbenv"),
-		os.ExpandEnv("$HOME/.yarn"),
-		os.ExpandEnv(filepath.Join(GetCwdOrFail(), ".zig-cache")), // For Zig's build cache
 	}
+	rwPathsToMount = append(rwPathsToMount, getCachesForPackageManagers()...)
 
 	for _, env := range []string{"UV_CACHE_DIR", "ZIG_GLOBAL_CACHE_DIR", "ZIG_LOCAL_CACHE_DIR"} {
 		if os.Getenv(env) != "" {

@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 
 	"github.com/rs/zerolog/log"
@@ -84,20 +83,10 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 	// each of these is read-only inside the sandbox, so the directory has to exist
 	// on the host before it can be bind-mounted; create it if necessary.
 	rwPathsToMount := []string{
-		os.ExpandEnv("$HOME/.cache"),
-		os.ExpandEnv("$HOME/.cargo"),
-		os.ExpandEnv("$HOME/.rustup"),
-		os.ExpandEnv("$HOME/.npm"),
-		os.ExpandEnv("$HOME/.bun"),
-		os.ExpandEnv("$HOME/.gem"),
-		os.ExpandEnv("$HOME/.local"),
-		os.ExpandEnv("$HOME/.yarn"),
-		os.ExpandEnv("$HOME/.cabal"),
-		os.ExpandEnv("$HOME/.rbenv"),
-		os.ExpandEnv("$HOME/go"),                                  // Go module and build cache
-		os.ExpandEnv(filepath.Join(GetCwdOrFail(), ".zig-cache")), // For Zig's build cache
+		os.ExpandEnv("$HOME/go"), // Go module and build cache
 	}
 
+	rwPathsToMount = append(rwPathsToMount, getCachesForPackageManagers()...)
 	for _, env := range []string{"UV_CACHE_DIR", "ZIG_GLOBAL_CACHE_DIR", "ZIG_LOCAL_CACHE_DIR"} {
 		if os.Getenv(env) != "" {
 			log.Debug().

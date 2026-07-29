@@ -9,9 +9,12 @@
 
 Amazing Sandbox (AS) is for running various tools inside
 
-- a [Docker](https://ashishb.net/programming/docker-101/)-based sandbox (by default)
-- [seatbelt-based](https://igorstechnoclub.com/sandbox-exec/) sandbox on Mac OS
-- [bubblewrap](https://github.com/containers/bubblewrap) sandbox on GNU/Linux
+```mermaid
+graph TD
+    AS[Amazing Sandbox] -->|Default| D[<a href='https://ashishb.net/programming/docker-101/'>Docker-based Sandbox</a>]
+    AS -->|Mac OS| S[<a href='https://igorstechnoclub.com/sandbox-exec/'>Seatbelt-based Sandbox</a>]
+    AS -->|GNU/Linux| B[<a href='https://github.com/containers/bubblewrap'>Bubblewrap Sandbox</a>]
+```
 
 - [x] Prevents [malicious packages](https://www.kaspersky.com/about/press-releases/kaspersky-uncovers-500k-crypto-heist-through-malicious-packages-targeting-cursor-developers) from having full disk access and stealing data
 - [x] Prevents AI agents from [mistakenly](https://www.theregister.com/2025/12/01/google_antigravity_wipes_d_drive/) deleting all files on your disk
@@ -22,7 +25,7 @@ Amazing Sandbox (AS) is for running various tools inside
 Default config
 
 - [x] Give Read-write access to the current directory
-- [x] network access
+- [x] Network access
 - [x] Load `.env` file from the current directory
 - [x] Cache various build steps using Docker
 - [x] Give Read-write access to any explicitly referenced files via CLI arguments
@@ -146,6 +149,19 @@ $ asb zig build
 ...
 ```
 
+### Run [Grok Build](https://x.ai/cli) inside it
+
+```bash
+$ asb bash
+<inside the sandboxed shell>
+# One-time setup
+$ apt-get update -y
+$ apt-get install -y curl
+$ curl -fsSL https://x.ai/cli/install.sh | bash
+# Do this to run it from now on
+$ /root/.grok/bin/grok # To start it
+```
+
 ## To see the full usage
 
 ```bash
@@ -206,10 +222,10 @@ containing `asb npx htmlhint "$@"` and add `.local/bin` to the `$PATH` in `~/.ba
 
 1. Why not use [bubblewrap](https://github.com/containers/bubblewrap)?  
    It only [supports](https://github.com/containers/bubblewrap/issues/396) GNU/Linux.  
-   Further, the developer experience for trying to run a simple tool like `htmlhint` or `yamllint` is sub-par.
+   Further, the developer experience for trying to run a simple tool like `htmlhint` or `yamllint` is subpar.
 1. Why not use [Firejail](https://github.com/netblue30/firejail)?  
    No support for Mac OS or Windows.  
-   Further, the developer experience for trying to run a simple tool like `htmlhint` or `yamllint` is sub-par.
+   Further, the developer experience for trying to run a simple tool like `htmlhint` or `yamllint` is subpar.
 1. Why not use `sandbox-exec` on Mac OS?  
    `sandbox-exec` is [deprecated](https://github.com/openai/codex/issues/215).
    But if you want, you can use `asb` to use `sandbox-exec`/`bubblewrap` via `asb --mode=native)

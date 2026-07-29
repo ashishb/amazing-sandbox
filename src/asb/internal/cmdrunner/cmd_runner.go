@@ -115,3 +115,20 @@ func touchFile(name string) error {
 	// It's crucial to close the file to release the file descriptor
 	return file.Close()
 }
+
+// Caches for various package managers
+func getCachesForPackageManagers() []string {
+	return []string{
+		os.ExpandEnv("$HOME/Library/Caches/pip"),
+		os.ExpandEnv("$HOME/.bun"),
+		os.ExpandEnv("$HOME/.cabal"),
+		os.ExpandEnv("$HOME/.cache"),
+		os.ExpandEnv("$HOME/.cargo"),
+		os.ExpandEnv("$HOME/.gem"),
+		os.ExpandEnv("$HOME/.local"),
+		os.ExpandEnv("$HOME/.npm"),
+		os.ExpandEnv("$HOME/.rustup"),
+		os.ExpandEnv("$HOME/.rbenv"),
+		os.ExpandEnv("$HOME/.yarn"),
+	}
+}

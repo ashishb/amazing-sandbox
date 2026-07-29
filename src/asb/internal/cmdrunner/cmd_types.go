@@ -33,6 +33,8 @@ const (
 
 	CmdTypeGoExec CmdType = "go_exec"
 	CmdTypeZig    CmdType = "zig"
+
+	CmdTypeBash CmdType = "bash"
 )
 
 // Ref: https://docs.docker.com/engine/network/

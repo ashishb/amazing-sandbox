@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"time"
 
-	docker "github.com/fsouza/go-dockerclient"
 	"github.com/rs/zerolog/log"
+
+	docker "github.com/fsouza/go-dockerclient"
 )
 
 func runCmdInDocker(ctx context.Context, config Config) (*ShellResult, error) {
@@ -119,7 +121,7 @@ func collectContainerNetworkStats(ctx context.Context, client *docker.Client, co
 			if lastStats != nil {
 				rxBytes, txBytes = sumNetworkStats(lastStats)
 			}
-			return
+			return rxBytes, txBytes
 		}
 
 		if statsErr == nil {
@@ -127,19 +129,19 @@ func collectContainerNetworkStats(ctx context.Context, client *docker.Client, co
 			if lastStats != nil {
 				rxBytes, txBytes = sumNetworkStats(lastStats)
 			}
-			return
+			return rxBytes, txBytes
 		}
 
 		// Container not found yet – retry after a short delay.
 		var nsErr *docker.NoSuchContainer
 		if !errors.As(statsErr, &nsErr) {
 			log.Debug().Err(statsErr).Msg("Unexpected error collecting container stats")
-			return
+			return rxBytes, txBytes
 		}
 
 		select {
 		case <-ctx.Done():
-			return
+			return rxBytes, txBytes
 		case <-time.After(50 * time.Millisecond):
 		}
 	}
@@ -265,7 +267,10 @@ func getCacheMounts() map[_VolumeName]_ContainerFilePath {
 }
 
 func setupDirMappingsForCodingAgents(config Config) ([]EnvVar, []_FilePathToMount, error) {
-	if config.cmdType != CmdTypeNpx {
+	if !slices.Contains([]CmdType{CmdTypeBash, CmdTypeNpx}, config.cmdType) {
+		log.Debug().
+			Str("cmdType", string(config.cmdType)).
+			Msg("Not likely a coding agent command, skipping coding agent directory mounting")
 		return nil, nil, nil
 	}
 
@@ -299,6 +304,9 @@ func setupDirMappingsForCodingAgents(config Config) ([]EnvVar, []_FilePathToMoun
 		".claude", // Anthropic Claude code config
 		".codex",  // OpenAI Codex config
 		".gemini", // Google Gemini CLI config
+
+		// xAI Grok binary is stored at `~/.grok/bin`
+		".grok", // xAI Grok config - https://docs.x.ai/build/settings
 	}
 
 	for _, dirName := range dirsToMap {

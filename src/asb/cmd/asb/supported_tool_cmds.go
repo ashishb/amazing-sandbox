@@ -166,3 +166,11 @@ func zigCmd() *cobra.Command {
 	}
 	return createCmd(cmd, cmdrunner.CmdTypeZig)
 }
+
+func bashCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "bash",
+		Short: "Run a bash command",
+	}
+	return createCmd(cmd, cmdrunner.CmdTypeBash)
+}
