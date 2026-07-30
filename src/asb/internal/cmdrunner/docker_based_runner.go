@@ -2,16 +2,14 @@ package cmdrunner
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
-	"time"
+	"strconv"
+	"strings"
 
 	"github.com/rs/zerolog/log"
-
-	docker "github.com/fsouza/go-dockerclient"
 )
 
 func runCmdInDocker(ctx context.Context, config Config) (*ShellResult, error) {
@@ -30,25 +28,56 @@ func runCmdInDocker(ctx context.Context, config Config) (*ShellResult, error) {
 		return nil, fmt.Errorf("failed to run %s command: %w", config.cmdType, err)
 	}
 
-	if result, err := runDockerContainer(ctx, client, config); err != nil {
+	if result, err := runDockerContainer(ctx, config); err != nil {
 		return result, fmt.Errorf("failed to run %s command: %w", config.cmdType, err)
 	}
 	return nil, nil
 }
 
-// _containerNamePrefix is the prefix used for automatically-named sandbox containers.
-const _containerNamePrefix = "asb-sandbox"
-
-// _networkResult holds the final network byte counters collected from a container.
-type _networkResult struct {
+// networkSnapshot holds total rx/tx byte counts across all non-loopback
+// network interfaces at a single point in time, read from /proc/net/dev.
+type networkSnapshot struct {
 	rxBytes uint64
 	txBytes uint64
 }
 
-func runDockerContainer(ctx context.Context, client *docker.Client, config Config) (*ShellResult, error) {
-	containerName := fmt.Sprintf("%s-%d", _containerNamePrefix, time.Now().UnixNano())
+// readNetworkSnapshot parses /proc/net/dev and returns the aggregate rx/tx
+// byte totals across all non-loopback interfaces. It returns an error when
+// /proc/net/dev is not available (e.g., macOS / Windows).
+func readNetworkSnapshot() (networkSnapshot, error) {
+	data, err := os.ReadFile("/proc/net/dev")
+	if err != nil {
+		return networkSnapshot{}, fmt.Errorf("cannot read /proc/net/dev: %w", err)
+	}
+	var snap networkSnapshot
+	for _, line := range strings.Split(string(data), "\n") {
+		colonIdx := strings.IndexByte(line, ':')
+		if colonIdx < 0 {
+			continue
+		}
+		iface := strings.TrimSpace(line[:colonIdx])
+		if iface == "lo" {
+			continue // skip loopback
+		}
+		// /proc/net/dev columns after the colon:
+		//   [0]  rx_bytes  [1-7] other rx fields  [8]  tx_bytes  [9-15] other tx fields
+		fields := strings.Fields(line[colonIdx+1:])
+		if len(fields) < 9 {
+			continue
+		}
+		rxB, err1 := strconv.ParseUint(fields[0], 10, 64)
+		txB, err2 := strconv.ParseUint(fields[8], 10, 64)
+		if err1 != nil || err2 != nil {
+			continue
+		}
+		snap.rxBytes += rxB
+		snap.txBytes += txB
+	}
+	return snap, nil
+}
 
-	dockerRunCmd, err := getDockerRunCmd(config, containerName)
+func runDockerContainer(ctx context.Context, config Config) (*ShellResult, error) {
+	dockerRunCmd, err := getDockerRunCmd(config)
 	if err != nil {
 		return nil, err
 	}
@@ -58,107 +87,28 @@ func runDockerContainer(ctx context.Context, client *docker.Client, config Confi
 		Strs("dockerRunCmd", dockerRunCmd).
 		Msg("Running docker container with command")
 
-	statsCtx, statsCancel := context.WithCancel(ctx)
-	// statsResultCh carries the final rx/tx counters out of the goroutine so that
-	// there is no shared-variable data race: the goroutine writes exclusively, the
-	// main goroutine reads only after receiving on statsGoroutineDone.
-	statsResultCh := make(chan _networkResult, 1)
-	statsGoroutineDone := make(chan struct{})
-
-	go func() {
-		defer close(statsGoroutineDone)
-		rx, tx := collectContainerNetworkStats(statsCtx, client, containerName)
-		statsResultCh <- _networkResult{rxBytes: rx, txBytes: tx}
-	}()
-
+	// Snapshot network counters before and after the container run.
+	// /proc/net/dev works for --network=host (default) and --network=bridge.
+	// It is unavailable on macOS/Windows; in that case we skip the output.
+	beforeSnap, snapErr := readNetworkSnapshot()
 	result, runErr := runShellCommand(ctx, dockerRunCmd)
+	afterSnap, _ := readNetworkSnapshot()
 
-	statsCancel()
-	<-statsGoroutineDone
-
-	ns := <-statsResultCh
-	fmt.Fprintf(os.Stderr, "\nNetwork usage: received %s, sent %s\n",
-		formatBytes(ns.rxBytes), formatBytes(ns.txBytes))
-
-	if removeErr := client.RemoveContainer(docker.RemoveContainerOptions{
-		ID:    containerName,
-		Force: true,
-	}); removeErr != nil {
-		log.Debug().Err(removeErr).Str("container", containerName).Msg("Failed to remove container")
+	if snapErr != nil {
+		log.Debug().Err(snapErr).Msg("Network usage stats unavailable on this platform")
+	} else {
+		var rxDelta, txDelta uint64
+		if afterSnap.rxBytes >= beforeSnap.rxBytes {
+			rxDelta = afterSnap.rxBytes - beforeSnap.rxBytes
+		}
+		if afterSnap.txBytes >= beforeSnap.txBytes {
+			txDelta = afterSnap.txBytes - beforeSnap.txBytes
+		}
+		fmt.Fprintf(os.Stderr, "\nNetwork usage: received %s, sent %s\n",
+			formatBytes(rxDelta), formatBytes(txDelta))
 	}
 
 	return result, runErr
-}
-
-// collectContainerNetworkStats streams Docker stats for the named container and
-// returns the final cumulative rx/tx byte totals. It retries if the container
-// has not yet started, and stops when ctx is cancelled.
-func collectContainerNetworkStats(ctx context.Context, client *docker.Client, containerName string) (rxBytes, txBytes uint64) {
-	for {
-		statsCh := make(chan *docker.Stats, 10)
-		errCh := make(chan error, 1)
-
-		go func(ch chan<- *docker.Stats) {
-			errCh <- client.Stats(docker.StatsOptions{
-				ID:      containerName,
-				Stats:   ch,
-				Stream:  true,
-				Context: ctx,
-			})
-		}(statsCh)
-
-		var lastStats *docker.Stats
-		for s := range statsCh {
-			if s != nil {
-				lastStats = s
-			}
-		}
-
-		statsErr := <-errCh
-
-		// Context was cancelled (container run finished): use last collected stats.
-		if ctx.Err() != nil {
-			if lastStats != nil {
-				rxBytes, txBytes = sumNetworkStats(lastStats)
-			}
-			return rxBytes, txBytes
-		}
-
-		if statsErr == nil {
-			// Streaming ended normally (container removed while still running).
-			if lastStats != nil {
-				rxBytes, txBytes = sumNetworkStats(lastStats)
-			}
-			return rxBytes, txBytes
-		}
-
-		// Container not found yet – retry after a short delay.
-		var nsErr *docker.NoSuchContainer
-		if !errors.As(statsErr, &nsErr) {
-			log.Debug().Err(statsErr).Msg("Unexpected error collecting container stats")
-			return rxBytes, txBytes
-		}
-
-		select {
-		case <-ctx.Done():
-			return rxBytes, txBytes
-		case <-time.After(50 * time.Millisecond):
-		}
-	}
-}
-
-// sumNetworkStats aggregates rx/tx bytes across all networks in a Stats snapshot.
-func sumNetworkStats(s *docker.Stats) (rxBytes, txBytes uint64) {
-	for _, n := range s.Networks {
-		rxBytes += n.RxBytes
-		txBytes += n.TxBytes
-	}
-	// Fallback for single-network containers that only populate Network (not Networks).
-	if len(s.Networks) == 0 {
-		rxBytes += s.Network.RxBytes
-		txBytes += s.Network.TxBytes
-	}
-	return
 }
 
 // formatBytes returns a human-readable byte count using SI decimal prefixes
@@ -177,11 +127,9 @@ func formatBytes(n uint64) string {
 	return fmt.Sprintf("%.1f %cB", float64(n)/float64(div), "kMGTPE"[exp])
 }
 
-func getDockerRunCmd(config Config, containerName string) ([]string, error) {
+func getDockerRunCmd(config Config) ([]string, error) {
 	// If this is an interactive terminal then inform the process about this.
-	// Note: --rm is intentionally omitted; the container is removed manually after
-	// collecting network stats.
-	dockerRunCmd := []string{"docker", "run", "--init", "--name=" + containerName}
+	dockerRunCmd := []string{"docker", "run", "--rm", "--init"}
 	if isInteractiveTerminal() {
 		dockerRunCmd = append(dockerRunCmd, "--interactive", "--tty")
 	}
