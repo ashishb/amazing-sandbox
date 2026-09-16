@@ -80,7 +80,7 @@ jobs:
           ./src/asb/bin/asb --mode=native version
 
       - name: Install uv for testing it under the sandbox
-        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d  # v10.0.1
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4  # v10.1.0
 
       - name: Install poetry for testing it under the sandbox
         uses: snok/install-poetry@a783c322200f0519c7926aa6faa857c4e23e9263  # v1.4.2
