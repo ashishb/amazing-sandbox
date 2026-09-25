@@ -29,12 +29,14 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 		"(allow file-read-metadata)",
 		"(deny file-write*)",
 		"(deny file-read*)",
+		`(allow file-read-xattr (subpath "/"))`,
 		// Explicitly allow process forking as "gem" needs it
 		`(allow process-fork)`,
 
 		`(allow process-exec (subpath "/bin"))`,
 		`(allow process-exec (subpath "/usr/bin"))`,
 		`(allow process-exec (subpath "/opt/homebrew"))`,
+		`(allow process-exec (subpath "/Applications/"))`,
 		`(allow process-exec (subpath "/Library/Frameworks/Python.framework"))`,
 		// GitHub Actions put tools inside $HOME/hostedtoolcache
 		// e.g. uv is in /Users/runner/hostedtoolcache/uv/0.11.16/aarch64/uv
@@ -71,6 +73,7 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 		`(allow file-read-data (subpath "/usr/lib/"))`,
 		`(allow file-read-data (literal "/private/etc/passwd"))`,
 		// For timezone information allow reading these files
+		`(allow file-read-data (subpath "/usr/share/langid/"))`,
 		`(allow file-read-data (subpath "/usr/share/locale/"))`,
 		`(allow file-read-data (subpath "/private/var/db/timezone"))`,
 		`(allow file-read-data (subpath "/usr/share/icu/"))`,
@@ -89,7 +92,46 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 		`(allow mach-lookup (global-name "com.apple.windowserver.active"))`,
 		`(allow mach-lookup (global-name "com.apple.DiskArbitration.diskarbitrationd"))`,
 		`(allow mach-lookup (global-name "com.apple.CoreServices.coreservicesd"))`,
+		`(allow mach-lookup (global-name "com.apple.distributed_notifications@Uv3"))`,
+		`(allow mach-lookup (global-name "com.apple.coreservices.launchservicesd"))`,
+		`(allow mach-lookup (global-name "com.apple.CARenderServer"))`,
+		`(allow mach-lookup (global-name "com.apple.lsd.modifydb"))`,
+		`(allow mach-lookup (global-name "com.apple.spotlight.IndexAgent"))`,
+		`(allow mach-lookup (global-name "com.apple.iconservices"))`,
+		`(allow mach-lookup (global-name "com.apple.lsd.mapdb"))`,
+		`(allow mach-lookup (global-name "com.apple.system.opendirectoryd.membership"))`,
+		`(allow mach-lookup (global-name "com.apple.appkit.restoration_storage"))`,
+		`(allow mach-lookup (global-name "com.apple.windowmanager.server"))`,
+		`(allow mach-lookup (global-name "com.apple.dock.fullscreen"))`,
+		`(allow mach-lookup (global-name "com.apple.uiintelligencesupport.agent"))`,
+		`(allow mach-lookup (global-name "com.apple.bsd.dirhelper"))`,
+		`(allow mach-lookup (global-name "com.apple.analyticsd"))`,
+		`(allow mach-lookup (global-name "com.apple.dock.server"))`,
+		`(allow mach-lookup (global-name "com.apple.coreservices.quarantine-resolver"))`,
+		`(allow mach-lookup (global-name "com.apple.coreservices.appleevents"))`,
+		`(allow mach-lookup (global-name "com.apple.hiservices-xpcservice"))`,
+		`(allow mach-lookup (global-name "com.apple.ViewBridgeAuxiliary"))`,
+		`(allow mach-lookup (global-name "com.apple.locationd"))`,
+		`(allow mach-lookup (global-name "com.apple.locationd.desktop.registration"))`,
+		`(allow mach-lookup (global-name "com.apple.SystemConfiguration.DNSConfiguration"))`,
+		`(allow mach-lookup (global-name "com.apple.CoreLocation.agent"))`,
+		`(allow mach-lookup (global-name "com.apple.CoreLocation.agent"))`,
+		`(allow mach-lookup (global-name "com.apple.iconservices.store"))`,
+		`(allow mach-lookup (global-name "com.apple.iohideventsystem"))`,
+		`(allow mach-lookup (global-name "com.apple.logd.events"))`,
+		`(allow mach-lookup (global-name "com.apple.touchbarserver.mig"))`,
+		`(allow mach-lookup (global-name "com.apple.coredrag"))`,
 		`(allow ipc-posix-shm-read-data (ipc-posix-name "apple.shm.notification_center"))`,
+		`(allow file-issue-extension
+			  (extension-class "com.apple.app-sandbox.read")
+			  (literal "/Applications/Xcode.app"))`,
+		`(allow iokit-open-user-client (iokit-user-client-class "AGXDeviceUserClient"))`,
+		`(allow iokit-open-user-client (iokit-user-client-class "IOHIDParamUserClient"))`,
+		`(allow iokit-open-user-client (iokit-user-client-class "IOSurfaceRootUserClient"))`,
+		`(allow iokit-open-user-client (iokit-user-client-class "RootDomainUserClient"))`,
+		`(allow user-preference-read 
+       	(preference-domain "com.apple.hitoolbox")
+       	(preference-domain "kCFPreferencesCurrentApplication"))`,
 	}
 	if config.networkType == NetworkNone {
 		sandboxConfig = append(sandboxConfig, "(deny network*)", "(deny system-socket)")
@@ -120,17 +162,19 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 
 	roPathsToMount := []string{
 		"/bin",
+		"/private/etc", // For network configuration files like /etc/hosts, /etc/resolv.conf, etc.
 		"/opt/homebrew",
 		"/usr/bin",
 		"/Applications/", // For executing apps like Xcode, Safari, etc.
+		"/Library/Caches",
 		"/Library/Developer/CommandLineTools",
 		"/Library/Frameworks",
 		"/Library/Preferences",
-		"/System/Library/Frameworks",
-		"/System/Library/Preferences/Logging",
+		"/System/Library/",
 		"/System/Volumes/Preboot/Cryptexes/OS",
-		"/System/Library/CoreServices/",
 		"/Library/Application Support/CrashReporter/DiagnosticMessagesHistory.plist", // For Zig to decide on crash reporting
+		os.ExpandEnv("$HOME/Library/Input Methods"),
+		os.ExpandEnv("$HOME/Library/Keyboard Layouts"),
 		os.ExpandEnv("$HOME/Library/Python"),
 		os.ExpandEnv("$HOME/Library/Preferences"),
 		// GitHub Actions put tools inside $HOME/hostedtoolcache
