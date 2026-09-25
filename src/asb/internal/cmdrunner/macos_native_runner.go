@@ -4,6 +4,7 @@ package cmdrunner
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -12,7 +13,8 @@ import (
 )
 
 func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
-	cmdArgs := config.cmdType.getArgs(config.args)
+	// config.args is already normalized by SetArgs (e.g. ["node", "index.js"]).
+	cmdArgs := config.args
 	log.Debug().
 		Str("args", strings.Join(cmdArgs, " ")).
 		Strs("cmdArgs", cmdArgs).
@@ -71,6 +73,7 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 		// For timezone information allow reading these files
 		`(allow file-read-data (subpath "/usr/share/locale/"))`,
 		`(allow file-read-data (subpath "/private/var/db/timezone"))`,
+		`(allow file-read-data (subpath "/usr/share/icu/"))`,
 
 		// For dtrace support, allow access to dtracehelper
 		`(allow file-ioctl (literal "/dev/dtracehelper"))`,
@@ -80,6 +83,12 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 		`(allow mach-lookup (global-name "com.apple.system.opendirectoryd.libinfo"))`,
 		`(allow mach-lookup (global-name "com.apple.logd"))`,
 		`(allow mach-lookup (global-name "com.apple.system.notification_center"))`,
+		`(allow mach-lookup (global-name "com.apple.diagnosticd"))`,
+		`(allow mach-lookup (global-name "com.apple.pasteboard.1"))`,
+		`(allow mach-lookup (global-name "com.apple.tccd.system"))`,
+		`(allow mach-lookup (global-name "com.apple.windowserver.active"))`,
+		`(allow mach-lookup (global-name "com.apple.DiskArbitration.diskarbitrationd"))`,
+		`(allow mach-lookup (global-name "com.apple.CoreServices.coreservicesd"))`,
 		`(allow ipc-posix-shm-read-data (ipc-posix-name "apple.shm.notification_center"))`,
 	}
 	if config.networkType == NetworkNone {
@@ -113,13 +122,14 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 		"/bin",
 		"/opt/homebrew",
 		"/usr/bin",
+		"/Applications/", // For executing apps like Xcode, Safari, etc.
 		"/Library/Developer/CommandLineTools",
 		"/Library/Frameworks",
 		"/Library/Preferences",
 		"/System/Library/Frameworks",
 		"/System/Library/Preferences/Logging",
 		"/System/Volumes/Preboot/Cryptexes/OS",
-		"/System/Library/CoreServices/SystemVersion.plist", // For Zig to get macOS version
+		"/System/Library/CoreServices/",
 		"/Library/Application Support/CrashReporter/DiagnosticMessagesHistory.plist", // For Zig to decide on crash reporting
 		os.ExpandEnv("$HOME/Library/Python"),
 		os.ExpandEnv("$HOME/Library/Preferences"),
@@ -130,7 +140,6 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 		// Some package managers on GitHub Actions install binaries in the home directory, so allow executing from there as well
 		os.ExpandEnv("$HOME/work/_temp"),
 		os.ExpandEnv("$HOME/setup-pnpm"), // For pnpm
-
 	}
 
 	// For each referenced file/directory, we need to allow read access to it
@@ -160,11 +169,31 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 		sandboxConfig = append(sandboxConfig, fmt.Sprintf(`(allow file-write* (subpath "%s"))`, path))
 	}
 
-	cmd := make([]string, 0, 3+len(cmdArgs)-1)
+	if config.cmdType == CmdTypeExec {
+		// The binary may live outside the paths allowed above (e.g. ~/bin), so
+		// allow reading and executing it. sandbox-exec checks the real path, so
+		// allow both the path as invoked and the symlink-resolved one.
+		absPath, realPath, err := resolveExecBinary(config)
+		if err != nil {
+			return nil, err
+		}
+		for _, path := range []string{absPath, realPath} {
+			sandboxConfig = append(sandboxConfig,
+				fmt.Sprintf(`(allow file-read* (literal "%s"))`, path),
+				fmt.Sprintf(`(allow process-exec (literal "%s"))`, path))
+		}
+		cmdArgs = append([]string{absPath}, cmdArgs[1:]...)
+	}
+
+	if len(cmdArgs) == 0 {
+		return nil, errors.New("no command to run in native mode")
+	}
+
+	cmd := make([]string, 0, 3+len(cmdArgs))
 	cmd = append(cmd, "sandbox-exec", "-p", strings.Join(sandboxConfig, "\n"))
 	// One can see the config with
 	// os.WriteFile("/tmp/debug.sb", []byte(strings.Join(sandboxConfig, "\n")), 0o644)
-	cmd = append(cmd, cmdArgs[1:]...)
+	cmd = append(cmd, cmdArgs...)
 	log.Debug().
 		Strs("cmd", cmd).
 		Msg("Running command in native execution mode with sandbox-exec")

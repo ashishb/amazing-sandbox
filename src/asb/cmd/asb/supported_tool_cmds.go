@@ -174,3 +174,11 @@ func bashCmd() *cobra.Command {
 	}
 	return createCmd(cmd, cmdrunner.CmdTypeBash)
 }
+
+func execCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "exec",
+		Short: "Run an arbitrary host binary inside the sandbox (requires --mode=native)",
+	}
+	return createCmd(cmd, cmdrunner.CmdTypeExec)
+}

@@ -73,6 +73,7 @@ func getRootCmd() *cobra.Command {
 
 	// Generic tools
 	rootCmd.AddCommand(bashCmd())
+	rootCmd.AddCommand(execCmd())
 
 	return rootCmd
 }

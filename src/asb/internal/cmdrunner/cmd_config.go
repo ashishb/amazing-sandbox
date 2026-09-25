@@ -53,6 +53,7 @@ var _dockerImageMap = map[CmdType]string{
 	CmdTypeGoExec:           _goDockerImage,
 	CmdTypeZig:              _zigDockerImage,
 	CmdTypeBash:             _bashDockerImage,
+	CmdTypeExec:             "", // Native mode only, no Docker image
 }
 
 type Config struct {
@@ -305,6 +306,7 @@ func (cmdType CmdType) getArgs(args []string) []string {
 		CmdTypeZig: "zig",
 		// Generic tools
 		CmdTypeBash: "bash",
+		CmdTypeExec: "", // The first arg is the binary itself
 	}
 
 	if cmdType == CmdTypeRubyGem {

@@ -123,6 +123,18 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 		}
 	}
 
+	if config.cmdType == CmdTypeExec {
+		// The binary may live outside the paths exposed above (e.g. ~/bin), so
+		// expose it read-only. The real path is executed so that a symlink whose
+		// parent directory is not visible inside the sandbox still works.
+		_, realPath, err := resolveExecBinary(config)
+		if err != nil {
+			return nil, err
+		}
+		bwrapArgs = append(bwrapArgs, "--ro-bind", realPath, realPath)
+		cmdArgs = append([]string{realPath}, cmdArgs[1:]...)
+	}
+
 	for _, envVar := range envVars {
 		bwrapArgs = append(bwrapArgs, "--setenv", envVar.key, envVar.value)
 	}

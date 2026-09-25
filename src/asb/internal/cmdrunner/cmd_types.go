@@ -35,6 +35,9 @@ const (
 	CmdTypeZig    CmdType = "zig"
 
 	CmdTypeBash CmdType = "bash"
+
+	// CmdTypeExec runs an arbitrary host binary. Only supported in native mode.
+	CmdTypeExec CmdType = "exec"
 )
 
 // Ref: https://docs.docker.com/engine/network/

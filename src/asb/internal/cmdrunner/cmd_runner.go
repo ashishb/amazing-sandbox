@@ -35,6 +35,10 @@ type EnvVar struct {
 // RunCmd runs the npx command with the given arguments.
 // args can be empty list as well
 func RunCmd(ctx context.Context, config Config) (*ShellResult, error) {
+	if config.cmdType == CmdTypeExec && config.execMode != ExecModeNative {
+		return nil, fmt.Errorf("running an arbitrary binary is only supported with --mode=%s", ExecModeNative)
+	}
+
 	// Now run the image with the config
 	switch config.execMode {
 	case ExecModeDocker:

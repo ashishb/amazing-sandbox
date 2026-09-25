@@ -135,7 +135,7 @@ func getCacheMounts() map[_VolumeName]_ContainerFilePath {
 }
 
 func setupDirMappingsForCodingAgents(config Config) ([]EnvVar, []_FilePathToMount, error) {
-	if !slices.Contains([]CmdType{CmdTypeBash, CmdTypeNpx}, config.cmdType) {
+	if !slices.Contains([]CmdType{CmdTypeBash, CmdTypeExec, CmdTypeNpx}, config.cmdType) {
 		log.Debug().
 			Str("cmdType", string(config.cmdType)).
 			Msg("Not likely a coding agent command, skipping coding agent directory mounting")
