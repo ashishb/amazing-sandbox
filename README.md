@@ -149,7 +149,7 @@ $ asb zig build
 ...
 ```
 
-### Run [Grok Build](https://x.ai/cli) inside it
+### Run [Grok Build](https://x.ai/cli) inside the sandbox
 
 ```bash
 $ asb bash
@@ -160,6 +160,18 @@ $ apt-get install -y curl
 $ curl -fsSL https://x.ai/cli/install.sh | bash
 # Do this to run it from now on
 $ /root/.grok/bin/grok # To start it
+```
+
+### Run [Obsidian](https://obsidian.md/) inside the sandbox on macOS
+
+```bash
+$ asb --mode=native 
+  --mount-ro /private/var/db/eligibilityd/eligibility.plist \
+  --mount-ro /private/var/db/mds/messages/$(id -u)/se_SecurityMessages \
+  --mount-rw "$HOME/Library/Application Support/obsidian/" \
+  --mount-rw $HOME/Library/CloudStorage \
+  --mount-rw $HOME/.obsidian-cli.sock \
+  exec /Applications/Obsidian.app/Contents/MacOS/Obsidian --no-sandbox
 ```
 
 ## To see the full usage
