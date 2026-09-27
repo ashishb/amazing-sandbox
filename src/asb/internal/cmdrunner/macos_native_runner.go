@@ -221,12 +221,9 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 	for _, dir := range filePathsToMount {
 		mountStr := make([]string, 0, 1)
 		if dir.readOnly {
-			mountStr = append(mountStr, fmt.Sprintf(`(allow file-read* (literal "%s"))`, dir.hostFilePath))
 			mountStr = append(mountStr, fmt.Sprintf(`(allow file-read* (subpath "%s"))`, dir.hostFilePath))
 		} else {
-			mountStr = append(mountStr, fmt.Sprintf(`(allow file-read* (literal "%s"))`, dir.hostFilePath))
 			mountStr = append(mountStr, fmt.Sprintf(`(allow file-read* (subpath "%s"))`, dir.hostFilePath))
-			mountStr = append(mountStr, fmt.Sprintf(`(allow file-write* (literal "%s"))`, dir.hostFilePath))
 			mountStr = append(mountStr, fmt.Sprintf(`(allow file-write* (subpath "%s"))`, dir.hostFilePath))
 		}
 		sandboxConfig = append(sandboxConfig, mountStr...)
