@@ -116,6 +116,7 @@ func getCmdConfig(cmd *cobra.Command, args []string) []cmdrunner.Option {
 	loadEnv := getBoolFlagOrFail(cmd, "load-env")
 	customDockerImage := getStringFlagOrFail(cmd, "custom-docker-image") // Optional
 	mountRODirs := getStringArrayFlagOrFail(cmd, "mount-ro")             // Optional
+	mountRWDirs := getStringArrayFlagOrFail(cmd, "mount-rw")             // Optional
 	mode := strings.ToLower(getStringFlagOrFail(cmd, "mode"))
 
 	// Note that, readWrite is true by default
@@ -184,6 +185,14 @@ func getCmdConfig(cmd *cobra.Command, args []string) []cmdrunner.Option {
 			Strs("mountRODirs", mountRODirs).
 			Msg("Mounting additional directories as read-only inside the sandbox")
 		options = append(options, cmdrunner.SetExtraMountRODirs(mountRODirs))
+	}
+
+	if len(mountRWDirs) > 0 {
+		log.Debug().
+			Ctx(cmd.Context()).
+			Strs("mountRWDirs", mountRWDirs).
+			Msg("Mounting additional directories as read-write inside the sandbox")
+		options = append(options, cmdrunner.SetExtraMountRWDirs(mountRWDirs))
 	}
 
 	options = append(options, cmdrunner.SetExecMode(cmdrunner.ExecMode(mode)))

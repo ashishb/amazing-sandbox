@@ -32,6 +32,8 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 		`(allow file-read-xattr (subpath "/"))`,
 		// Explicitly allow process forking as "gem" needs it
 		`(allow process-fork)`,
+		`(allow network-outbound (remote unix-socket))`,
+		`(allow ipc-posix-shm* (ipc-posix-name "com.apple.AppleDatabaseChanged"))`,
 
 		`(allow process-exec (subpath "/bin"))`,
 		`(allow process-exec (subpath "/usr/bin"))`,
@@ -121,17 +123,45 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 		`(allow mach-lookup (global-name "com.apple.logd.events"))`,
 		`(allow mach-lookup (global-name "com.apple.touchbarserver.mig"))`,
 		`(allow mach-lookup (global-name "com.apple.coredrag"))`,
+		`(allow mach-lookup (global-name "com.apple.coreservices.sharedfilelistd.xpc"))`,
+		`(allow mach-lookup (global-name "com.apple.pbs.fetch_services"))`,
+		`(allow mach-lookup (global-name "com.apple.view-bridge"))`,
+		`(allow mach-lookup (global-name "com.apple.SafariPlatformSupport.Helper"))`,
+		`(allow mach-lookup (global-name "com.apple.PowerManagement.control"))`,
+		`(allow mach-lookup (global-name "com.apple.system.logger"))`,
+		`(allow mach-lookup (global-name "com.apple.distributed_notifications@1v3"))`,
+		`(allow mach-lookup (global-name "com.apple.scopedbookmarksagent.xpc"))`,
+		`(allow mach-lookup (global-name "com.apple.securityd.xpc"))`,
+		`(allow mach-lookup (global-name "com.apple.SecurityServer"))`,
+		`(allow mach-lookup (global-name "com.apple.window_proxies"))`,
+		`(allow mach-lookup (global-name "com.apple.backupd.sandbox.xpc"))`,
+		`(allow mach-lookup (global-name "com.apple.tsm.uiserver"))`,
+		`(allow mach-lookup (global-name "com.apple.FSEvents"))`,
+		`(allow mach-lookup (global-name "com.apple.metadata.mds"))`,
+		`(allow mach-lookup (global-name "com.apple.FileProvider"))`,
+		`(allow mach-lookup (global-name "com.apple.trustd.agent"))`,
+		`(allow mach-lookup (global-name "com.apple.backboard.hid-services.xpc"))`,
+		`(allow mach-lookup (global-name "com.apple.pluginkit.pkd"))`,
+		`(allow mach-lookup (global-name "com.apple.diagnosticd"))`,
+		`(allow mach-lookup (global-name "com.apple.powerlog.plxpclogger.xpc"))`,
+
 		`(allow ipc-posix-shm-read-data (ipc-posix-name "apple.shm.notification_center"))`,
 		`(allow file-issue-extension
 			  (extension-class "com.apple.app-sandbox.read")
 			  (literal "/Applications/Xcode.app"))`,
 		`(allow iokit-open-user-client (iokit-user-client-class "AGXDeviceUserClient"))`,
+		`(allow iokit-open-user-client (iokit-user-client-class "AppleNVMeEANUC"))`,
 		`(allow iokit-open-user-client (iokit-user-client-class "IOHIDParamUserClient"))`,
 		`(allow iokit-open-user-client (iokit-user-client-class "IOSurfaceRootUserClient"))`,
 		`(allow iokit-open-user-client (iokit-user-client-class "RootDomainUserClient"))`,
 		`(allow user-preference-read 
        	(preference-domain "com.apple.hitoolbox")
        	(preference-domain "kCFPreferencesCurrentApplication"))`,
+		`(allow mach-lookup (global-name-regex #"^md\.obsidian\."))`,
+		`(allow mach-register (global-name-regex #"^md\.obsidian\."))`,
+		`(allow mach-register (global-name "com.apple.axserver"))`,
+		`(allow mach-register (global-name "com.apple.coredrag"))`,
+		`(allow mach-register (global-name "com.apple.tsm.portname"))`,
 	}
 	if config.networkType == NetworkNone {
 		sandboxConfig = append(sandboxConfig, "(deny network*)", "(deny system-socket)")
@@ -162,21 +192,15 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 
 	roPathsToMount := []string{
 		"/bin",
+		"/dev",
 		"/private/etc", // For network configuration files like /etc/hosts, /etc/resolv.conf, etc.
 		"/opt/homebrew",
 		"/usr/bin",
 		"/Applications/", // For executing apps like Xcode, Safari, etc.
-		"/Library/Caches",
-		"/Library/Developer/CommandLineTools",
-		"/Library/Frameworks",
-		"/Library/Preferences",
+		"/Library/",
 		"/System/Library/",
 		"/System/Volumes/Preboot/Cryptexes/OS",
-		"/Library/Application Support/CrashReporter/DiagnosticMessagesHistory.plist", // For Zig to decide on crash reporting
-		os.ExpandEnv("$HOME/Library/Input Methods"),
-		os.ExpandEnv("$HOME/Library/Keyboard Layouts"),
-		os.ExpandEnv("$HOME/Library/Python"),
-		os.ExpandEnv("$HOME/Library/Preferences"),
+		os.ExpandEnv("$HOME/Library/"),
 		// GitHub Actions put tools inside $HOME/hostedtoolcache
 		// e.g. uv is in /Users/runner/hostedtoolcache/uv/0.11.16/aarch64/uv
 		// Ref: https://devopsdirective.com/posts/2025/07/github-actions-tool-cache/
@@ -197,9 +221,12 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 	for _, dir := range filePathsToMount {
 		mountStr := make([]string, 0, 1)
 		if dir.readOnly {
+			mountStr = append(mountStr, fmt.Sprintf(`(allow file-read* (literal "%s"))`, dir.hostFilePath))
 			mountStr = append(mountStr, fmt.Sprintf(`(allow file-read* (subpath "%s"))`, dir.hostFilePath))
 		} else {
+			mountStr = append(mountStr, fmt.Sprintf(`(allow file-read* (literal "%s"))`, dir.hostFilePath))
 			mountStr = append(mountStr, fmt.Sprintf(`(allow file-read* (subpath "%s"))`, dir.hostFilePath))
+			mountStr = append(mountStr, fmt.Sprintf(`(allow file-write* (literal "%s"))`, dir.hostFilePath))
 			mountStr = append(mountStr, fmt.Sprintf(`(allow file-write* (subpath "%s"))`, dir.hostFilePath))
 		}
 		sandboxConfig = append(sandboxConfig, mountStr...)

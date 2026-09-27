@@ -70,6 +70,7 @@ type Config struct {
 	mountReferencedDirRW bool // Whether to mount the referenced directory into the container as read-write
 
 	extraMountRODirs []string // Additional directories to mount as read-only inside the container
+	extraMountRWDirs []string // Additional directories to mount as read-write inside the container
 
 	runAsNonRoot bool        // Whether to run the container as non-root user
 	networkType  NetworkType // Network type for the container
@@ -150,6 +151,12 @@ func SetExtraMountRODirs(dirs []string) Option {
 	}
 }
 
+func SetExtraMountRWDirs(dirs []string) Option {
+	return func(c *Config) {
+		c.extraMountRWDirs = append([]string(nil), dirs...)
+	}
+}
+
 func SetExecMode(execMode ExecMode) Option {
 	return func(c *Config) {
 		switch execMode {
@@ -216,6 +223,17 @@ func (c Config) getDirsToMount() []_FilePathToMount {
 			continue
 		}
 		result = append(result, newFilePathToMount(absDir, absDir, true))
+	}
+
+	for _, dir := range c.extraMountRWDirs {
+		absDir := getAbsolutePath(c.workingDir, dir)
+		if _, err := os.Stat(absDir); os.IsNotExist(err) {
+			log.Warn().
+				Str("dir", absDir).
+				Msg("Extra read-write mount directory does not exist, skipping")
+			continue
+		}
+		result = append(result, newFilePathToMount(absDir, absDir, false))
 	}
 
 	return result

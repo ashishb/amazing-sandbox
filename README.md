@@ -174,12 +174,14 @@ Usage:
   asb [command]
 
 Available Commands:
+  bash        Run a bash command
   bun         Run a bun command
   cabal       Run a Haskell cabal command
   cabal-exec  Run a Haskell-based binary already installed inside sandbox
   cargo       Run a cargo command
   cargo-exec  Run a Rust-based binary package already installed inside sandbox
   completion  Generate the autocompletion script for the specified shell
+  exec        Run an arbitrary host binary inside the sandbox (requires --mode=native)
   gem         Run a Ruby gem-based CLI tool
   go-exec     Run a Go-based binary package using go run
   help        Help about any command
@@ -199,11 +201,12 @@ Available Commands:
 
 Flags:
   -i, --custom-docker-image string   Use a custom Docker image for the sandbox
-  -d, --directory string             Working directory for this command (default "<current directory>")
+  -d, --directory string             Working directory for this command (default "/Users/ashishb/src/amazing-sandbox/src/asb")
   -h, --help                         help for asb
   -e, --load-env                     Load .env file from working directory (default true)
       --mode string                  Sandbox mode to use (docker or native) (default "docker")
   -m, --mount-ro stringArray         Mount a directory as read-only inside the sandbox (can be specified multiple times)
+      --mount-rw stringArray         Mount a directory as read-write inside the sandbox (can be specified multiple times)
   -x, --no-disk-access               Disable disk access inside the sandbox
   -n, --no-network                   Disable network access inside the sandbox
   -r, --read-only                    Load working directory and referenced directories as read-only
