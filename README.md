@@ -165,7 +165,7 @@ $ /root/.grok/bin/grok # To start it
 ### Run [Obsidian](https://obsidian.md/) inside the sandbox on macOS
 
 ```bash
-$ asb --mode=native 
+$ asb --mode=native \
   --mount-ro /private/var/db/eligibilityd/eligibility.plist \
   --mount-ro /private/var/db/mds/messages/$(id -u)/se_SecurityMessages \
   --mount-rw "$HOME/Library/Application Support/obsidian/" \
