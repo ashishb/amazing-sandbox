@@ -169,7 +169,7 @@ $ asb --mode=native
   --mount-ro /private/var/db/eligibilityd/eligibility.plist \
   --mount-ro /private/var/db/mds/messages/$(id -u)/se_SecurityMessages \
   --mount-rw "$HOME/Library/Application Support/obsidian/" \
-  --mount-rw $HOME/Library/CloudStorage \
+  --mount-rw "<path to Obsidian vault>" \
   --mount-rw $HOME/.obsidian-cli.sock \
   exec /Applications/Obsidian.app/Contents/MacOS/Obsidian --no-sandbox
 ```
