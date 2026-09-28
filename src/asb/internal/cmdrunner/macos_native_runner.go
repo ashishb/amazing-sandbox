@@ -79,6 +79,7 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 		`(allow file-read-data (subpath "/usr/share/locale/"))`,
 		`(allow file-read-data (subpath "/private/var/db/timezone"))`,
 		`(allow file-read-data (subpath "/usr/share/icu/"))`,
+		`(allow file-read-data (subpath "/Applications"))`,
 
 		// For dtrace support, allow access to dtracehelper
 		`(allow file-ioctl (literal "/dev/dtracehelper"))`,
@@ -144,8 +145,16 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 		`(allow mach-lookup (global-name "com.apple.pluginkit.pkd"))`,
 		`(allow mach-lookup (global-name "com.apple.diagnosticd"))`,
 		`(allow mach-lookup (global-name "com.apple.powerlog.plxpclogger.xpc"))`,
+		`(allow mach-lookup (global-name "com.apple.storekitagent"))`,
+		`(allow mach-lookup (global-name "com.apple.lsd.advertisingidentifiers"))`,
+		`(allow mach-lookup (global-name "com.apple.proactive.app-client.donation"))`, // For Siri
+		`(allow mach-lookup (global-name "com.apple.MTLCompilerService"))`,
+		`(allow mach-lookup (global-name-prefix "com.apple."))`,
+		`(allow mach-lookup (global-name-prefix "com.microsoft.VSCode.MachPortRendezvousServer."))`, // For VS Code
 
 		`(allow ipc-posix-shm-read-data (ipc-posix-name "apple.shm.notification_center"))`,
+		`(allow ipc-posix-shm-read-data (ipc-posix-name "apple.cfprefs.daemonv1"))`,
+		`(allow ipc-posix-shm-read-data (ipc-posix-name "apple.cfprefs.501v1"))`,
 		`(allow file-issue-extension
 			  (extension-class "com.apple.app-sandbox.read")
 			  (literal "/Applications/Xcode.app"))`,
@@ -155,13 +164,40 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 		`(allow iokit-open-user-client (iokit-user-client-class "IOSurfaceRootUserClient"))`,
 		`(allow iokit-open-user-client (iokit-user-client-class "RootDomainUserClient"))`,
 		`(allow user-preference-read 
-       	(preference-domain "com.apple.hitoolbox")
-       	(preference-domain "kCFPreferencesCurrentApplication"))`,
+       		(preference-domain "com.apple.hitoolbox")
+       		(preference-domain "kCFPreferencesCurrentApplication"))`,
+		// Obsidian
 		`(allow mach-lookup (global-name-regex #"^md\.obsidian\."))`,
 		`(allow mach-register (global-name-regex #"^md\.obsidian\."))`,
-		`(allow mach-register (global-name "com.apple.axserver"))`,
-		`(allow mach-register (global-name "com.apple.coredrag"))`,
-		`(allow mach-register (global-name "com.apple.tsm.portname"))`,
+		`(allow mach-register
+    		(global-name "com.apple.axserver")
+    		(local-name "com.apple.axserver"))`,
+		`(allow mach-register
+			(global-name "com.apple.coredrag")
+			(local-name "com.apple.coredrag"))`,
+		`(allow mach-register
+			(global-name "com.apple.tsm.portname")
+			(local-name "com.apple.tsm.portname"))`,
+		// VS code
+		`(allow mach-register (global-name-regex #"^com\.microsoft\.VSCode\.MachPortRendezvousServer\..*"))`,
+		`;; Allow querying terminal window size (TIOCGWINSZ) on pseudo-terminals
+		 (allow file-ioctl
+		 (literal "/dev/ttys000")
+ 		 (ioctl-command (_IO "t" 20)))`,
+		`(allow system-fsctl (fsctl-command (_IO "h" 47)))`,
+		// authorization-right-obtain com.apple.ServiceManagement.daemons.modify
+		`(allow mach-lookup (global-name "com.apple.ServiceManagement.daemons.modify"))`,
+
+		// Allow Electron to send signals (including SIGTERM/15) to its child processes
+		`(allow signal (target children))`,
+		// Allow forking child processes (required for node:child_process spawn)
+		`(allow process-fork)`,
+		// Allow executing binaries (either everywhere or scoped to specific binaries)
+		`(allow process-exec*)`,
+		// Allow local IPC (unix sockets & local loopback) for extension server communication
+		`(allow network-outbound (literal "/private/tmp") (subpath "/private/tmp"))`,
+		`(allow network-bind (local ip "localhost:*"))`,
+		`(allow network-outbound (remote ip "localhost:*"))`,
 	}
 	if config.networkType == NetworkNone {
 		sandboxConfig = append(sandboxConfig, "(deny network*)", "(deny system-socket)")
@@ -173,11 +209,16 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 		"/tmp",
 		"/var/tmp",
 		"/var/folders",
+		"/private/tmp",
 		"/private/var/folders",
+		"/private/var/db",
+		os.ExpandEnv("$HOME/Library/HTTPStorages/"), // For Electron apps like VS Code etc.
 
 		"/dev/dtracehelper", // Ref: https://apple.stackexchange.com/questions/384593/apple-dtracehelper-file
-		os.ExpandEnv("$HOME/Library/Caches/Homebrew"),
+		os.ExpandEnv("$HOME/Library/Caches/"),
 		os.ExpandEnv("$HOME/Library/Developer/Xcode"),
+		os.ExpandEnv("$HOME/Library/Developer/Xcode"),
+		os.ExpandEnv("$HOME/.vscode"), // For VS Code extensions
 	}
 	rwPathsToMount = append(rwPathsToMount, getCachesForPackageManagers()...)
 
