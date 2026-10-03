@@ -48,6 +48,8 @@ const (
 )
 
 const (
+	ExecModeAuto   ExecMode = "auto"
+	ExecModePodman ExecMode = "podman"
 	ExecModeDocker ExecMode = "docker"
 	ExecModeNative ExecMode = "native"
 )

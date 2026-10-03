@@ -48,8 +48,15 @@ func runDockerContainer(ctx context.Context, config Config) (*ShellResult, error
 }
 
 func getDockerRunCmd(config Config) ([]string, error) {
+	return getContainerRunCmd(config, ExecModeDocker)
+}
+
+func getContainerRunCmd(config Config, runtime ExecMode) ([]string, error) {
 	// If this is an interactive terminal then inform the process about this
-	dockerRunCmd := []string{"docker", "run", "--rm", "--init"}
+	dockerRunCmd := []string{string(runtime), "run", "--rm", "--init"}
+	if runtime == ExecModePodman {
+		dockerRunCmd = append(dockerRunCmd, "--pull=missing")
+	}
 	if isInteractiveTerminal() {
 		dockerRunCmd = append(dockerRunCmd, "--interactive", "--tty")
 	}
