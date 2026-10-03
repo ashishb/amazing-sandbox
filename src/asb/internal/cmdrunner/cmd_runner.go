@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 
 	"github.com/mattn/go-isatty"
 	"github.com/rs/zerolog/log"
@@ -39,8 +40,18 @@ func RunCmd(ctx context.Context, config Config) (*ShellResult, error) {
 		return nil, fmt.Errorf("running an arbitrary binary is only supported with --mode=%s", ExecModeNative)
 	}
 
+	if config.execMode == ExecModeAuto {
+		mode, err := selectContainerRuntime(exec.LookPath)
+		if err != nil {
+			return nil, err
+		}
+		config.execMode = mode
+	}
+
 	// Now run the image with the config
 	switch config.execMode {
+	case ExecModePodman:
+		return runPodmanContainer(ctx, config)
 	case ExecModeDocker:
 		return runCmdInDocker(ctx, config)
 	case ExecModeNative:

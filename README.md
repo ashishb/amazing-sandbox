@@ -216,7 +216,7 @@ Flags:
   -d, --directory string             Working directory for this command (default "/Users/ashishb/src/amazing-sandbox/src/asb")
   -h, --help                         help for asb
   -e, --load-env                     Load .env file from working directory (default true)
-      --mode string                  Sandbox mode to use (docker or native) (default "docker")
+      --mode string                  Sandbox mode to use (auto, podman, docker, or native; auto prefers docker) (default "auto")
   -m, --mount-ro stringArray         Mount a directory as read-only inside the sandbox (can be specified multiple times)
       --mount-rw stringArray         Mount a directory as read-write inside the sandbox (can be specified multiple times)
   -x, --no-disk-access               Disable disk access inside the sandbox

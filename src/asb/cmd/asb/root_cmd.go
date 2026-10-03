@@ -34,7 +34,7 @@ func getRootCmd() *cobra.Command {
 	_ = rootCmd.PersistentFlags().StringP("custom-docker-image", "i", "", "Use a custom Docker image for the sandbox")
 	_ = rootCmd.PersistentFlags().StringArrayP("mount-ro", "m", nil, "Mount a directory as read-only inside the sandbox (can be specified multiple times)")
 	_ = rootCmd.PersistentFlags().StringArrayP("mount-rw", "", nil, "Mount a directory as read-write inside the sandbox (can be specified multiple times)")
-	_ = rootCmd.PersistentFlags().StringP("mode", "", "docker", "Sandbox mode to use (docker or native)")
+	_ = rootCmd.PersistentFlags().StringP("mode", "", "auto", "Sandbox mode to use (auto, podman, docker, or native; auto prefers docker)")
 
 	rootCmd.AddCommand(versionCmd())
 

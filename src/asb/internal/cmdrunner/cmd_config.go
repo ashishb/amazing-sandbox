@@ -76,7 +76,7 @@ type Config struct {
 	networkType  NetworkType // Network type for the container
 	loadDotEnv   bool        // Whether to load .env file from working directory
 	// Native mode uses sandbox-exec on macOS and bubblewrap (bwrap) on Linux
-	execMode ExecMode // Execution mode (docker or native)
+	execMode ExecMode // Execution mode (auto, podman, docker, or native)
 }
 
 type Option func(*Config)
@@ -160,10 +160,7 @@ func SetExtraMountRWDirs(dirs []string) Option {
 func SetExecMode(execMode ExecMode) Option {
 	return func(c *Config) {
 		switch execMode {
-		case ExecModeDocker:
-			c.execMode = execMode
-			// Docker is the default mode, so we don't need to do anything here
-		case ExecModeNative:
+		case ExecModeAuto, ExecModePodman, ExecModeDocker, ExecModeNative:
 			c.execMode = execMode
 		default:
 			log.Fatal().
@@ -271,6 +268,7 @@ func NewConfig(cmdType CmdType, options ...Option) Config {
 
 func getDefaultConfig() Config {
 	return Config{
+		execMode:             ExecModeAuto,
 		workingDir:           ".",
 		args:                 nil,
 		mountWorkingDirRW:    true,
