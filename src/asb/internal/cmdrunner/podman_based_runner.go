@@ -2,6 +2,7 @@ package cmdrunner
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -16,7 +17,7 @@ func selectContainerRuntime(lookPath func(string) (string, error)) (ExecMode, er
 			return mode, nil
 		}
 	}
-	return "", fmt.Errorf("neither podman nor docker is available in PATH; install a container runtime or use --mode=native")
+	return "", errors.New("neither podman nor docker is available in PATH; install a container runtime or use --mode=native")
 }
 
 func runPodmanContainer(ctx context.Context, config Config) (*ShellResult, error) {
