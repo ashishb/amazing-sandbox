@@ -174,6 +174,15 @@ $ asb --mode=native \
   exec /Applications/Obsidian.app/Contents/MacOS/Obsidian --no-sandbox
 ```
 
+### Run [VScode](https://code.visualstudio.com) and its malicious extensions inside the sandbox on Mac OS
+
+```bash
+$ asb --mode=native \
+   --mount-rw "$HOME/Library/Application Support/Code" \
+   exec /Applications/Visual\ Studio\ Code.app/Contents/MacOS/Electron --no-sandbox <code-dir>
+```
+
+
 ## To see the full usage
 
 ```bash
