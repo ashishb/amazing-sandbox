@@ -182,7 +182,6 @@ $ asb --mode=native \
    exec /Applications/Visual\ Studio\ Code.app/Contents/MacOS/Electron --no-sandbox <code-dir>
 ```
 
-
 ## To see the full usage
 
 ```bash
