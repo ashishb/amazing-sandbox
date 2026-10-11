@@ -34,7 +34,7 @@ Configurable via CLI parameters
 
 - [x] Disable read access to the current and referenced directories via `-x`
 - [x] Provide Read-only access to the referenced directories via `-r`
-- [x] Disable network access - via `-n`
+- [x] Disable network access via `-n`
 - [x] Disable `.env` file loading via `--load-env=false`
 - [x] Add ability to pass a custom Docker image via `-i`
 
@@ -174,7 +174,7 @@ $ asb --mode=native \
   exec /Applications/Obsidian.app/Contents/MacOS/Obsidian --no-sandbox
 ```
 
-### Run [VScode](https://code.visualstudio.com) and its malicious extensions inside the sandbox on Mac OS
+### Run [VScode](https://code.visualstudio.com) and its [potentially malicious extensions](https://www.broadcom.com/support/security-center/protection-bulletin/malicious-vscode-extensions-infecing-users-with-cryptominer) inside the sandbox on Mac OS
 
 ```bash
 $ asb --mode=native \
