@@ -182,6 +182,17 @@ $ asb --mode=native \
    exec /Applications/Visual\ Studio\ Code.app/Contents/MacOS/Electron --no-sandbox <code-dir>
 ```
 
+### Run [golangci-lint](https://golangci-lint.run/) inside sandbox on Mac OS natively
+
+```bash
+$ asb --mode=native \
+  --mount-rw "$HOME/Library/Caches/go-build" \
+  --mount-rw "$HOME/go/pkg/mod/" \
+  --mount-rw "$HOME/Library/Application Support/go/telemetry" \
+  --mount-ro "/opt/homebrew/Cellar/go" \
+  exec /opt/homebrew/bin/golangci-lint "$@"
+```
+
 ## To see the full usage
 
 ```bash
