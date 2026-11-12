@@ -36,21 +36,12 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 		return nil, errors.New("no command to run in native mode")
 	}
 
-	bwrapArgs := []string{
-		"bwrap",
-		// Expose the entire host filesystem read-only, then overlay writable paths
-		// on top of it. This matches the macOS policy of "allow reads everywhere,
-		// restrict writes".
-		"--ro-bind", "/bin", "/bin",
-		"--ro-bind", "/etc", "/etc",
-		"--ro-bind", "/lib", "/lib",
-		"--ro-bind", "/lib64", "/lib64",
-		"--ro-bind", "/sbin", "/sbin",
-		"--ro-bind", "/opt", "/opt",
-		"--ro-bind", "/run", "/run",
-		"--ro-bind", "/snap", "/snap",
-		"--ro-bind", "/sys", "/sys",
-		"--ro-bind", "/usr/", "/usr",
+	bwrapArgs := []string{"bwrap"}
+	// Expose the entire host filesystem read-only, then overlay writable paths
+	// on top of it. This matches the macOS policy of "allow reads everywhere,
+	// restrict writes".
+	bwrapArgs = append(bwrapArgs, getBwrapSystemDirMountArgs()...)
+	bwrapArgs = append(bwrapArgs,
 		// Fresh pseudo-filesystems. These come after the root bind so they take
 		// precedence, and give the sandbox a clean /dev (null, zero, random,
 		// urandom, tty, ...), /proc and writable temporary directories.
@@ -69,7 +60,7 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 		"--unshare-cgroup-try",
 		// Ensure the sandboxed process is reaped if the parent dies.
 		"--die-with-parent",
-	}
+	)
 
 	if config.networkType == NetworkNone {
 		// Drop the network namespace entirely to deny all network access.
