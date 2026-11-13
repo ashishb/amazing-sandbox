@@ -37,8 +37,7 @@ func createCmd(cmd *cobra.Command, cmdType cmdrunner.CmdType) *cobra.Command {
 			return
 		}
 
-		var exitErr *exec.ExitError
-		if errors.As(err, &exitErr) {
+		if exitErr, ok := errors.AsType[*exec.ExitError](err); ok {
 			exitCode := exitErr.ExitCode()
 			// SIGINT = Graceful termination of "Interactive foreground tasks"
 			// SIGTERM = Graceful termination of "Background tasks"
