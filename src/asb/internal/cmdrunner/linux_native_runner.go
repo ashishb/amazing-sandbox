@@ -118,7 +118,7 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 		// The binary may live outside the paths exposed above (e.g. ~/bin), so
 		// expose it read-only. The real path is executed so that a symlink whose
 		// parent directory is not visible inside the sandbox still works.
-		_, realPath, err := resolveExecBinary(config)
+		_, realPath, err := resolveExecBinary(ctx, config)
 		if err != nil {
 			return nil, err
 		}

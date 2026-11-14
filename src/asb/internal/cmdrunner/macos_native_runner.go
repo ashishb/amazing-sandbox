@@ -282,7 +282,7 @@ func runCmdInNative(ctx context.Context, config Config) (*ShellResult, error) {
 		// The binary may live outside the paths allowed above (e.g. ~/bin), so
 		// allow reading and executing it. sandbox-exec checks the real path, so
 		// allow both the path as invoked and the symlink-resolved one.
-		absPath, realPath, err := resolveExecBinary(config)
+		absPath, realPath, err := resolveExecBinary(ctx, config)
 		if err != nil {
 			return nil, err
 		}

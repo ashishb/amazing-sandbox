@@ -171,7 +171,7 @@ $ asb --mode=native \
   --mount-rw "$HOME/Library/Application Support/obsidian/" \
   --mount-rw "<path to Obsidian vault>" \
   --mount-rw $HOME/.obsidian-cli.sock \
-  exec /Applications/Obsidian.app/Contents/MacOS/Obsidian --no-sandbox
+  exec /Applications/Obsidian.app --no-sandbox
 ```
 
 ### Run [VScode](https://code.visualstudio.com) and its [potentially malicious extensions](https://www.broadcom.com/support/security-center/protection-bulletin/malicious-vscode-extensions-infecing-users-with-cryptominer) inside the sandbox on Mac OS
@@ -179,7 +179,7 @@ $ asb --mode=native \
 ```bash
 $ asb --mode=native \
    --mount-rw "$HOME/Library/Application Support/Code" \
-   exec /Applications/Visual\ Studio\ Code.app/Contents/MacOS/Electron --no-sandbox <code-dir>
+   exec /Applications/Visual\ Studio\ Code.app/ --no-sandbox <code-dir>
 ```
 
 ### Run [golangci-lint](https://golangci-lint.run/) inside sandbox on Mac OS natively
