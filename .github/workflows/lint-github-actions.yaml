@@ -39,7 +39,7 @@ jobs:
           sparse-checkout-cone-mode: false
 
       - name: Lint GitHub Actions
-        uses: reviewdog/action-actionlint@a7d35aaf8c309203a4ae861d32b7bd490baa7bf3  # v1.83.0
+        uses: reviewdog/action-actionlint@ae857e78c1b42b3d0a49637181b09d3d56d402b4  # v1.84.1
 
       - name: Check GitHub Actions with 'actionlint'
         # Ref: https://github.com/rhysd/actionlint/blob/main/docs/usage.md#use-actionlint-on-github-actions
